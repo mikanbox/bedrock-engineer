@@ -182,7 +182,6 @@ export type RecognizeImageInput = {
   type: 'recognizeImage'
   imagePath: string
   prompt?: string
-  modelId?: string
 }
 
 // MCPツールの入力型
@@ -623,11 +622,6 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
               type: 'string',
               description:
                 'Custom prompt to guide the image analysis (e.g., "Describe this image in detail", "What text appears in this image?", etc.). Default: "Describe this image in detail."'
-            },
-            modelId: {
-              type: 'string',
-              description:
-                'Claude model ID to use for image recognition. Default: anthropic.claude-3-sonnet-20240229-v1:0'
             }
           },
           required: ['imagePath']

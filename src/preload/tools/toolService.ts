@@ -1208,16 +1208,19 @@ export class ToolService {
    * recognizeImage ツールの実装
    * 画像ファイルを読み込み、AWS Bedrock の Claude モデルを使用して画像認識を行う
    * BedrockService.recognizeImage を使用して実装
+   *
+   * 注: modelIdは常に外部設定から渡される値を使用します
    */
   async recognizeImage(
     bedrock: BedrockService,
     toolInput: {
       imagePath: string
       prompt?: string
-      modelId?: string
-    }
+    },
+    modelId: string
   ): Promise<RecognizeImageResult> {
-    const { imagePath, prompt, modelId = 'anthropic.claude-3-sonnet-20240229-v1:0' } = toolInput
+    // 常に設定から渡されたモデルIDを使用する
+    const { imagePath, prompt } = toolInput
 
     logger.debug('Recognizing image', {
       imagePath,
@@ -1244,7 +1247,7 @@ export class ToolService {
       const description = await bedrock.recognizeImage({
         imagePath,
         prompt,
-        modelId
+        modelId // 設定から渡されたモデルIDを使用
       })
 
       logger.info('Image recognition successful', {

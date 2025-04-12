@@ -7,6 +7,7 @@ import { CommandForm } from './CommandForm'
 import { BedrockAgentSettingForm } from './BedrockAgentSettingForm'
 import { TavilySearchSettingForm } from './TavilySearchSettingForm'
 import { ThinkToolSettingForm } from './ThinkToolSettingForm'
+import { RecognizeImageSettingForm } from './RecognizeImageSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -85,7 +86,13 @@ const TOOL_CATEGORIES: ToolCategory[] = [
 ]
 
 // 詳細設定が必要なツール
-const TOOLS_WITH_SETTINGS = ['executeCommand', 'retrieve', 'invokeBedrockAgent', 'tavilySearch']
+const TOOLS_WITH_SETTINGS = [
+  'executeCommand',
+  'retrieve',
+  'invokeBedrockAgent',
+  'tavilySearch',
+  'recognizeImage'
+]
 
 interface ToolSettingModalProps {
   isOpen: boolean
@@ -417,6 +424,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                         setTavilySearchApiKey={setTavilySearchApiKey}
                       />
                     )}
+                    {selectedTool === 'recognizeImage' && <RecognizeImageSettingForm />}
                     {selectedTool === 'think' && <ThinkToolSettingForm />}
                   </>
                 ) : (
