@@ -14,6 +14,9 @@ export const chatPage = {
     ...tools.en,
     ...guardrails.en,
     ...{
+      'Analyzed image': 'Analyzed image',
+      'Image Analysis': 'Image Analysis',
+      'Analyzed with': 'Analyzed with',
       textarea: {
         placeholder: 'Type message or add images ({{modifier}}+V / drop)',
         imageValidation: {
@@ -46,6 +49,9 @@ export const chatPage = {
     ...tools.ja,
     ...guardrails.ja,
     ...{
+      'Analyzed image': '解析された画像',
+      'Image Analysis': '画像解析結果',
+      'Analyzed with': '使用モデル',
       textarea: {
         placeholder: 'メッセージを入力、または画像を追加 ({{modifier}}+V / ドロップ)',
         imageValidation: {

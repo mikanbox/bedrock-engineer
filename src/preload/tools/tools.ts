@@ -161,6 +161,13 @@ export const executeTool = async (input: ToolInput): Promise<string | ToolResult
       case 'think':
         return toolService.think(input.thought)
 
+      case 'recognizeImage':
+        return toolService.recognizeImage(bedrock, {
+          imagePath: input.imagePath,
+          prompt: input.prompt,
+          modelId: input.modelId
+        })
+
       default: {
         // 未知のツール名の場合はエラー
         const unknownToolError = `Unknown tool type: ${input.type}`

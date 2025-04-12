@@ -54,6 +54,10 @@ export class BedrockService {
     return this.imageService.isModelSupported(modelId)
   }
 
+  async recognizeImage(props: { imagePath: string; prompt?: string; modelId?: string }) {
+    return this.converseService.recognizeImage(props)
+  }
+
   async applyGuardrail(props: ApplyGuardrailRequest) {
     return this.guardrailService.applyGuardrail(props)
   }

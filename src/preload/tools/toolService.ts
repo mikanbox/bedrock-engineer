@@ -52,6 +52,15 @@ interface ThinkResult extends ToolResult {
   }
 }
 
+interface RecognizeImageResult extends ToolResult {
+  name: 'recognizeImage'
+  result: {
+    imagePath: string
+    description: string
+    modelUsed: string
+  }
+}
+
 type Completion = {
   message?: string
   files?: string[]
@@ -1192,6 +1201,81 @@ export class ToolService {
       throw new Error(
         `Error in think tool: ${error instanceof Error ? error.message : String(error)}`
       )
+    }
+  }
+
+  /**
+   * recognizeImage ツールの実装
+   * 画像ファイルを読み込み、AWS Bedrock の Claude モデルを使用して画像認識を行う
+   * BedrockService.recognizeImage を使用して実装
+   */
+  async recognizeImage(
+    bedrock: BedrockService,
+    toolInput: {
+      imagePath: string
+      prompt?: string
+      modelId?: string
+    }
+  ): Promise<RecognizeImageResult> {
+    const { imagePath, prompt, modelId = 'anthropic.claude-3-sonnet-20240229-v1:0' } = toolInput
+
+    logger.debug('Recognizing image', {
+      imagePath,
+      modelId,
+      hasCustomPrompt: !!prompt
+    })
+
+    try {
+      // ファイル存在確認（基本的なバリデーションはクライアント側でも行う）
+      try {
+        await fs.access(imagePath)
+      } catch (error) {
+        logger.error(`Image file not found: ${imagePath}`, { error })
+        throw new Error(`Image file not found: ${imagePath}`)
+      }
+
+      // BedrockService経由で画像認識を実行
+      logger.info('Calling Bedrock for image recognition', {
+        imagePath,
+        modelId
+      })
+
+      // BedrockServiceの新しいメソッドを呼び出し
+      const description = await bedrock.recognizeImage({
+        imagePath,
+        prompt,
+        modelId
+      })
+
+      logger.info('Image recognition successful', {
+        imagePath,
+        modelId,
+        responseLength: description.length
+      })
+
+      return {
+        name: 'recognizeImage',
+        success: true,
+        message: `Successfully analyzed image: ${path.basename(imagePath)}`,
+        result: {
+          imagePath,
+          description,
+          modelUsed: modelId
+        }
+      }
+    } catch (error: any) {
+      logger.error('Error recognizing image', {
+        imagePath,
+        error: error.message,
+        errorName: error.name
+      })
+
+      throw `Error recognizing image: ${JSON.stringify({
+        success: false,
+        name: 'recognizeImage',
+        error: 'Failed to recognize image',
+        message: error.message
+      })}`
     }
   }
 

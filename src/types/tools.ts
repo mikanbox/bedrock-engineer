@@ -16,6 +16,7 @@ export type ToolName =
   | 'executeCommand'
   | 'applyDiffEdit'
   | 'think'
+  | 'recognizeImage'
   | string // MCPツール名を許容するために文字列型も追加
 
 /**
@@ -176,6 +177,14 @@ export type ThinkInput = {
   thought: string
 }
 
+// recognizeImage ツールの入力型
+export type RecognizeImageInput = {
+  type: 'recognizeImage'
+  imagePath: string
+  prompt?: string
+  modelId?: string
+}
+
 // MCPツールの入力型
 export type McpToolInput = {
   type: string // MCPツール名
@@ -193,6 +202,7 @@ export type ToolInput =
   | TavilySearchInput
   | FetchWebsiteInput
   | GenerateImageInput
+  | RecognizeImageInput
   | RetrieveInput
   | InvokeBedrockAgentInput
   | ExecuteCommandInput
@@ -211,6 +221,7 @@ export type ToolInputTypeMap = {
   tavilySearch: TavilySearchInput
   fetchWebsite: FetchWebsiteInput
   generateImage: GenerateImageInput
+  recognizeImage: RecognizeImageInput
   retrieve: RetrieveInput
   invokeBedrockAgent: InvokeBedrockAgentInput
   executeCommand: ExecuteCommandInput
@@ -590,6 +601,36 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
             }
           },
           required: ['prompt', 'outputPath', 'modelId']
+        }
+      }
+    }
+  },
+  {
+    toolSpec: {
+      name: 'recognizeImage',
+      description:
+        "Analyze and describe image content using Amazon Bedrock's Claude vision capabilities. The tool reads an image file, processes it, and returns a detailed description based on the provided prompt.",
+      inputSchema: {
+        json: {
+          type: 'object',
+          properties: {
+            imagePath: {
+              type: 'string',
+              description:
+                'Path to the image file to analyze. Supports common image formats: .jpg, .jpeg, .png, .gif, .webp'
+            },
+            prompt: {
+              type: 'string',
+              description:
+                'Custom prompt to guide the image analysis (e.g., "Describe this image in detail", "What text appears in this image?", etc.). Default: "Describe this image in detail."'
+            },
+            modelId: {
+              type: 'string',
+              description:
+                'Claude model ID to use for image recognition. Default: anthropic.claude-3-sonnet-20240229-v1:0'
+            }
+          },
+          required: ['imagePath']
         }
       }
     }
