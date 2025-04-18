@@ -55,8 +55,11 @@ interface ThinkResult extends ToolResult {
 interface RecognizeImageResult extends ToolResult {
   name: 'recognizeImage'
   result: {
-    imagePath: string
-    description: string
+    images: Array<{
+      path: string
+      description: string
+      success: boolean
+    }>
     modelUsed: string
   }
 }
@@ -1206,78 +1209,104 @@ export class ToolService {
 
   /**
    * recognizeImage ツールの実装
-   * 画像ファイルを読み込み、AWS Bedrock の Claude モデルを使用して画像認識を行う
+   * 複数の画像ファイルを読み込み、AWS Bedrock の Claude モデルを使用して並列に画像認識を行う
    * BedrockService.recognizeImage を使用して実装
+   * 最大5枚の画像を並列処理
    *
    * 注: modelIdは常に外部設定から渡される値を使用します
    */
   async recognizeImage(
     bedrock: BedrockService,
     toolInput: {
-      imagePath: string
+      imagePaths: string[]
       prompt?: string
     },
     modelId: string
   ): Promise<RecognizeImageResult> {
-    // 常に設定から渡されたモデルIDを使用する
-    const { imagePath, prompt } = toolInput
+    const { imagePaths, prompt } = toolInput
 
-    logger.debug('Recognizing image', {
-      imagePath,
+    // 画像数を最大5枚に制限
+    const limitedPaths = imagePaths.slice(0, 5)
+
+    logger.debug('Recognizing multiple images', {
+      imageCount: limitedPaths.length,
       modelId,
       hasCustomPrompt: !!prompt
     })
 
     try {
-      // ファイル存在確認（基本的なバリデーションはクライアント側でも行う）
-      try {
-        await fs.access(imagePath)
-      } catch (error) {
-        logger.error(`Image file not found: ${imagePath}`, { error })
-        throw new Error(`Image file not found: ${imagePath}`)
-      }
+      // Promise.all で並列処理
+      const results = await Promise.all(
+        limitedPaths.map(async (imagePath) => {
+          try {
+            // ファイル存在確認
+            try {
+              await fs.access(imagePath)
+            } catch (error) {
+              logger.error(`Image file not found: ${imagePath}`, { error })
+              throw new Error(`Image file not found: ${imagePath}`)
+            }
 
-      // BedrockService経由で画像認識を実行
-      logger.info('Calling Bedrock for image recognition', {
-        imagePath,
+            // 個別の画像認識処理
+            const description = await bedrock.recognizeImage({
+              imagePath,
+              prompt,
+              modelId
+            })
+
+            logger.debug(`Successfully recognized image: ${path.basename(imagePath)}`, {
+              path: imagePath,
+              descriptionLength: description.length
+            })
+
+            return {
+              path: imagePath,
+              description,
+              success: true
+            }
+          } catch (error) {
+            logger.error(`Failed to recognize image: ${imagePath}`, {
+              error: error instanceof Error ? error.message : String(error)
+            })
+
+            return {
+              path: imagePath,
+              description: `Error: ${error instanceof Error ? error.message : 'Failed to analyze this image'}`,
+              success: false
+            }
+          }
+        })
+      )
+
+      const successCount = results.filter((r) => r.success).length
+
+      logger.info('Multiple image recognition completed', {
+        total: limitedPaths.length,
+        success: successCount,
+        failed: limitedPaths.length - successCount,
         modelId
-      })
-
-      // BedrockServiceの新しいメソッドを呼び出し
-      const description = await bedrock.recognizeImage({
-        imagePath,
-        prompt,
-        modelId // 設定から渡されたモデルIDを使用
-      })
-
-      logger.info('Image recognition successful', {
-        imagePath,
-        modelId,
-        responseLength: description.length
       })
 
       return {
         name: 'recognizeImage',
-        success: true,
-        message: `Successfully analyzed image: ${path.basename(imagePath)}`,
+        success: successCount > 0, // 少なくとも1枚成功していればtrue
+        message: `Analyzed ${successCount} of ${limitedPaths.length} images successfully`,
         result: {
-          imagePath,
-          description,
+          images: results,
           modelUsed: modelId
         }
       }
-    } catch (error: any) {
-      logger.error('Error recognizing image', {
-        imagePath,
-        error: error.message,
-        errorName: error.name
+    } catch (error) {
+      logger.error('Failed to recognize images', {
+        error: error instanceof Error ? error.message : String(error),
+        imageCount: limitedPaths.length
       })
 
-      throw `Error recognizing image: ${JSON.stringify({
+      throw `Error recognizing images: ${JSON.stringify({
         success: false,
         name: 'recognizeImage',
-        error: 'Failed to recognize image',
-        message: error.message
+        error: 'Failed to recognize images',
+        message: error instanceof Error ? error.message : String(error)
       })}`
     }
   }

@@ -172,7 +172,7 @@ export const executeTool = async (input: ToolInput): Promise<string | ToolResult
         return toolService.recognizeImage(
           bedrock,
           {
-            imagePath: input.imagePath,
+            imagePaths: input.imagePaths,
             prompt: input.prompt
           },
           modelId // 設定から取得したモデルIDを直接渡す

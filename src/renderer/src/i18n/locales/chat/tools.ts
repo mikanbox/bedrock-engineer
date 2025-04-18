@@ -69,7 +69,7 @@ export const tools = {
       tavilySearch: 'Search the web for information',
       fetchWebsite: 'Fetch and analyze content from websites',
       generateImage: 'Generate images using LLMs',
-      recognizeImage: 'Analyze and describe image content using Claude vision capabilities',
+      recognizeImage: 'Analyze and describe image content using LLM vision capabilities',
       retrieve:
         'Query the Amazon Bedrock Knowledge Base to find relevant information using Retrieval-Augmented Generation (RAG).',
       invokeBedrockAgent: 'Invoke Amazon Bedrock Agent to interact with LLMs and external tools',
@@ -270,7 +270,7 @@ export const tools = {
       tavilySearch: 'Web上の情報を検索',
       fetchWebsite: 'Webサイトのコンテンツを取得して分析',
       generateImage: 'LLMを使用して画像を生成',
-      recognizeImage: 'Claudeの視覚機能を使用して画像を分析・説明',
+      recognizeImage: 'LLMの視覚機能を使用して画像を分析・説明',
       retrieve: 'Amazon Bedrock Knowledge Base へのクエリ',
       invokeBedrockAgent: 'Amazon Bedrock Agent を実行',
       executeCommand: 'ワイルドカードをサポートする許可されたコマンドを実行',

@@ -180,7 +180,7 @@ export type ThinkInput = {
 // recognizeImage ツールの入力型
 export type RecognizeImageInput = {
   type: 'recognizeImage'
-  imagePath: string
+  imagePaths: string[] // 複数画像をサポート（最大5枚）
   prompt?: string
 }
 
@@ -608,15 +608,18 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
     toolSpec: {
       name: 'recognizeImage',
       description:
-        "Analyze and describe image content using Amazon Bedrock's Claude vision capabilities. The tool reads an image file, processes it, and returns a detailed description based on the provided prompt.",
+        "Analyze and describe multiple images (up to 5) using Amazon Bedrock's Claude vision capabilities. The tool processes images in parallel and returns detailed descriptions.",
       inputSchema: {
         json: {
           type: 'object',
           properties: {
-            imagePath: {
-              type: 'string',
+            imagePaths: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
               description:
-                'Path to the image file to analyze. Supports common image formats: .jpg, .jpeg, .png, .gif, .webp'
+                'Paths to the image files to analyze (maximum 5). Supports common formats: .jpg, .jpeg, .png, .gif, .webp'
             },
             prompt: {
               type: 'string',
@@ -624,7 +627,7 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
                 'Custom prompt to guide the image analysis (e.g., "Describe this image in detail", "What text appears in this image?", etc.). Default: "Describe this image in detail."'
             }
           },
-          required: ['imagePath']
+          required: ['imagePaths']
         }
       }
     }

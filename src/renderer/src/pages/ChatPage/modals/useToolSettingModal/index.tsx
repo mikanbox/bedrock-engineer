@@ -393,7 +393,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                     />
                   </div>
                 ) : TOOLS_WITH_SETTINGS.includes(selectedTool) ? (
-                  <>
+                  <div className="w-full">
                     {selectedTool === 'retrieve' && selectedAgentId && (
                       <KnowledgeBaseSettingForm
                         knowledgeBases={getAgentKnowledgeBases(selectedAgentId)}
@@ -426,7 +426,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                     )}
                     {selectedTool === 'recognizeImage' && <RecognizeImageSettingForm />}
                     {selectedTool === 'think' && <ThinkToolSettingForm />}
-                  </>
+                  </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">
                     <p className="mb-4 text-gray-700 dark:text-gray-300 font-bold">
