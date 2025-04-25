@@ -3,6 +3,9 @@ import remarkGfm from 'remark-gfm'
 import style from './styles.module.css'
 import { useMemo } from 'react'
 import LocalImage from '../LocalImage'
+import rehypeKatex from 'rehype-katex'
+import remarkMath from 'remark-math'
+import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for you
 
 type MDProps = {
   children: string | null | undefined
@@ -47,7 +50,8 @@ const MD = (props: MDProps) => {
   return (
     <Markdown
       className={style.reactMarkDown}
-      remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
+      remarkPlugins={[[remarkGfm, { singleTilde: false }], [remarkMath]]}
+      rehypePlugins={[rehypeKatex]}
       components={components}
     >
       {props.children}

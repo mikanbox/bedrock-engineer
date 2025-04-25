@@ -69,6 +69,7 @@ If you need a visual explanation:
 - Express it in Mermaid.js format.
 - Unless otherwise specified, please draw no more than two at a time.
 - To display an image, follow the Markdown format: \`![image-name](url)\`
+- To display math formula, use Katex format
 
 You can now read files, list the contents of the root folder where this script is being run, and perform web searches. Use these capabilities when:
 - The user asks for edits or improvements to existing files
