@@ -398,6 +398,41 @@ app.whenReady().then(() => {
       throw error
     }
   })
+  
+  // AWS アイコン画像のBase64データを取得するハンドラ（xmlToPptx用）
+  ipcMain.handle('get-aws-icon', async (_, serviceName: string) => {
+    try {
+      // ファイル名を構築
+      const fileName = `Arch_${serviceName}_64@5x.png`
+      
+      // 開発環境とプロダクション環境で異なるパスを使用
+      let iconPath: string
+      
+      if (is.dev) {
+        // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
+        iconPath = join(app.getAppPath(), 'icons', fileName)
+      } else {
+        // プロダクション環境ではリソースディレクトリから取得
+        // asar内のファイルにはアクセスできないため、app.asar外のリソースから取得
+        const resourcePath = app.getAppPath().replace('app.asar', '')
+        iconPath = join(resourcePath, 'icons', fileName)
+      }
+      
+      log.info('Loading AWS icon', { serviceName, path: iconPath })
+      
+      // 画像ファイルを読み込む
+      const imageBuffer = await fs.promises.readFile(iconPath)
+      // Base64エンコードして返す
+      const base64Data = `data:image/png;base64,${imageBuffer.toString('base64')}`
+      return base64Data
+    } catch (error) {
+      log.error('Failed to get AWS icon', { 
+        serviceName,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      return null
+    }
+  })
 
   // Web fetch handler for Tool execution
   ipcMain.handle('fetch-website', async (_event, url: string, options?: any) => {
