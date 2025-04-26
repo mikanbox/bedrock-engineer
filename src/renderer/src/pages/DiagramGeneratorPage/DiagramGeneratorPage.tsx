@@ -13,6 +13,7 @@ import { WebLoader } from '../../components/WebLoader'
 import { DeepSearchButton } from '@renderer/components/DeepSearchButton'
 import { extractDrawioXml } from './utils/xmlParser'
 import { DIAGRAM_GENERATOR_SYSTEM_PROMPT } from '../ChatPage/constants/DEFAULT_AGENTS'
+import { PowerPointExportButton } from './components/PowerPointExportButton'
 
 export default function DiagramGeneratorPage() {
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -160,6 +161,7 @@ export default function DiagramGeneratorPage() {
         <span className="font-bold flex flex-col gap-2 w-full">
           <div className="flex justify-between">
             <h1 className="content-center dark:text-white text-lg">Diagram Generator</h1>
+            <PowerPointExportButton xml={xml} disabled={loading} drawioRef={drawioRef} />
           </div>
           <div className="flex justify-between w-full">
             <div className="flex gap-2">

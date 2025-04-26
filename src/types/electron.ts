@@ -21,5 +21,8 @@ declare global {
       log: RendererLogger
       createCategoryLogger: (category: string) => RendererCategoryLogger
     }
+    electronAPI?: {
+      saveFile: (buffer: Buffer, filename: string, filters?: string) => Promise<string | undefined>
+    }
   }
 }

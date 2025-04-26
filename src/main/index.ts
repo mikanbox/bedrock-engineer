@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Menu, MenuItem } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Menu, MenuItem, dialog } from 'electron'
 import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.ico?asset'
@@ -327,10 +327,76 @@ app.whenReady().then(() => {
     }
   })
 
+  // File save handler for PPTX export
+  ipcMain.handle('save-file', async (event, buffer: Buffer, filename: string, filters?: string) => {
+    try {
+      const browserWindow = BrowserWindow.fromWebContents(event.sender)
+      if (!browserWindow) {
+        throw new Error('No browser window available')
+      }
+      
+      // Parse filter string into the required format
+      const filtersParsed = filters ? [{ name: filters.split('|')[0], extensions: [filters.split('|')[1].replace('*.', '')] }] : []
+      
+      const { canceled, filePath } = await dialog.showSaveDialog(browserWindow, {
+        title: 'Save Diagram as PowerPoint',
+        defaultPath: filename,
+        filters: filtersParsed.length > 0 ? filtersParsed : [
+          { name: 'PowerPoint Presentation', extensions: ['pptx'] }
+        ],
+        properties: ['createDirectory', 'showOverwriteConfirmation']
+      })
+      
+      if (canceled || !filePath) {
+        return undefined
+      }
+      
+      // Write buffer to file
+      await fs.promises.writeFile(filePath, buffer)
+      log.info('File saved successfully', { filePath })
+      
+      return filePath
+    } catch (error) {
+      log.error('Failed to save file', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
+  })
+
   // Window focus state handler
   ipcMain.handle('window:isFocused', (event) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     return window?.isFocused() ?? false
+  })
+  
+  // ディレクトリの内容を読み取るハンドラ（xmlToPptx用）
+  ipcMain.handle('read-directory', async (_, directoryPath: string) => {
+    try {
+      log.info('Reading directory contents', { path: directoryPath })
+      const files = await fs.promises.readdir(directoryPath)
+      return files
+    } catch (error) {
+      log.error('Failed to read directory', { 
+        path: directoryPath,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
+  })
+  
+  // ファイルを読み取るハンドラ（xmlToPptx用）
+  ipcMain.handle('read-file', async (_, filePath: string) => {
+    try {
+      log.info('Reading file', { path: filePath })
+      return await fs.promises.readFile(filePath)
+    } catch (error) {
+      log.error('Failed to read file', { 
+        path: filePath,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
   })
 
   // Web fetch handler for Tool execution

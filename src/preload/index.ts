@@ -26,6 +26,9 @@ if (process.contextIsolated) {
       log: rendererLogger,
       createCategoryLogger: createRendererCategoryLogger
     })
+    contextBridge.exposeInMainWorld('electronAPI', {
+      saveFile: file.saveFile
+    })
     log.info('Preload APIs initialized successfully')
   } catch (error) {
     log.error('Error initializing preload APIs', {
@@ -51,6 +54,10 @@ if (process.contextIsolated) {
     window.logger = {
       log: rendererLogger,
       createCategoryLogger: createRendererCategoryLogger
+    }
+    // @ts-ignore (define in dts)
+    window.electronAPI = {
+      saveFile: file.saveFile
     }
     log.info('Preload APIs initialized successfully (context isolation disabled)')
   } catch (error) {
