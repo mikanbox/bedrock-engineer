@@ -438,66 +438,28 @@ app.whenReady().then(() => {
   // リソースアイコン画像のBase64データを取得するハンドラ（xmlToPptx用）
   ipcMain.handle('get-resource-icon', async (_, resourceName: string) => {
     try {
-      // サポートする画像形式の配列
-      const supportedExtensions = ['svg']
+      const fileName = `Res_${resourceName}_48_Light.svg`
       
       // 開発環境とプロダクション環境で異なるパスを使用
-      let resourcesDir: string
+      let resourcesPath: string
       
-      if (is.dev) {
-        // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
-        resourcesDir = join(app.getAppPath(), 'icons/Res_48_Light')
+    if (is.dev) {
+      // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
+      resourcesPath = join(app.getAppPath(), 'icons/Res_48_Light', fileName)
       } else {
         // プロダクション環境ではリソースディレクトリから取得
         const resourcePath = app.getAppPath().replace('app.asar', '')
-        resourcesDir = join(resourcePath, 'icons/Res_48_Light')
+        resourcesPath = join(resourcePath, 'icons/Res_48_Light',fileName )
       }
       
-      log.info('Looking for resource icon', { resourceName, directory: resourcesDir })
-      
-      // リソース名と一致するファイルを探す
-      try {
-        // ディレクトリ内のファイル一覧を取得
-        const files = await fs.promises.readdir(resourcesDir)
-        
-        // リソース名と一致するファイルを探す
-        let iconFile: string | null = null
-        for (const file of files) {
-          // ファイル名からリソース名を抽出（拡張子を除く）
-          const fileNameWithoutExt = file.split('.')[0]
-          
-          // リソース名と一致するか確認（大文字小文字を区別しない）
-          if (fileNameWithoutExt.toLowerCase() === resourceName.toLowerCase()) {
-            iconFile = file
-            break
-          }
-        }
-        
-        if (iconFile) {
-          // 見つかったファイルのパスを構築
-          const iconPath = join(resourcesDir, iconFile)
-          
-          // 画像ファイルを読み込む
-          const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
-          
-          // ファイルの拡張子を取得
-          const ext = iconFile.split('.').pop()?.toLowerCase() || 'svg'
-          
-          // Base64エンコードして返す
-          const base64Data = `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
-          log.info('Successfully loaded resource icon', { resourceName, file: iconFile })
-          return base64Data
-        }
-      } catch (err) {
-        log.error('Error reading resource directory', {
-          directory: resourcesDir,
-          error: err instanceof Error ? err.message : String(err)
-        })
-      }
-      
-      // ファイルが見つからない場合はnullを返す
-      log.warn('Resource icon not found', { resourceName })
-      return null
+      log.info('Loading Resource icon', { resourceName, path: resourcesPath })
+
+      // 画像ファイルを読み込む
+      const imageBuffer = await fs.promises.readFile(resourcesPath, { encoding: null })
+      // Base64エンコードして返す
+      const base64Data = `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
+      return base64Data;
+
     } catch (error) {
       log.error('Failed to get resource icon', { 
         resourceName,

@@ -216,7 +216,22 @@ function extractResourceName(text: string | null): string | null {
   if (!text) return null
   
   // テキストをトリムして基本的な処理
-  const trimmedText = text.trim()
+  let trimmedText = text.trim()
+  
+  // 英語の「Client」をUserに変換
+  if (trimmedText.includes('Client')) {
+    trimmedText = trimmedText.replace(/Client/g, 'User')
+  }
+  
+  // カタカナの「クライアント」をUserに変換
+  if (trimmedText.includes('クライアント')) {
+    trimmedText = trimmedText.replace(/クライアント/g, 'User')
+  }
+  
+  // カタカナの「ユーザー」をUserに変換
+  if (trimmedText.includes('ユーザー')) {
+    trimmedText = trimmedText.replace(/ユーザー/g, 'User')
+  }
   
   return trimmedText
 }

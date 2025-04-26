@@ -3,7 +3,7 @@ import pptxgen from 'pptxgenjs'
 import {addEmptyShapeElement} from './draw/addEmptyShape'
 import {addTextOnlyElement} from './draw/addTextOnly'
 import {addShapeWithTextElement} from './draw/addShapeWithTextLabel'
-import * as path from 'path'
+import { addConnectionElement } from './draw/addConnection'
 // IPC経由でメインプロセスと通信するためにwindow.electronを使用
 // Electronのcontextブリッジで公開されたAPIを使用
 
@@ -78,7 +78,7 @@ export const convertXmlToPptxandSave = async (
 /**
  * XMLからダイアグラム要素を抽出し、スライドに配置する
  */
-async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): void {
+async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): Promise<void> {
   console.log('[PPTX Convert] Adding diagram elements to slide')
   
   // 基本的なコンポーネント抽出
@@ -133,7 +133,7 @@ async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): void 
         break
       case 'connection':
         // フォーマットにエラーがあるっぽい
-        // addConnectionElement(slide, cell, cells, SCALE_FACTOR)
+        addConnectionElement(slide, cell, cells, SCALE_FACTOR)
         break
       default:
         // 未知の要素タイプは処理しない
