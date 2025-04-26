@@ -84,7 +84,7 @@ function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): void {
   // 1インチ = 96ピクセルとして換算
   const SCALE_FACTOR = 1/96
   
-  // 処理済みのセルIDを記録
+  // 処理済みのsセルIDを記録
   const processedCellIds = new Set<string>()
   
   // 親子関係のマップを作成
@@ -127,7 +127,7 @@ function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): void {
         break
       case 'connection':
         // フォーマットにエラーがあるっぽい
-        addConnectionElement(slide, cell, cells, SCALE_FACTOR)
+        // addConnectionElement(slide, cell, cells, SCALE_FACTOR)
         break
       default:
         // 未知の要素タイプは処理しない
@@ -254,35 +254,81 @@ function addShapeWithTextElement(
   const width = parseFloat(geometry.getAttribute('width') || '120') * scaleFactor
   const height = parseFloat(geometry.getAttribute('height') || '60') * scaleFactor
   
-  // 通常の図形要素として追加
-  slide.addText(value, {
-    x: x + offset,
-    y: y + offset,
-    w: width,
-    h: height,
-    fontSize: 10,
-    align: 'center',
-    valign: 'middle',
-    line: { color: '000000', width: 1 }
-  })
-  console.log(`[PPTX Convert] Added shape "${value}" at (${x}, ${y}) with size ${width}x${height}`)
+  // AWSサービス名を抽出してアイコンがあるか確認
+  const awsServiceName = extractAwsServiceName(value)
+  const iconPath = awsServiceName ? `awsicons/Arch_AWS-${awsServiceName}_64@5x.png` : null
+  
+  try {
+    // アイコンが存在する場合は画像を追加
+    if (awsServiceName && iconPath) {
 
-  const y_label = (parseFloat(geometry.getAttribute('y') || '0') + 75) * scaleFactor
-  const height_label = (parseFloat(geometry.getAttribute('height') || '60') - 45 )* scaleFactor
+      // 画像を追加
+      slide.addImage({
+        path: iconPath,
+        x: x + offset,
+        y: y + offset,
+        w: width,
+        h: height * 0.7, // 画像の高さを調整
+      })
+      console.log(`[PPTX Convert] Added AWS icon for "${awsServiceName}" at (${x}, ${y}) from ${iconPath}`)
+      
+      // サービス名をラベルとして下部に追加
+      const y_label = (parseFloat(geometry.getAttribute('y') || '0') + 75) * scaleFactor
+      const height_label = (parseFloat(geometry.getAttribute('height') || '60') - 45) * scaleFactor
+      
+      slide.addText(value, {
+        x: x + offset,
+        y: y_label + offset,
+        w: width,
+        h: height_label,
+        fontSize: 8,
+        align: 'center',
+        valign: 'middle',
+      })
+      console.log(`[PPTX Convert] Added label "${value}" at (${x}, ${y_label})`)
+    } else {
+      // アイコンがない場合は通常のテキストボックスを追加
+      slide.addText(value, {
+        x: x + offset,
+        y: y + offset,
+        w: width,
+        h: height,
+        fontSize: 10,
+        align: 'center',
+        valign: 'middle',
+        line: { color: '000000', width: 1 }
+      })
+      console.log(`[PPTX Convert] Added shape "${value}" at (${x}, ${y}) with size ${width}x${height}`)
 
-    // 通常の図形要素として追加
-    // その下にラベルを表示
-    slide.addText(value ,{
+      const y_label = (parseFloat(geometry.getAttribute('y') || '0') + 75) * scaleFactor
+      const height_label = (parseFloat(geometry.getAttribute('height') || '60') - 45) * scaleFactor
+
+      // その下にラベルを表示
+      slide.addText(value, {
+        x: x + offset,
+        y: y_label + offset,
+        w: width,
+        h: height_label,
+        fontSize: 8,
+        align: 'center',
+        valign: 'middle',
+      })
+      console.log(`[PPTX Convert] Added shape "${value}" at (${x}, ${y_label}) with size ${width}x${height_label}`)
+    }
+  } catch (error) {
+    console.error(`[PPTX Convert] Error adding shape with text: ${error}`)
+    // エラーが発生した場合は通常のテキストボックスを追加
+    slide.addText(value, {
       x: x + offset,
-      y: y_label + offset,
+      y: y + offset,
       w: width,
-      h: height_label,
-      fontSize: 8,
+      h: height,
+      fontSize: 10,
       align: 'center',
       valign: 'middle',
+      line: { color: '000000', width: 1 }
     })
-
-  console.log(`[PPTX Convert] Added shape "${value}" at (${x}, ${y_label}) with size ${width}x${height_label}`)
+  }
 }
 
 
@@ -317,6 +363,38 @@ function addEmptyShapeElement(
   })
   
   console.log(`[PPTX Convert] Added empty shape at (${x}, ${y}) with size ${width}x${height}`)
+}
+
+/**
+ * テキストからAWSサービス名を抽出する
+ * 例: "AWS Lambda" -> "Lambda"
+ */
+function extractAwsServiceName(text: string | null): string | null {
+  if (!text) return null
+  
+  // AWSサービス名のパターンを検出
+  // 例: "AWS Lambda", "Amazon S3", "Lambda", "S3" など
+  const awsPatterns = [
+    /\bAWS\s+([A-Za-z0-9\-]+)(?:\s|$)/i,  // "AWS Lambda" -> "Lambda"
+    /\bAmazon\s+([A-Za-z0-9\-]+)(?:\s|$)/i,  // "Amazon S3" -> "S3"
+    /\b(Lambda|S3|EC2|DynamoDB|CloudFront|Route53|SQS|SNS|RDS|ECS|EKS|Fargate|Step\s*Functions|API\s*Gateway|CloudWatch|IAM|VPC|Cognito|Amplify|AppSync|Athena|Glue|Kinesis|CodePipeline|CodeBuild|CodeDeploy|CloudFormation)(?:\s|$)/i  // 一般的なAWSサービス名
+  ]
+  
+  for (const pattern of awsPatterns) {
+    const match = text.match(pattern)
+    if (match && match[1]) {
+      // サービス名を正規化（スペースを削除し、特殊なケースを処理）
+      let serviceName = match[1].replace(/\s+/g, '-')
+      
+      // 特殊なケースの処理
+      if (serviceName.toLowerCase() === 'api-gateway') serviceName = 'API-Gateway'
+      if (serviceName.toLowerCase() === 'step-functions') serviceName = 'Step-Functions'
+      
+      return serviceName
+    }
+  }
+  
+  return null
 }
 
 /**
@@ -391,5 +469,6 @@ function addConnectionElement(
     flipV: startY > endY
   })
   
+  console.log(`[PPTX Convert] Added connection from (${startX}, ${startY}) to (${endX}, ${endY})`)
   console.log(`[PPTX Convert] Added connection from (${startX}, ${startY}) to (${endX}, ${endY})`)
 }
