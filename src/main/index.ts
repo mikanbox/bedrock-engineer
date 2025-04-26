@@ -314,7 +314,7 @@ app.whenReady().then(() => {
   // Local image loading handler
   ipcMain.handle('get-local-image', async (_, path: string) => {
     try {
-      const data = await fs.promises.readFile(path)
+      const data = await fs.promises.readFile(path, { encoding: null })
       const ext = path.split('.').pop()?.toLowerCase() || 'png'
       const base64 = data.toString('base64')
       return `data:image/${ext};base64,${base64}`
@@ -352,7 +352,7 @@ app.whenReady().then(() => {
       }
       
       // Write buffer to file
-      await fs.promises.writeFile(filePath, buffer)
+      await fs.promises.writeFile(filePath, buffer as unknown as Uint8Array)
       log.info('File saved successfully', { filePath })
       
       return filePath
@@ -389,7 +389,7 @@ app.whenReady().then(() => {
   ipcMain.handle('read-file', async (_, filePath: string) => {
     try {
       log.info('Reading file', { path: filePath })
-      return await fs.promises.readFile(filePath)
+      return await fs.promises.readFile(filePath, { encoding: 'utf-8' })
     } catch (error) {
       log.error('Failed to read file', { 
         path: filePath,
@@ -403,31 +403,104 @@ app.whenReady().then(() => {
   ipcMain.handle('get-aws-icon', async (_, serviceName: string) => {
     try {
       // ファイル名を構築
-      const fileName = `Arch_${serviceName}_64@5x.png`
+      // const fileName = `Arch_${serviceName}_64@5x.png`
+      const fileName = `Arch_${serviceName}_48.svg`
       
       // 開発環境とプロダクション環境で異なるパスを使用
       let iconPath: string
       
       if (is.dev) {
         // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
-        iconPath = join(app.getAppPath(), 'icons', fileName)
+        iconPath = join(app.getAppPath(), 'icons/Aws_48_Light', fileName)
       } else {
         // プロダクション環境ではリソースディレクトリから取得
         // asar内のファイルにはアクセスできないため、app.asar外のリソースから取得
         const resourcePath = app.getAppPath().replace('app.asar', '')
-        iconPath = join(resourcePath, 'icons', fileName)
+        iconPath = join(resourcePath, 'icons/Aws_48_Light', fileName)
       }
       
       log.info('Loading AWS icon', { serviceName, path: iconPath })
       
       // 画像ファイルを読み込む
-      const imageBuffer = await fs.promises.readFile(iconPath)
+      const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
       // Base64エンコードして返す
-      const base64Data = `data:image/png;base64,${imageBuffer.toString('base64')}`
+      const base64Data = `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
       return base64Data
     } catch (error) {
       log.error('Failed to get AWS icon', { 
         serviceName,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      return null
+    }
+  })
+
+  // リソースアイコン画像のBase64データを取得するハンドラ（xmlToPptx用）
+  ipcMain.handle('get-resource-icon', async (_, resourceName: string) => {
+    try {
+      // サポートする画像形式の配列
+      const supportedExtensions = ['svg']
+      
+      // 開発環境とプロダクション環境で異なるパスを使用
+      let resourcesDir: string
+      
+      if (is.dev) {
+        // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
+        resourcesDir = join(app.getAppPath(), 'icons/Res_48_Light')
+      } else {
+        // プロダクション環境ではリソースディレクトリから取得
+        const resourcePath = app.getAppPath().replace('app.asar', '')
+        resourcesDir = join(resourcePath, 'icons/Res_48_Light')
+      }
+      
+      log.info('Looking for resource icon', { resourceName, directory: resourcesDir })
+      
+      // リソース名と一致するファイルを探す
+      try {
+        // ディレクトリ内のファイル一覧を取得
+        const files = await fs.promises.readdir(resourcesDir)
+        
+        // リソース名と一致するファイルを探す
+        let iconFile: string | null = null
+        for (const file of files) {
+          // ファイル名からリソース名を抽出（拡張子を除く）
+          const fileNameWithoutExt = file.split('.')[0]
+          
+          // リソース名と一致するか確認（大文字小文字を区別しない）
+          if (fileNameWithoutExt.toLowerCase() === resourceName.toLowerCase()) {
+            iconFile = file
+            break
+          }
+        }
+        
+        if (iconFile) {
+          // 見つかったファイルのパスを構築
+          const iconPath = join(resourcesDir, iconFile)
+          
+          // 画像ファイルを読み込む
+          const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
+          
+          // ファイルの拡張子を取得
+          const ext = iconFile.split('.').pop()?.toLowerCase() || 'svg'
+          
+          // Base64エンコードして返す
+          const base64Data = `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
+          log.info('Successfully loaded resource icon', { resourceName, file: iconFile })
+          return base64Data
+        }
+      } catch (err) {
+        log.error('Error reading resource directory', {
+          directory: resourcesDir,
+          error: err instanceof Error ? err.message : String(err)
+        })
+      }
+      
+      // ファイルが見つからない場合はnullを返す
+      log.warn('Resource icon not found', { resourceName })
+      return null
+    } catch (error) {
+      log.error('Failed to get resource icon', { 
+        resourceName,
         error: error instanceof Error ? error.message : String(error)
       })
       return null
