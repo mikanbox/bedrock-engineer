@@ -399,75 +399,48 @@ app.whenReady().then(() => {
     }
   })
   
-  // AWS アイコン画像のBase64データを取得するハンドラ（xmlToPptx用）
-  ipcMain.handle('get-aws-icon', async (_, serviceName: string) => {
+  // アイコン画像のBase64データを取得する共通ハンドラ（xmlToPptx用）
+  ipcMain.handle('get-icon', async (_, iconType: 'aws' | 'resource', name: string) => {
     try {
-      // ファイル名を構築
-      // const fileName = `Arch_${serviceName}_64@5x.png`
-      const fileName = `Arch_${serviceName}_48.svg`
+      let fileName: string
+      let dirName: string
+      let logName: string
       
-      // 開発環境とプロダクション環境で異なるパスを使用
-      let iconPath: string
-      
-      if (is.dev) {
-        // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
-        iconPath = join(app.getAppPath(), 'icons/Aws_48_Light', fileName)
+      if (iconType === 'aws') {
+        fileName = `Arch_${name}_48.svg`
+        dirName = 'Aws_48_Light'
+        logName = 'AWS icon'
       } else {
-        // プロダクション環境ではリソースディレクトリから取得
-        // asar内のファイルにはアクセスできないため、app.asar外のリソースから取得
-        const resourcePath = app.getAppPath().replace('app.asar', '')
-        iconPath = join(resourcePath, 'icons/Aws_48_Light', fileName)
+        fileName = `Res_${name}_48_Light.svg`
+        dirName = 'Res_48_Light'
+        logName = 'Resource icon'
       }
       
-      log.info('Loading AWS icon', { serviceName, path: iconPath })
-      
-      // 画像ファイルを読み込む
-      const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
-      // Base64エンコードして返す
-      const base64Data = `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
-      return base64Data
-    } catch (error) {
-      log.error('Failed to get AWS icon', { 
-        serviceName,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return null
-    }
-  })
-
-  // リソースアイコン画像のBase64データを取得するハンドラ（xmlToPptx用）
-  ipcMain.handle('get-resource-icon', async (_, resourceName: string) => {
-    try {
-      const fileName = `Res_${resourceName}_48_Light.svg`
-      
-      // 開発環境とプロダクション環境で異なるパスを使用
-      let resourcesPath: string
-      
+    // 開発環境とプロダクション環境で異なるパスを使用
+    let iconPath: string
+    
     if (is.dev) {
-      // 開発環境ではプロジェクトのルートディレクトリのiconsフォルダから取得
-      resourcesPath = join(app.getAppPath(), 'icons/Res_48_Light', fileName)
-      } else {
-        // プロダクション環境ではリソースディレクトリから取得
-        const resourcePath = app.getAppPath().replace('app.asar', '')
-        resourcesPath = join(resourcePath, 'icons/Res_48_Light',fileName )
-      }
+      iconPath = join(app.getAppPath(), `icons/${dirName}`, fileName)
+    } else {
+      // プロダクション環境ではリソースディレクトリから取得
+      // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
+      iconPath = join(process.resourcesPath, `icons/${dirName}`, fileName)
+    }
       
-      log.info('Loading Resource icon', { resourceName, path: resourcesPath })
-
-      // 画像ファイルを読み込む
-      const imageBuffer = await fs.promises.readFile(resourcesPath, { encoding: null })
-      // Base64エンコードして返す
-      const base64Data = `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
-      return base64Data;
-
+      log.info(`Loading ${logName}`, { name, path: iconPath })
+      
+      const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
+      return `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
+      
     } catch (error) {
-      log.error('Failed to get resource icon', { 
-        resourceName,
+      log.error(`Failed to get ${iconType} icon`, { 
+        name,
         error: error instanceof Error ? error.message : String(error)
       })
       return null
     }
   })
+  
 
   // Web fetch handler for Tool execution
   ipcMain.handle('fetch-website', async (_event, url: string, options?: any) => {

@@ -40,7 +40,7 @@ export async function addShapeWithTextElement(
         servicefileName = servicefileName.replace(/\s+/g, '-')
 
         console.error(`[PPTX Convert] file path ${servicefileName}`)
-        const iconData: string | null = await window.electron.ipcRenderer.invoke('get-aws-icon', servicefileName);
+        const iconData: string | null = await window.electron.ipcRenderer.invoke('get-icon', 'aws', servicefileName);
         imageData = iconData;
         
         if (imageData) {
@@ -58,7 +58,7 @@ export async function addShapeWithTextElement(
       try {
         // メインプロセスを経由してリソースアイコンを取得する（IPC通信）
         console.error(`[PPTX Convert] Trying to load resource icon for ${resourceName}`)
-        const iconData: string | null = await window.electron.ipcRenderer.invoke('get-resource-icon', resourceName);
+        const iconData: string | null = await window.electron.ipcRenderer.invoke('get-icon', 'resource', resourceName);
         imageData = iconData;
         
         if (imageData) {
