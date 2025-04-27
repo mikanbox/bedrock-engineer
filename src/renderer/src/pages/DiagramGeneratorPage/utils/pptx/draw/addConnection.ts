@@ -9,7 +9,7 @@ export function addConnectionElement(
     allCells: HTMLCollectionOf<Element>,
     scaleFactor: number
   ): void {
-    console.log('[PPTX Convert] Adding connection element')
+    // console.log('[PPTX Convert] Adding connection element')
     
     const offset = 0.5 // PowerPoint座標系へのオフセット
     
@@ -61,17 +61,28 @@ export function addConnectionElement(
     const endX = (targetX + targetWidth / 2) * scaleFactor + offset
     const endY = (targetY + targetHeight / 2) * scaleFactor + offset
     
-    // 直線を描画
+    const x = startX;
+    let y = startY;
+    let w = endX - startX;
+    let h = endY - startY;
+
+    // console.error(` xxy = (${startX}, ${startY})  w,h = (${w}, ${h}) `);
+    if (w == 0) {
+      if (h < 0) {
+        h = h * -1;
+        y = y - h;
+      }
+    }
+
+    // console.error(` xxy = (${startX}, ${startY})  w,h = (${w}, ${h}) `);
+    // // 直線を描画
     slide.addShape('line', {
-      x: startX,
-      y: startY,
-      w: endX - startX,
-      h: endY - startY,
-      line: { color: '000000', width: 1 },
-      flipH: startX > endX,
-      flipV: startY > endY
+      x: x,
+      y: y,
+      w: w,
+      h: h,
+      line: { color: '000000', width: 1, dashType: "solid" },
     })
+
     
-    console.log(`[PPTX Convert] Added connection from (${startX}, ${startY}) to (${endX}, ${endY})`)
-    console.log(`[PPTX Convert] Added connection from (${startX}, ${startY}) to (${endX}, ${endY})`)
   }

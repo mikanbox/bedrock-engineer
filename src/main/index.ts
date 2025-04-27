@@ -401,44 +401,49 @@ app.whenReady().then(() => {
   
   // アイコン画像のBase64データを取得する共通ハンドラ（xmlToPptx用）
   ipcMain.handle('get-icon', async (_, iconType: 'aws' | 'resource', name: string) => {
-    try {
-      let fileName: string
-      let dirName: string
-      let logName: string
-      
-      if (iconType === 'aws') {
-        fileName = `Arch_${name}_48.svg`
-        dirName = 'Aws_48_Light'
-        logName = 'AWS icon'
-      } else {
-        fileName = `Res_${name}_48_Light.svg`
-        dirName = 'Res_48_Light'
-        logName = 'Resource icon'
-      }
-      
-    // 開発環境とプロダクション環境で異なるパスを使用
-    let iconPath: string
+    // let dirName: string
+    // let logName: string
+    let fileNamePatterns: string[] = []
     
-    if (is.dev) {
-      iconPath = join(app.getAppPath(), `icons/${dirName}`, fileName)
-    } else {
-      // プロダクション環境ではリソースディレクトリから取得
-      // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
-      iconPath = join(process.resourcesPath, `icons/${dirName}`, fileName)
+    fileNamePatterns = [
+      `Aws_48_Light/Arch_AWS-${name}_48.svg`,
+      `Aws_48_Light/Arch_Amazon-${name}_48.svg`,
+      `Aws_48_Light/Arch_${name}_48.svg`,
+      `Res_48_Light/Res_${name}_48_Light.svg`
+    ]
+    
+    // 各ファイル名パターンを順番に試す
+    for (const fileName of fileNamePatterns) {
+      try {
+        // 開発環境とプロダクション環境で異なるパスを使用
+        let iconPath: string    
+        if (is.dev) {
+          iconPath = join(app.getAppPath(), `icons/`, fileName)
+        } else {
+          // プロダクション環境ではリソースディレクトリから取得
+          // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
+          iconPath = join(process.resourcesPath, `icons/`, fileName)
+        }
+          
+        log.info(`Loading`, { name, path: iconPath, pattern: fileName })
+        
+        const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
+        return `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
+      } catch (error) {
+        // 最後のパターンでも失敗した場合のみエラーログを出力
+        if (fileName === fileNamePatterns[fileNamePatterns.length - 1]) {
+          log.error(`Failed to get ${iconType} icon after trying all patterns`, { 
+            name,
+            triedPatterns: fileNamePatterns,
+            error: error instanceof Error ? error.message : String(error)
+          })
+        } else {
+          log.debug(`Pattern ${fileName} not found, trying next pattern`, { name })
+        }
+      }
     }
-      
-      log.info(`Loading ${logName}`, { name, path: iconPath })
-      
-      const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
-      return `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
-      
-    } catch (error) {
-      log.error(`Failed to get ${iconType} icon`, { 
-        name,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return null
-    }
+    
+    return null    
   })
   
 

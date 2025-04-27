@@ -119,10 +119,11 @@ async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): Promi
         }
         break
       case 'shapeWithText':
-        const shapeValue = cell.getAttribute('value')
+        const labelValue = cell.getAttribute('value')
+        const shapeValue = cell.getAttribute('style')
         const shapeGeometryElements = cell.getElementsByTagName('mxGeometry')
         if (shapeGeometryElements.length > 0 && shapeValue) {
-          await addShapeWithTextElement(slide, cell, shapeGeometryElements[0], shapeValue, SCALE_FACTOR, childrenMap, processedCellIds)
+          await addShapeWithTextElement(slide, cell, shapeGeometryElements[0], labelValue, shapeValue, SCALE_FACTOR, childrenMap, processedCellIds)
         }
         break
       case 'emptyShape':
