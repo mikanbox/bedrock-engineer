@@ -401,32 +401,31 @@ app.whenReady().then(() => {
   
   // アイコン画像のBase64データを取得する共通ハンドラ（xmlToPptx用）
   ipcMain.handle('get-icon', async (_, iconType: 'aws' | 'resource', name: string) => {
-    // let dirName: string
-    // let logName: string
     let fileNamePatterns: string[] = []
     
     fileNamePatterns = [
       `Aws_48_Light/Arch_AWS-${name}_48.svg`,
       `Aws_48_Light/Arch_Amazon-${name}_48.svg`,
       `Aws_48_Light/Arch_${name}_48.svg`,
-      `Res_48_Light/Res_${name}_48_Light.svg`
+      `Res_48_Light/Res_${name}_48_Light.svg`,
+      `Res_48_Light/Res_AWS-${name}_48_Light.svg`,
+      `Res_48_Light/Res_Amazon-${name}_48_Light.svg`
     ]
     
-    // 各ファイル名パターンを順番に試す
+    let basePath: string;
+    if (is.dev) {
+      basePath = app.getAppPath();
+    } else {
+      // プロダクション環境ではリソースディレクトリから取得
+      // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
+      basePath = process.resourcesPath;
+    }
+
     for (const fileName of fileNamePatterns) {
-      try {
-        // 開発環境とプロダクション環境で異なるパスを使用
-        let iconPath: string    
-        if (is.dev) {
-          iconPath = join(app.getAppPath(), `icons/`, fileName)
-        } else {
-          // プロダクション環境ではリソースディレクトリから取得
-          // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
-          iconPath = join(process.resourcesPath, `icons/`, fileName)
-        }
-          
-        log.info(`Loading`, { name, path: iconPath, pattern: fileName })
-        
+      const iconPath = join(basePath, `icons/`, fileName)
+      log.info(`Loading`, { name, path: iconPath, pattern: fileName })
+
+      try {  
         const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
         return `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
       } catch (error) {
@@ -437,9 +436,7 @@ app.whenReady().then(() => {
             triedPatterns: fileNamePatterns,
             error: error instanceof Error ? error.message : String(error)
           })
-        } else {
-          log.debug(`Pattern ${fileName} not found, trying next pattern`, { name })
-        }
+        } 
       }
     }
     

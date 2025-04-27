@@ -13,7 +13,8 @@ import { addConnectionElement } from './draw/addConnection'
  */
 export const convertXmlToPptxandSave = async (
   xmlContent: string,
-  title: string = 'AWS Architecture Diagram'
+  title: string = 'AWS Architecture Diagram',
+  scaleFactor: number = 1/96
 ): Promise<void> => {
   console.log('[PPTX Convert] Starting XML to PPTX conversion')
   
@@ -54,7 +55,7 @@ export const convertXmlToPptxandSave = async (
 
     
     // ダイアグラム要素を配置
-    await addDiagramElements(slide, xmlDoc)
+    await addDiagramElements(slide, xmlDoc, scaleFactor)
     
     // 生成日時の追加
     const today = new Date()
@@ -78,7 +79,7 @@ export const convertXmlToPptxandSave = async (
 /**
  * XMLからダイアグラム要素を抽出し、スライドに配置する
  */
-async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): Promise<void> {
+async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document, scaleFactor: number): Promise<void> {
   console.log('[PPTX Convert] Adding diagram elements to slide')
   
   // 基本的なコンポーネント抽出
@@ -87,14 +88,13 @@ async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): Promi
   
   // Draw.ioとPowerPointの座標系変換用のスケール係数
   // Draw.ioの座標はピクセル単位、PowerPointはインチ単位
-  // 1インチ = 96ピクセルとして換算
-  const SCALE_FACTOR = 1/96
+  // デフォルトは1インチ = 96ピクセルとして換算
+  const SCALE_FACTOR = scaleFactor
+  
   
   // 処理済みのsセルIDを記録
   const processedCellIds = new Set<string>()
   
-  // 親子関係のマップを作成
-  const childrenMap = buildChildrenMap(cells)
   
   // 各セルを処理
   for (let i = 0; i < cells.length; i++) {
@@ -109,27 +109,59 @@ async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): Promi
     
     // 要素の種類を判別して適切な関数を呼び出す
     const elementType = determineElementType(cell)
+
+    // 親要素のIDを取得
+    const parentId = cell.getAttribute('parent')
+    // 直接の親要素のgeometryを取得
+    const parentGeometry = parentId ? getGeometryElementById(cells, parentId) : null
+    // 親の親、親の親の親...と辿って、すべての親要素のgeometryを取得
+    const parentGeometries = id ? getAllParentGeometries(cells, id) : []
     
     switch (elementType) {
       case 'textOnly':
         const textValue = cell.getAttribute('value')
         const geometryElements = cell.getElementsByTagName('mxGeometry')
         if (geometryElements.length > 0 && textValue) {
-          addTextOnlyElement(slide, cell, geometryElements[0], textValue, SCALE_FACTOR)
+          addTextOnlyElement(
+            slide, 
+            cell, 
+            geometryElements[0], 
+            textValue, 
+            SCALE_FACTOR, 
+            parentGeometry,
+            parentGeometries
+          )
         }
         break
       case 'shapeWithText':
         const labelValue = cell.getAttribute('value')
         const shapeValue = cell.getAttribute('style')
         const shapeGeometryElements = cell.getElementsByTagName('mxGeometry')
+
         if (shapeGeometryElements.length > 0 && shapeValue) {
-          await addShapeWithTextElement(slide, cell, shapeGeometryElements[0], labelValue, shapeValue, SCALE_FACTOR, childrenMap, processedCellIds)
+          await addShapeWithTextElement(
+            slide, 
+            cell, 
+            shapeGeometryElements[0], 
+            labelValue, 
+            shapeValue, 
+            SCALE_FACTOR, 
+            parentGeometry, // 直接の親要素のgeometryを渡す
+            parentGeometries // 親の親、親の親の親...のgeometryを渡す
+          )
         }
         break
       case 'emptyShape':
         const emptyGeometryElements = cell.getElementsByTagName('mxGeometry')
         if (emptyGeometryElements.length > 0) {
-          addEmptyShapeElement(slide, cell, emptyGeometryElements[0], SCALE_FACTOR)
+          addEmptyShapeElement(
+            slide, 
+            cell, 
+            emptyGeometryElements[0], 
+            SCALE_FACTOR,
+            parentGeometry, // 直接の親要素のgeometryを渡す
+            parentGeometries // 親の親、親の親の親...のgeometryを渡す
+          )
         }
         break
       case 'connection':
@@ -145,26 +177,55 @@ async function addDiagramElements(slide: pptxgen.Slide, xmlDoc: Document): Promi
   console.log('[PPTX Convert] Finished adding diagram elements')
 }
 
+
 /**
- * 親子関係のマップを構築する
+ * 指定されたIDのセルのgeometry要素を取得する
  */
-function buildChildrenMap(cells: HTMLCollectionOf<Element>): Record<string, Array<Element>> {
-  const childrenMap: Record<string, Array<Element>> = {}
-  
+export function getGeometryElementById(cells: HTMLCollectionOf<Element>, id: string): Element | null {
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i]
-    const parentId = cell.getAttribute('parent')
-    const id = cell.getAttribute('id')
-    
-    if (parentId && id && parentId !== '1') {
-      if (!childrenMap[parentId]) {
-        childrenMap[parentId] = []
+    if (cell.getAttribute('id') === id) {
+      const geometryElements = cell.getElementsByTagName('mxGeometry')
+      if (geometryElements.length > 0) {
+        return geometryElements[0]
       }
-      childrenMap[parentId].push(cell)
     }
   }
+  return null
+}
+
+/**
+ * 指定されたIDのセルの親要素のIDを取得する
+ */
+export function getParentIdById(cells: HTMLCollectionOf<Element>, id: string): string | null {
+  for (let i = 0; i < cells.length; i++) {
+    const cell = cells[i]
+    if (cell.getAttribute('id') === id) {
+      return cell.getAttribute('parent')
+    }
+  }
+  return null
+}
+
+/**
+ * 指定されたIDのセルの親要素のgeometry要素を再帰的に取得する
+ * 親の親、親の親の親...と辿って、すべての親要素のgeometryを配列として返す
+ */
+export function getAllParentGeometries(cells: HTMLCollectionOf<Element>, id: string): Element[] {
+  const parentGeometries: Element[] = []
+  let currentId = id
+  let parentId: string | null
   
-  return childrenMap
+  // 親要素のIDを再帰的に辿る
+  while ((parentId = getParentIdById(cells, currentId)) !== null && parentId !== '1') {
+    const parentGeometry = getGeometryElementById(cells, parentId)
+    if (parentGeometry) {
+      parentGeometries.push(parentGeometry)
+    }
+    currentId = parentId
+  }
+  
+  return parentGeometries
 }
 
 /**

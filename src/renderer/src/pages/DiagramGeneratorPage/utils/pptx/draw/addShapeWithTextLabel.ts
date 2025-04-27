@@ -1,5 +1,6 @@
 import pptxgen from 'pptxgenjs'
 import { extractIconValues } from './extractIconValues'
+import { calculateAbsolutePosition } from './calculateAbsolutePosition'
 /**
  * テキスト付きの図形要素を追加する
  */
@@ -12,19 +13,16 @@ export async function addShapeWithTextElement(
   value: string | null, 
   shapeValue: string | null, 
   scaleFactor: number,
-  childrenMap: Record<string, Array<Element>>,
-  processedCellIds: Set<string>
+  parentGeometry: Element | null = null, // 直接の親要素のgeometryを受け取る（デフォルトはnull）
+  parentGeometries: Element[] = [] // 親の親、親の親の親...のgeometryを受け取る（デフォルトは空配列）
 ): Promise<void> {
   if (!value) return
   
   const offset = 0.5 // PowerPoint座標系へのオフセット
   const id = cell.getAttribute('id')
   
-  // x, y, width, heightの属性を取得して数値に変換
-  const x = parseFloat(geometry.getAttribute('x') || '0') * scaleFactor
-  const y = parseFloat(geometry.getAttribute('y') || '0') * scaleFactor
-  const width = parseFloat(geometry.getAttribute('width') || '120') * scaleFactor
-  const height = parseFloat(geometry.getAttribute('height') || '60') * scaleFactor
+  // 親要素の座標を考慮して絶対座標を計算（複数階層の親要素も考慮）
+  const { x, y, width, height } = calculateAbsolutePosition(geometry, parentGeometry, scaleFactor, parentGeometries)
 
   // console.log(cell)
   // console.log('value : ', value)
@@ -36,8 +34,8 @@ export async function addShapeWithTextElement(
   const type = (awsresIcon)?"aws":"resource";
   const fileName = transformToFileName(awsresIcon,resIcon,grIcon);
 
+  console.log(`[PPTX Convert] Load "${fileName}" `)        
   let imageData = await window.electron.ipcRenderer.invoke('get-icon', type, fileName);
-
 
 
   try {
@@ -86,19 +84,19 @@ export async function addShapeWithTextElement(
       h: height, // 画像の高さを調整
     })
     
-    // サービス名をラベルとして下部に追加
-    const y_label = (parseFloat(geometry.getAttribute('y') || '0') + 75) * scaleFactor
-    const height_label = (parseFloat(geometry.getAttribute('height') || '60') - 45) * scaleFactor
+    // サービス名をラベルとして下部に追加    
+    const y_label = y + offset + height// 元の高さから45px分下にずらす
+
     slide.addText(value, {
-      x: x + offset,
-      y: y_label + offset,
-      w: width,
-      h: height_label,
+      x: x + offset - width / 2,
+      y: y_label,
+      w: width * 2,
+      h: height / 3,
       fontSize: 8,
       align: 'center',
-      valign: 'middle',
+      valign: 'top',
     })
-  console.log(`[PPTX Convert] Added label "${value}" at (${x}, ${y_label})`)
+    console.log(`[PPTX Convert] Added label "${value}" at (${x}, ${y_label})`)
 
 
   } catch (error) {
@@ -165,7 +163,35 @@ function correctExceptionServices(iconName:string):string|null {
   if (iconName == "auto_scaling2") {
     return "Application-Auto-Scaling"
   }
+  if (iconName == "traditional_server") {
+    return "Server"
+  }
+  if (iconName == "s3") {
+    return "Simple-Storage-Service"
+  }
+  if (iconName == "glue_data_catalog") {
+    return "Glue"
+  }
 
+  if (iconName == "cloudwatch" || iconName == "cloudwatch_2") {
+    return "CloudWatch"
+  }
+
+  if (iconName == "eks") {
+    return "Elastic-Kubernetes-Service"
+  }
+
+  if (iconName == "ecr") {
+    return "Elastic-Container-Registry"
+  }
+
+  if (iconName == "role") {
+    return "Identity-Access-Management_Role"
+  }
+
+  if (iconName == "ecs") {
+    return "Elastic-Container-Service"
+  }
 
   return null;
 }

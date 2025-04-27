@@ -1,4 +1,6 @@
 import pptxgen from 'pptxgenjs'
+import { calculateAbsolutePosition } from './calculateAbsolutePosition'
+import { getGeometryElementById, getAllParentGeometries } from '../xmlToPptx'
 
 /**
  * 接続線（エッジ）要素を追加する
@@ -44,22 +46,27 @@ export function addConnectionElement(
     
     if (!sourceGeometry || !targetGeometry) return
     
-    // 座標を取得
-    const sourceX = parseFloat(sourceGeometry.getAttribute('x') || '0')
-    const sourceY = parseFloat(sourceGeometry.getAttribute('y') || '0')
-    const sourceWidth = parseFloat(sourceGeometry.getAttribute('width') || '0')
-    const sourceHeight = parseFloat(sourceGeometry.getAttribute('height') || '0')
+    // 親要素の情報を取得
+    const sourceParentId = sourceCell.getAttribute('parent')
+    const targetParentId = targetCell.getAttribute('parent')
     
-    const targetX = parseFloat(targetGeometry.getAttribute('x') || '0')
-    const targetY = parseFloat(targetGeometry.getAttribute('y') || '0')
-    const targetWidth = parseFloat(targetGeometry.getAttribute('width') || '0')
-    const targetHeight = parseFloat(targetGeometry.getAttribute('height') || '0')
+    // 親要素のgeometryを取得
+    const sourceParentGeometry = sourceParentId ? getGeometryElementById(allCells, sourceParentId) : null
+    const targetParentGeometry = targetParentId ? getGeometryElementById(allCells, targetParentId) : null
+    
+    // 親の親、親の親の親...と辿って、すべての親要素のgeometryを取得
+    const sourceParentGeometries = sourceId ? getAllParentGeometries(allCells, sourceId) : []
+    const targetParentGeometries = targetId ? getAllParentGeometries(allCells, targetId) : []
+    
+    // 親要素の座標を考慮して絶対座標を計算
+    const sourcePosition = calculateAbsolutePosition(sourceGeometry, sourceParentGeometry, scaleFactor, sourceParentGeometries)
+    const targetPosition = calculateAbsolutePosition(targetGeometry, targetParentGeometry, scaleFactor, targetParentGeometries)
     
     // 接続の開始点と終了点を計算（単純化のためオブジェクトの中心を使用）
-    const startX = (sourceX + sourceWidth / 2) * scaleFactor + offset
-    const startY = (sourceY + sourceHeight / 2) * scaleFactor + offset
-    const endX = (targetX + targetWidth / 2) * scaleFactor + offset
-    const endY = (targetY + targetHeight / 2) * scaleFactor + offset
+    const startX = sourcePosition.x + sourcePosition.width / 2 + offset
+    const startY = sourcePosition.y + sourcePosition.height / 2 + offset
+    const endX = targetPosition.x + targetPosition.width / 2 + offset
+    const endY = targetPosition.y + targetPosition.height / 2 + offset
     
     const x = startX;
     let y = startY;

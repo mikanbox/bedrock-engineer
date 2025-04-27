@@ -1,4 +1,5 @@
 import pptxgen from 'pptxgenjs'
+import { calculateAbsolutePosition } from './calculateAbsolutePosition'
 /**
  * テキストのみの要素を追加する
  */
@@ -7,17 +8,16 @@ export function addTextOnlyElement(
   cell: Element, 
   geometry: Element, 
   value: string | null, 
-  scaleFactor: number
+  scaleFactor: number,
+  parentGeometry: Element | null = null, // 直接の親要素のgeometryを受け取る（デフォルトはnull）
+  parentGeometries: Element[] = [] // 親の親、親の親の親...のgeometryを受け取る（デフォルトは空配列）
 ): void {
   if (!value) return
   
   const offset = 0.5 // PowerPoint座標系へのオフセット
   
-  // x, y, width, heightの属性を取得して数値に変換
-  const x = parseFloat(geometry.getAttribute('x') || '0') * scaleFactor
-  const y = parseFloat(geometry.getAttribute('y') || '0') * scaleFactor
-  const width = parseFloat(geometry.getAttribute('width') || '120') * scaleFactor
-  const height = parseFloat(geometry.getAttribute('height') || '60') * scaleFactor
+  // 親要素の座標を考慮して絶対座標を計算（複数階層の親要素も考慮）
+  const { x, y, width, height } = calculateAbsolutePosition(geometry, parentGeometry, scaleFactor, parentGeometries)
   
   // 透明なテキストボックスとして追加
   slide.addText(value, {
@@ -28,7 +28,7 @@ export function addTextOnlyElement(
     fontSize: 8,
     align: 'center',
     valign: 'middle',
-    fill: { color: 'FFFFFF', transparency: 100 }, // 完全透明
+    fill: { color: 'FFFFFF', transparency:100 }, // 完全透明
     line: { color: 'FFFFFF', width: 0 } // 枠線なし
   })
   
