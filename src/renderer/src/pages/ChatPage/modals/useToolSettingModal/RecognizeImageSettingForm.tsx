@@ -8,10 +8,14 @@ export const RecognizeImageSettingForm: React.FC = () => {
   const { t } = useTranslation()
   const { recognizeImageModel, setRecognizeImageModel, availableModels } = useSettings()
 
-  // Claude関連モデルとNova関連モデルをフィルタリング
+  // Claude関連モデルをフィルタリング
   const supportedModels = useMemo(() => {
     return availableModels
-      .filter((model) => model.modelId.includes('anthropic.claude'))
+      .filter(
+        (model) =>
+          model.modelId.includes('anthropic.claude') &&
+          !model.modelId.includes('anthropic.claude-3-5-haiku')
+      )
       .sort((a, b) => a.modelName.localeCompare(b.modelName))
   }, [availableModels])
 
