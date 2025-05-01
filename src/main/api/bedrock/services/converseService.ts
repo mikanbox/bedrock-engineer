@@ -136,6 +136,10 @@ export class ConverseService {
       }
       inferenceParams.topP = 1
       inferenceParams.temperature = 1
+
+      // If the number of parallel executions is 3 or more, it may not be stable, so process it in stages.
+      system[0].text =
+        system[0].text + '\n Do not run ToolUse in parallel, but proceed step by step.'
     }
 
     // コマンドパラメータを作成
