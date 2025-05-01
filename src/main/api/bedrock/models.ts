@@ -125,6 +125,13 @@ export const usModels: LLM[] = [
     regions: usRegions
   },
   {
+    modelId: 'us.amazon.nova-premier-v1:0',
+    modelName: 'Amazon Nova Premier (US cross-region)',
+    toolUse: true,
+    maxTokensLimit: 32000,
+    regions: usRegions
+  },
+  {
     modelId: 'us.amazon.nova-pro-v1:0',
     modelName: 'Amazon Nova Pro (US cross-region)',
     toolUse: true,
