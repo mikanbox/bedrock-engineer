@@ -8,12 +8,14 @@ interface PowerPointExportButtonProps {
   xml: string
   disabled?: boolean
   drawioRef?: React.RefObject<DrawIoEmbedRef>
+  getLatestXml?: () => Promise<string>
 }
 
 export const PowerPointExportButton: React.FC<PowerPointExportButtonProps> = ({ 
   xml, 
   disabled,
-  drawioRef 
+  drawioRef,
+  getLatestXml
 }) => {
   const [isExporting, setIsExporting] = useState(false)
   const [selectedScale, setSelectedScale] = useState<number>(1/96) // デフォルトは1/96
@@ -25,7 +27,7 @@ export const PowerPointExportButton: React.FC<PowerPointExportButtonProps> = ({
   }, [])
 
   const handleExport = async () => {
-    if (disabled || !xml || isExporting) return
+    if (disabled || isExporting) return
 
     try {
       setIsExporting(true)
@@ -33,9 +35,30 @@ export const PowerPointExportButton: React.FC<PowerPointExportButtonProps> = ({
       console.log('[PPTX Export] DrawIO ref exists:', !!drawioRef)
       console.log('[PPTX Export] DrawIO ref current exists:', !!(drawioRef?.current))
       console.log('[PPTX Export] Using scale factor:', selectedScale)
+      
+      // 最新のXMLデータを取得
+      let currentXml = xml
+      
+      // getLatestXml関数が存在する場合は、それを使用して最新のXMLを取得
+      if (getLatestXml) {
+        try {
+          const latestXml = await getLatestXml()
+          if (latestXml) {
+            currentXml = latestXml
+            console.log('[PPTX Export] Successfully retrieved latest XML')
+          }
+        } catch (error) {
+          console.error('[PPTX Export] Error retrieving latest XML:', error)
+          console.log('[PPTX Export] Falling back to provided XML')
+        }
+      }
+      
+      if (!currentXml) {
+        throw new Error('No XML data available for export')
+      }
             
       // XMLからPowerPointファイルを生成し保存する
-      await convertXmlToPptxandSave(xml, 'AWS Architecture Diagram', selectedScale)
+      await convertXmlToPptxandSave(currentXml, 'AWS Architecture Diagram', selectedScale)
       
     } catch (error) {
       console.error('[PPTX Export] Failed to export PowerPoint:', error)
