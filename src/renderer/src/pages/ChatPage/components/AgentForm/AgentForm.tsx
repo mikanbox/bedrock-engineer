@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import useSetting from '@renderer/hooks/useSetting'
 import { AgentFormProps } from './types'
 import { useAgentForm } from './useAgentForm'
@@ -51,7 +51,15 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
     [updateField]
   )
 
-  // プロンプト生成フック
+  // 標準ツールとMCPツールを結合
+  const combinedTools = useMemo(() => {
+    // MCPツールが存在し、有効なtoolSpecを持つもののみフィルタリング
+    const mcpToolsToUse = tempMcpTools.filter((tool) => tool.toolSpec?.name)
+    // 標準ツールとMCPツールを結合
+    return [...agentTools, ...mcpToolsToUse]
+  }, [agentTools, tempMcpTools])
+
+  // プロンプト生成フック - 結合したツール情報を渡す
   const { generateSystemPrompt, generateScenarios, isGeneratingSystem, isGeneratingScenarios } =
     usePromptGeneration(
       formData.name,
@@ -59,7 +67,8 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
       formData.system,
       handleSystemPromptGenerated,
       handleScenariosGenerated,
-      formData.additionalInstruction
+      formData.additionalInstruction,
+      combinedTools
     )
 
   // 合成された生成状態

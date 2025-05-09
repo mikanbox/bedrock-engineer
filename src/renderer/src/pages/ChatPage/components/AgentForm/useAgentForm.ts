@@ -266,8 +266,12 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
 
   // アクティブタブが変わった時にツール情報を更新
   useEffect(() => {
-    // ツールタブに切り替わったときのみ実行
-    if (activeTab === 'tools' && formData.mcpServers && formData.mcpServers.length > 0) {
+    // 基本設定・ツールタブに切り替わったときのみ実行
+    if (
+      (activeTab === 'tools' || activeTab == 'basic') &&
+      formData.mcpServers &&
+      formData.mcpServers.length > 0
+    ) {
       // 前回のフェッチから一定時間以上経過した場合のみ再取得
       const now = Date.now()
       const timeSinceLastFetch = now - lastMcpToolsFetchRef.current

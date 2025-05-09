@@ -1,8 +1,10 @@
 export const agent = {
   en: {
     additionalInstruction: 'Additional Instruction',
-    additionalInstructionInfo: 'Optional instructions to guide the system prompt generation. These will be included when auto-generating the system prompt.',
-    additionalInstructionPlaceholder: 'Enter additional instructions for system prompt generation...',
+    additionalInstructionInfo:
+      'Optional instructions to guide the system prompt generation. These will be included when auto-generating the system prompt.',
+    additionalInstructionPlaceholder:
+      'Enter additional instructions for system prompt generation...',
     active: 'Active',
     icon: 'Icon',
     iconDescription: "Select an icon that represents the agent's role",
@@ -98,7 +100,8 @@ export const agent = {
   },
   ja: {
     additionalInstruction: 'システムプロンプト生成のための追加の指示を入力する',
-    additionalInstructionInfo: 'システムプロンプト生成をガイドするための指示を入力してください。システムプロンプト自動生成時に考慮されます。',
+    additionalInstructionInfo:
+      'システムプロンプト生成をガイドするための指示を入力してください。システムプロンプト自動生成時に考慮されます。',
     additionalInstructionPlaceholder: 'システムプロンプト生成のための追加指示を入力...',
     active: 'アクティブ',
     icon: 'アイコン',
