@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { convertXmlToPptxandSave } from '../utils/pptx/xmlToPptx'
+import { convertXmlToPptxandSave } from '../utils/exportPptx/xmlToPptx'
 import { useTranslation } from 'react-i18next'
 import { DrawIoEmbedRef } from 'react-drawio'
 

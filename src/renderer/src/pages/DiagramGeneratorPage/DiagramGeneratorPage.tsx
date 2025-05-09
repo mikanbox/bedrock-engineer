@@ -14,7 +14,7 @@ import { DeepSearchButton } from '@renderer/components/DeepSearchButton'
 import { extractDrawioXml } from './utils/xmlParser'
 import { DIAGRAM_GENERATOR_SYSTEM_PROMPT } from '../ChatPage/constants/DEFAULT_AGENTS'
 import { PowerPointExportButton } from './components/PowerPointExportButton'
-import { handleDrawioExport } from './utils/pptx/onExport'
+import { handleDrawioExport } from './utils/exportPptx/onExport'
 
 
 export default function DiagramGeneratorPage() {

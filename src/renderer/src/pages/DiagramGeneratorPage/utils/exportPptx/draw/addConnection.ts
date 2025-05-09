@@ -81,15 +81,48 @@ export function addConnectionElement(
       }
     }
 
-    // console.error(` xxy = (${startX}, ${startY})  w,h = (${w}, ${h}) `);
+    // 矢印のタイプを取得
+    const style = cell.getAttribute('style') || ''
+    const styleMap = new Map<string, string>()
+    
+    style.split(';').forEach(item => {
+      const [key, value] = item.split('=')
+      if (key && value) {
+        styleMap.set(key.trim(), value.trim())
+      }
+    })
+    
+    // 矢印のスタイル情報を取得
+    const beginArrow = styleMap.get('startArrow')
+    const endArrow = styleMap.get('endArrow')
+    
+    // 矢印タイプの定義
+    type ArrowType = 'none' | 'diamond' | 'triangle' | 'arrow' | 'oval' | 'stealth' | undefined;
+    
+    // 矢印タイプのマッピング
+    const arrowTypeMap: Record<string, ArrowType> = {
+      'classic': 'arrow',
+      'diamond': 'diamond',
+      'oval': 'oval',
+      'block': 'stealth',
+      'open': 'triangle',
+      'none': 'none'
+    }
+    
+    // 矢印タイプを設定
+    const beginArrowType: ArrowType = beginArrow ? (arrowTypeMap[beginArrow] || 'none') : undefined
+    const endArrowType: ArrowType = endArrow ? (arrowTypeMap[endArrow] || 'none') : undefined
+    
     // // 直線を描画
     slide.addShape('line', {
       x: x,
       y: y,
       w: w,
       h: h,
-      line: { color: '000000', width: 1, dashType: "solid" },
+      line: { color: '000000', width: 1, dashType: "solid",
+        beginArrowType: beginArrowType,
+        endArrowType: endArrowType
+       },
     })
-
     
   }
