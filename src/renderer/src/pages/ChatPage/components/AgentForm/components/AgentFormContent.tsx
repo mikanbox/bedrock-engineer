@@ -31,6 +31,7 @@ export const AgentFormContent: React.FC<{
   isGeneratingScenarios: boolean
   availableTags: string[]
   fetchMcpTools: (servers?: McpServerConfig[]) => Promise<void>
+  handleAdditionalInstructionChange?: (value: string) => void
 }> = ({
   activeTab,
   formData,
@@ -47,7 +48,8 @@ export const AgentFormContent: React.FC<{
   isGeneratingSystem,
   isGeneratingScenarios,
   availableTags,
-  fetchMcpTools
+  fetchMcpTools,
+  handleAdditionalInstructionChange
 }) => {
   switch (activeTab) {
     case 'basic':
@@ -65,7 +67,9 @@ export const AgentFormContent: React.FC<{
             system={formData.system}
             name={formData.name}
             description={formData.description}
+            additionalInstruction={formData.additionalInstruction}
             onChange={(value) => updateField('system', value)}
+            onAdditionalInstructionChange={handleAdditionalInstructionChange}
             onAutoGenerate={handleAutoGeneratePrompt}
             isGenerating={isGeneratingSystem}
             projectPath={projectPath}

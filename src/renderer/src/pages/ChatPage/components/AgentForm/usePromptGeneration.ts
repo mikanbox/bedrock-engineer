@@ -101,7 +101,8 @@ function extractCompleteObjects(text: string): GeneratedScenario[] {
  * システムプロンプト生成用のプロンプトテンプレート
  */
 const getPromptTemplate = (
-  tools: ToolState[]
+  tools: ToolState[],
+  additionalInstruction?: string
 ) => `You are an AI assistant that helps create a custom AI agent configuration.
 Based on the following agent name and description, generate a system prompt that would be appropriate for this agent.
 
@@ -120,6 +121,13 @@ Rules:
 - Available tools are ${JSON.stringify(tools)}. Please specify how these tools should be used.
 - No explanation or \`\`\` needed, just print the system prompt.
 - Please output in the language entered for the Agent Name and Description.
+${
+  additionalInstruction
+    ? `
+Additional Instruction:
+${additionalInstruction}`
+    : ''
+}
 </Rules>
 
 Here is the system prompt example for a software agent:
@@ -157,7 +165,8 @@ export function usePromptGeneration(
   description: string,
   system: string,
   onSystemPromptGenerated: (prompt: string) => void,
-  onScenariosGenerated: (scenarios: Array<{ title: string; content: string }>) => void
+  onScenariosGenerated: (scenarios: Array<{ title: string; content: string }>) => void,
+  additionalInstruction?: string
 ) {
   const { t } = useTranslation()
   const { currentLLM: llm, selectedAgentId, getAgentTools } = useSetting()
@@ -166,7 +175,7 @@ export function usePromptGeneration(
 
   // システムプロンプト生成
   const agentTools = getAgentTools(selectedAgentId)
-  const systemPromptTemplate = getPromptTemplate(agentTools)
+  const systemPromptTemplate = getPromptTemplate(agentTools, additionalInstruction)
 
   const {
     messages: systemMessages,

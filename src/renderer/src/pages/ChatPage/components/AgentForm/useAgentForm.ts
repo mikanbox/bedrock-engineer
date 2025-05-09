@@ -32,7 +32,8 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     icon: initialAgent?.icon || 'robot',
     iconColor: initialAgent?.iconColor,
     tools: initialAgent?.tools || ([] as ToolName[]),
-    category: initialAgent?.category || 'all'
+    category: initialAgent?.category || 'all',
+    additionalInstruction: initialAgent?.additionalInstruction || ''
   })
 
   // タブナビゲーション用の状態

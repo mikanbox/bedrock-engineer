@@ -23,7 +23,9 @@ export interface SystemPromptSectionProps {
   system: string
   name: string
   description: string
+  additionalInstruction?: string
   onChange: (value: string) => void
+  onAdditionalInstructionChange?: (value: string) => void
   onAutoGenerate: () => void
   isGenerating: boolean
   projectPath: string

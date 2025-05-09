@@ -46,6 +46,11 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
     [updateField]
   )
 
+  const handleAdditionalInstructionChange = React.useCallback(
+    (value: string) => updateField('additionalInstruction', value),
+    [updateField]
+  )
+
   // プロンプト生成フック
   const { generateSystemPrompt, generateScenarios, isGeneratingSystem, isGeneratingScenarios } =
     usePromptGeneration(
@@ -53,7 +58,8 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
       formData.description,
       formData.system,
       handleSystemPromptGenerated,
-      handleScenariosGenerated
+      handleScenariosGenerated,
+      formData.additionalInstruction
     )
 
   // 合成された生成状態
@@ -91,6 +97,7 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
         isGeneratingScenarios={isGeneratingScenarios}
         availableTags={availableTags}
         fetchMcpTools={fetchMcpTools}
+        handleAdditionalInstructionChange={handleAdditionalInstructionChange}
       />
 
       {/* フォームアクションボタン */}
