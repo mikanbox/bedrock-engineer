@@ -31,16 +31,10 @@ export function calculateAbsolutePosition(
       height
     }
   }
-  
+
   // 親要素の座標を計算
   let totalParentX = 0
   let totalParentY = 0
-  
-  // 直接の親要素がある場合はその座標を加算
-  if (parentGeometry) {
-    totalParentX += parseFloat(parentGeometry.getAttribute('x') || '0') * scaleFactor
-    totalParentY += parseFloat(parentGeometry.getAttribute('y') || '0') * scaleFactor
-  }
   
   // 親の親、親の親の親...と辿って、すべての親要素の座標を加算
   for (const pg of parentGeometries) {
