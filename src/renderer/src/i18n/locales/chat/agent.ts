@@ -1,5 +1,10 @@
 export const agent = {
   en: {
+    additionalInstruction: 'Additional Instruction',
+    additionalInstructionInfo:
+      'Optional instructions to guide the system prompt generation. These will be included when auto-generating the system prompt.',
+    additionalInstructionPlaceholder:
+      'Enter additional instructions for system prompt generation...',
     active: 'Active',
     icon: 'Icon',
     iconDescription: "Select an icon that represents the agent's role",
@@ -94,6 +99,10 @@ export const agent = {
     failedToSaveShared: 'Failed to save agent as shared file'
   },
   ja: {
+    additionalInstruction: 'システムプロンプト生成のための追加の指示を入力する',
+    additionalInstructionInfo:
+      'システムプロンプト生成をガイドするための指示を入力してください。システムプロンプト自動生成時に考慮されます。MCPサーバーやツールの設定状態も考慮した最適なプロンプトを提案します。MCPサーバーを利用する際には先に MCP サーバーの登録をした後で再度システムプロンプトの自動生成を実行してください。',
+    additionalInstructionPlaceholder: 'システムプロンプト生成のための追加指示を入力...',
     active: 'アクティブ',
     icon: 'アイコン',
     iconDescription: 'エージェントの役割を表すアイコンを選択してください',

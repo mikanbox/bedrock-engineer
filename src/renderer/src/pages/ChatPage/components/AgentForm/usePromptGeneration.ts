@@ -101,7 +101,8 @@ function extractCompleteObjects(text: string): GeneratedScenario[] {
  * システムプロンプト生成用のプロンプトテンプレート
  */
 const getPromptTemplate = (
-  tools: ToolState[]
+  tools: ToolState[],
+  additionalInstruction?: string
 ) => `You are an AI assistant that helps create a custom AI agent configuration.
 Based on the following agent name and description, generate a system prompt that would be appropriate for this agent.
 
@@ -117,10 +118,25 @@ Rules:
   - {{allowedCommands}} to represent a list of available tools.
   - {{knowledgeBases}} to represent a list of knowledge bases.
   - {{bedrockAgents}} to represent a list of bedrock agents.
-- Available tools are ${JSON.stringify(tools)}. Please specify how these tools should be used.
+- Please specify how these tools should be used.
 - No explanation or \`\`\` needed, just print the system prompt.
 - Please output in the language entered for the Agent Name and Description.
+- Be sure to include the following instructions:
+  - Visual explanation: Mermaid.js format, Markdown format for Image, Katex for Math
 </Rules>
+
+Available Tools:
+<Tools>
+${JSON.stringify(tools)}
+</Tools>
+
+${
+  additionalInstruction
+    ? `
+Additional Instruction:
+${additionalInstruction}`
+    : ''
+}
 
 Here is the system prompt example for a software agent:
 <Examples>
@@ -157,7 +173,9 @@ export function usePromptGeneration(
   description: string,
   system: string,
   onSystemPromptGenerated: (prompt: string) => void,
-  onScenariosGenerated: (scenarios: Array<{ title: string; content: string }>) => void
+  onScenariosGenerated: (scenarios: Array<{ title: string; content: string }>) => void,
+  additionalInstruction?: string,
+  customTools?: ToolState[] // 追加: カスタムツール情報を受け取る
 ) {
   const { t } = useTranslation()
   const { currentLLM: llm, selectedAgentId, getAgentTools } = useSetting()
@@ -165,8 +183,9 @@ export function usePromptGeneration(
   const [isGeneratingScenarios, setIsGeneratingScenarios] = useState(false)
 
   // システムプロンプト生成
-  const agentTools = getAgentTools(selectedAgentId)
-  const systemPromptTemplate = getPromptTemplate(agentTools)
+  // カスタムツールが提供されていればそれを使用、なければ既存のエージェントツールを使用
+  const agentTools = customTools || getAgentTools(selectedAgentId)
+  const systemPromptTemplate = getPromptTemplate(agentTools, additionalInstruction)
 
   const {
     messages: systemMessages,

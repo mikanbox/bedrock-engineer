@@ -218,6 +218,7 @@ export type CustomAgent = Agent & {
   knowledgeBases?: KnowledgeBase[] // エージェント固有のKnowledge Base
   mcpServers?: McpServerConfig[] // エージェント固有のMCPサーバー設定
   mcpTools?: ToolState[] // エージェント固有のMCPツール設定
+  additionalInstruction?: string // エージェント生成時の追加指示
 }
 
 export type AgentSettings = {

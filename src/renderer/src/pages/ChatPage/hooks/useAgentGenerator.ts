@@ -48,9 +48,15 @@ export const useAgentGenerator = () => {
     { enableHistory: false }
   )
 
-  const generateAgentSystemPrompt = async (name: string, description: string) => {
+  const generateAgentSystemPrompt = async (
+    name: string,
+    description: string,
+    instruction?: string
+  ) => {
     const input = `Agent Name: ${name}
 Description: ${description}
+
+Additional Instruction: ${instruction}
 `
     await handleSubmit(input)
   }

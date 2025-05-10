@@ -7,6 +7,7 @@ import { TagsSection } from '../TagsSection'
 import { ToolsSection } from '../ToolsSection'
 import { McpServerSection } from '../McpServerSection'
 import { AgentCategory, CustomAgent, ToolState, McpServerConfig } from '@/types/agent-chat'
+import { useTranslation } from 'react-i18next'
 
 // タブ識別子の型定義
 type AgentFormTabId = 'basic' | 'mcp-servers' | 'tools'
@@ -31,6 +32,7 @@ export const AgentFormContent: React.FC<{
   isGeneratingScenarios: boolean
   availableTags: string[]
   fetchMcpTools: (servers?: McpServerConfig[]) => Promise<void>
+  handleAdditionalInstructionChange?: (value: string) => void
 }> = ({
   activeTab,
   formData,
@@ -47,99 +49,110 @@ export const AgentFormContent: React.FC<{
   isGeneratingSystem,
   isGeneratingScenarios,
   availableTags,
-  fetchMcpTools
+  fetchMcpTools,
+  handleAdditionalInstructionChange
 }) => {
+  const { t } = useTranslation()
   switch (activeTab) {
     case 'basic':
       return (
-        <div className="space-y-6 overflow-y-auto max-h-[900px] pb-4">
-          <BasicSection
-            name={formData.name}
-            description={formData.description}
-            icon={formData.icon}
-            iconColor={formData.iconColor}
-            onChange={(field, value) => updateField(field, value)}
-          />
+        <div className="h-full">
+          <div className="space-y-6 overflow-y-auto pb-4">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
+              {t('Basic Agent Settings')}
+            </h3>
 
-          <SystemPromptSection
-            system={formData.system}
-            name={formData.name}
-            description={formData.description}
-            onChange={(value) => updateField('system', value)}
-            onAutoGenerate={handleAutoGeneratePrompt}
-            isGenerating={isGeneratingSystem}
-            projectPath={projectPath}
-            allowedCommands={formData.allowedCommands || []}
-            knowledgeBases={formData.knowledgeBases || []}
-            bedrockAgents={formData.bedrockAgents || []}
-          />
+            <BasicSection
+              name={formData.name}
+              description={formData.description}
+              icon={formData.icon}
+              iconColor={formData.iconColor}
+              onChange={(field, value) => updateField(field, value)}
+            />
 
-          <ScenariosSection
-            scenarios={formData.scenarios}
-            name={formData.name}
-            description={formData.description}
-            system={formData.system}
-            onChange={(scenarios) => updateField('scenarios', scenarios)}
-            isGenerating={isGeneratingScenarios}
-            onAutoGenerate={handleGenerateScenarios}
-          />
+            <SystemPromptSection
+              system={formData.system}
+              name={formData.name}
+              description={formData.description}
+              additionalInstruction={formData.additionalInstruction}
+              onChange={(value) => updateField('system', value)}
+              onAdditionalInstructionChange={handleAdditionalInstructionChange}
+              onAutoGenerate={handleAutoGeneratePrompt}
+              isGenerating={isGeneratingSystem}
+              projectPath={projectPath}
+              allowedCommands={formData.allowedCommands || []}
+              knowledgeBases={formData.knowledgeBases || []}
+              bedrockAgents={formData.bedrockAgents || []}
+            />
 
-          <TagsSection
-            tags={formData.tags || []}
-            availableTags={availableTags}
-            onChange={(tags) => updateField('tags', tags)}
-          />
+            <ScenariosSection
+              scenarios={formData.scenarios}
+              name={formData.name}
+              description={formData.description}
+              system={formData.system}
+              onChange={(scenarios) => updateField('scenarios', scenarios)}
+              isGenerating={isGeneratingScenarios}
+              onAutoGenerate={handleGenerateScenarios}
+            />
+
+            <TagsSection
+              tags={formData.tags || []}
+              availableTags={availableTags}
+              onChange={(tags) => updateField('tags', tags)}
+            />
+          </div>
         </div>
       )
     case 'mcp-servers':
       return (
-        <div
-          className="overflow-y-auto max-h-[900px] pb-4"
-          onClick={formEventUtils.preventPropagation}
-        >
-          <McpServerSection
-            mcpServers={formData.mcpServers || []}
-            onChange={async (servers) => {
-              console.log('MCPサーバー設定変更:', servers.length, 'servers')
-              updateField('mcpServers', servers)
+        <div className="h-full">
+          <div className="overflow-y-auto pb-4" onClick={formEventUtils.preventPropagation}>
+            <McpServerSection
+              mcpServers={formData.mcpServers || []}
+              onChange={async (servers) => {
+                console.log('MCPサーバー設定変更:', servers.length, 'servers')
+                updateField('mcpServers', servers)
 
-              // サーバー設定変更後、タイマーを使用して状態更新の競合を避ける
-              // 現在のタブがツールタブの場合のみ再取得を行う
-              if (activeTab === ('tools' as AgentFormTabId)) {
-                console.log('ツールタブ表示中にMCPサーバー変更を検出 - ツールを再取得します')
-                setTimeout(async () => {
-                  // 最新のサーバー情報でツールを直接取得
-                  if (servers.length > 0) {
-                    await fetchMcpTools(servers)
-                  } else {
-                    console.log('サーバーが0件になったため、ツールをクリア')
-                  }
-                }, 50) // 少し長めの遅延を設定
-              } else {
-                console.log('ツールタブ以外でのMCPサーバー変更 - タブ切替時に取得します')
-              }
-            }}
-          />
+                // サーバー設定変更後、タイマーを使用して状態更新の競合を避ける
+                // 現在のタブがツールタブの場合のみ再取得を行う
+                if (activeTab === ('tools' as AgentFormTabId)) {
+                  console.log('ツールタブ表示中にMCPサーバー変更を検出 - ツールを再取得します')
+                  setTimeout(async () => {
+                    // 最新のサーバー情報でツールを直接取得
+                    if (servers.length > 0) {
+                      await fetchMcpTools(servers)
+                    } else {
+                      console.log('サーバーが0件になったため、ツールをクリア')
+                    }
+                  }, 50) // 少し長めの遅延を設定
+                } else {
+                  console.log('ツールタブ以外でのMCPサーバー変更 - タブ切替時に取得します')
+                }
+              }}
+            />
+          </div>
         </div>
       )
     case 'tools':
       return (
-        <div className="overflow-y-auto max-h-[900px] pb-4">
-          <ToolsSection
-            tools={agentTools}
-            onChange={handleToolsChange}
-            agentCategory={agentCategory}
-            onCategoryChange={handleCategoryChange}
-            knowledgeBases={formData.knowledgeBases || []}
-            onKnowledgeBasesChange={(kbs) => updateField('knowledgeBases', kbs)}
-            allowedCommands={formData.allowedCommands || []}
-            onAllowedCommandsChange={(commands) => updateField('allowedCommands', commands)}
-            bedrockAgents={formData.bedrockAgents || []}
-            onBedrockAgentsChange={(agents) => updateField('bedrockAgents', agents)}
-            mcpServers={formData.mcpServers || []}
-            tempMcpTools={tempMcpTools}
-            isLoadingMcpTools={isLoadingMcpTools}
-          />
+        <div className="h-full">
+          <div className="overflow-y-auto pb-4">
+            <ToolsSection
+              tools={agentTools}
+              onChange={handleToolsChange}
+              agentCategory={agentCategory}
+              onCategoryChange={handleCategoryChange}
+              knowledgeBases={formData.knowledgeBases || []}
+              onKnowledgeBasesChange={(kbs) => updateField('knowledgeBases', kbs)}
+              allowedCommands={formData.allowedCommands || []}
+              onAllowedCommandsChange={(commands) => updateField('allowedCommands', commands)}
+              bedrockAgents={formData.bedrockAgents || []}
+              onBedrockAgentsChange={(agents) => updateField('bedrockAgents', agents)}
+              mcpServers={formData.mcpServers || []}
+              tempMcpTools={tempMcpTools}
+              isLoadingMcpTools={isLoadingMcpTools}
+            />
+          </div>
         </div>
       )
     default:

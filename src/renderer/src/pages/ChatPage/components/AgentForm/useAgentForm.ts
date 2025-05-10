@@ -32,7 +32,8 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     icon: initialAgent?.icon || 'robot',
     iconColor: initialAgent?.iconColor,
     tools: initialAgent?.tools || ([] as ToolName[]),
-    category: initialAgent?.category || 'all'
+    category: initialAgent?.category || 'all',
+    additionalInstruction: initialAgent?.additionalInstruction || ''
   })
 
   // タブナビゲーション用の状態
@@ -265,8 +266,12 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
 
   // アクティブタブが変わった時にツール情報を更新
   useEffect(() => {
-    // ツールタブに切り替わったときのみ実行
-    if (activeTab === 'tools' && formData.mcpServers && formData.mcpServers.length > 0) {
+    // 基本設定・ツールタブに切り替わったときのみ実行
+    if (
+      (activeTab === 'tools' || activeTab == 'basic') &&
+      formData.mcpServers &&
+      formData.mcpServers.length > 0
+    ) {
       // 前回のフェッチから一定時間以上経過した場合のみ再取得
       const now = Date.now()
       const timeSinceLastFetch = now - lastMcpToolsFetchRef.current

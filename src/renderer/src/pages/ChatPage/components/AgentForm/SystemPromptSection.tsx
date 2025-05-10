@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FiZap, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiZap, FiEye, FiEyeOff, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import { SystemPromptSectionProps } from './types'
 import { replacePlaceholders } from '../../utils/placeholder'
+import { motion } from 'framer-motion'
 
 const PLACEHOLDERS = [
   { key: 'projectPath', translationKey: 'projectPathPlaceholder' },
@@ -16,7 +17,9 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
   system,
   name,
   description,
+  additionalInstruction,
   onChange,
+  onAdditionalInstructionChange,
   onAutoGenerate,
   isGenerating,
   projectPath,
@@ -26,6 +29,7 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
 }) => {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
+  const [showAdditionalInstructionForm, setShowAdditionalInstructionForm] = useState(false)
 
   const getPreviewText = (text: string): string => {
     if (!text) return text
@@ -46,6 +50,16 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
     setShowPreview(!showPreview)
   }
 
+  const toggleAdditionalInstructionForm = () => {
+    setShowAdditionalInstructionForm(!showAdditionalInstructionForm)
+  }
+
+  const handleAdditionalInstructionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (onAdditionalInstructionChange) {
+      onAdditionalInstructionChange(e.target.value)
+    }
+  }
+
   return (
     <div>
       <div className="flex justify-between pb-2">
@@ -64,7 +78,9 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
                 {showPreview ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
               </div>
               {name && description && (
-                <button
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   onClick={onAutoGenerate}
                   disabled={isGenerating}
                   className="inline-flex items-center text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 dark:hover:bg-blue-800
@@ -72,16 +88,55 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
                 >
                   <FiZap className={`w-3 h-3 mr-1 ${isGenerating ? 'animate-pulse' : ''}`} />
                   <span>{isGenerating ? t('generating') : t('generateSystemPrompt')}</span>
+                </motion.button>
+              )}
+
+              {/* Additional Instruction Toggle Button */}
+              {name && description && (
+                <button
+                  type="button"
+                  onClick={toggleAdditionalInstructionForm}
+                  className="text-xs flex items-center gap-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  {showAdditionalInstructionForm ? (
+                    <FiChevronUp className="w-3 h-3" />
+                  ) : (
+                    <FiChevronDown className="w-3 h-3" />
+                  )}
+                  <span>{t('additionalInstruction')}</span>
                 </button>
               )}
             </div>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-pre-line mb-2 mt-1">
-            {t('systemPromptInfo')}
-          </p>
         </div>
       </div>
 
+      {/* Additional Instruction Form */}
+      {showAdditionalInstructionForm && (
+        <motion.div className="mb-4" initial={{ opacity: 0.5 }} animate={{ opacity: 1 }}>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            {t(
+              'additionalInstructionInfo',
+              'Optional instructions to guide the system prompt generation. These will be included when auto-generating the system prompt.'
+            )}
+          </p>
+          <textarea
+            value={additionalInstruction || ''}
+            onChange={handleAdditionalInstructionChange}
+            className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+              text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm
+              h-[150px]"
+            placeholder={t(
+              'additionalInstructionPlaceholder',
+              'Enter additional instructions for system prompt generation...'
+            )}
+          />
+        </motion.div>
+      )}
+
+      <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-pre-line mb-2 mt-1">
+        {t('systemPromptInfo')}
+      </p>
       <div className="p-2 bg-blue-50 dark:bg-blue-800 rounded-md border border-gray-200 dark:border-gray-700 mb-2">
         <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">{t('placeholders')}</p>
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-1">
