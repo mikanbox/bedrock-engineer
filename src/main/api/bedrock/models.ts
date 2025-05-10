@@ -84,70 +84,70 @@ const usRegions = ['us-east-1', 'us-east-2', 'us-west-2'] as BedrockSupportRegio
 export const usModels: LLM[] = [
   {
     modelId: 'us.anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet (US cross-region)',
+    modelName: 'Claude 3 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: ['us-east-1', 'us-west-2']
   },
   {
     modelId: 'us.anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku (US cross-region)',
+    modelName: 'Claude 3 Haiku (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: usRegions
   },
   {
     modelId: 'us.anthropic.claude-3-5-haiku-20241022-v1:0',
-    modelName: 'Claude 3.5 Haiku (US cross-region)',
+    modelName: 'Claude 3.5 Haiku (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: usRegions
   },
   {
     modelId: 'us.anthropic.claude-3-5-sonnet-20240620-v1:0',
-    modelName: 'Claude 3.5 Sonnet (US cross-region)',
+    modelName: 'Claude 3.5 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: usRegions
   },
   {
     modelId: 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
-    modelName: 'Claude 3.5 Sonnet v2 (US cross-region)',
+    modelName: 'Claude 3.5 Sonnet v2 (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: usRegions
   },
   {
     modelId: 'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
-    modelName: 'Claude 3.7 Sonnet (US cross-region)',
+    modelName: 'Claude 3.7 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 64000,
     regions: usRegions
   },
   {
     modelId: 'us.amazon.nova-premier-v1:0',
-    modelName: 'Amazon Nova Premier (US cross-region)',
+    modelName: 'Amazon Nova Premier (cross-region)',
     toolUse: true,
     maxTokensLimit: 32000,
     regions: usRegions
   },
   {
     modelId: 'us.amazon.nova-pro-v1:0',
-    modelName: 'Amazon Nova Pro (US cross-region)',
+    modelName: 'Amazon Nova Pro (cross-region)',
     toolUse: true,
     maxTokensLimit: 5120,
     regions: usRegions
   },
   {
     modelId: 'us.amazon.nova-lite-v1:0',
-    modelName: 'Amazon Nova Lite (US cross-region)',
+    modelName: 'Amazon Nova Lite (cross-region)',
     toolUse: true,
     maxTokensLimit: 5120,
     regions: usRegions
   },
   {
     modelId: 'us.amazon.nova-micro-v1:0',
-    modelName: 'Amazon Nova Micro (US cross-region)',
+    modelName: 'Amazon Nova Micro (cross-region)',
     toolUse: true,
     maxTokensLimit: 5120,
     regions: usRegions
@@ -155,7 +155,7 @@ export const usModels: LLM[] = [
   // DeepSeek
   {
     modelId: 'us.deepseek.r1-v1:0',
-    modelName: 'DeepSeek R1 (US cross-region)',
+    modelName: 'DeepSeek R1 (cross-region)',
     toolUse: false,
     maxTokensLimit: 32768,
     regions: usRegions
@@ -168,21 +168,21 @@ const euRegions = ['eu-central-1', 'eu-west-1', 'eu-west-3'] as BedrockSupportRe
 export const euModels: LLM[] = [
   {
     modelId: 'eu.anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet (EU cross-region)',
+    modelName: 'Claude 3 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: euRegions
   },
   {
     modelId: 'eu.anthropic.claude-3-5-sonnet-20240620-v1:0',
-    modelName: 'Claude 3.5 Sonnet (EU cross-region)',
+    modelName: 'Claude 3.5 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: euRegions
   },
   {
     modelId: 'eu.anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku (EU cross-region)',
+    modelName: 'Claude 3 Haiku (cross-region)',
     toolUse: true,
     maxTokensLimit: 4096,
     regions: euRegions
@@ -202,21 +202,21 @@ const apacRegions = [
 export const apacModels: LLM[] = [
   {
     modelId: 'apac.anthropic.claude-3-5-sonnet-20241022-v2:0',
-    modelName: 'Claude 3.5 Sonnet v2 (APAC cross-region)',
+    modelName: 'Claude 3.5 Sonnet v2 (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: apacRegions
   },
   {
     modelId: 'apac.anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet (APAC cross-region)',
+    modelName: 'Claude 3 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 8192,
     regions: ['ap-northeast-1']
   },
   {
     modelId: 'apac.anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku (APAC cross-region)',
+    modelName: 'Claude 3 Haiku (cross-region)',
     toolUse: true,
     maxTokensLimit: 4096,
     regions: ['ap-northeast-1']
@@ -249,22 +249,18 @@ export const getModelsForRegion = (region: BedrockSupportRegion): LLM[] => {
 
 // Prompt Router support
 export const getDefaultPromptRouter = (accountId: string, region: string) => {
-  if (region === 'us-east-1' || region === 'us-west-2') {
-    return [
-      {
-        modelId: `arn:aws:bedrock:${region}:${accountId}:default-prompt-router/anthropic.claude:1`,
-        modelName: 'Claude Prompt Router',
-        maxTokensLimit: 8192,
-        toolUse: true
-      },
-      {
-        modelId: `arn:aws:bedrock:${region}:${accountId}:default-prompt-router/meta.llama:1`,
-        modelName: 'Meta Prompt Router',
-        maxTokensLimit: 8192,
-        toolUse: false
-      }
-    ]
-  }
-
-  return []
+  return [
+    {
+      modelId: `arn:aws:bedrock:${region}:${accountId}:default-prompt-router/anthropic.claude:1`,
+      modelName: 'Claude Prompt Router',
+      maxTokensLimit: 8192,
+      toolUse: true
+    },
+    {
+      modelId: `arn:aws:bedrock:${region}:${accountId}:default-prompt-router/meta.llama:1`,
+      modelName: 'Meta Prompt Router',
+      maxTokensLimit: 8192,
+      toolUse: false
+    }
+  ]
 }
