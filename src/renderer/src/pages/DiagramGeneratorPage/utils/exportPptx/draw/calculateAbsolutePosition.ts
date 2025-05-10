@@ -9,7 +9,8 @@ export function calculateAbsolutePosition(
   geometry: Element,
   parentGeometry: Element | null,
   scaleFactor: number,
-  parentGeometries: Element[] = []
+  parentGeometries: Element[] = [],
+  isLabel: boolean = false
 ): {
   x: number;
   y: number;
@@ -20,8 +21,9 @@ export function calculateAbsolutePosition(
   const relativeX = parseFloat(geometry.getAttribute('x') || '0') * scaleFactor
   const relativeY = parseFloat(geometry.getAttribute('y') || '0') * scaleFactor
   const width = parseFloat(geometry.getAttribute('width') || '120') * scaleFactor
-  const height = parseFloat(geometry.getAttribute('height') || '60') * scaleFactor
+  let height = parseFloat(geometry.getAttribute('height') || '60') * scaleFactor
   
+
   // 親要素がなく、親の階層も空の場合は相対座標をそのまま返す
   if (!parentGeometry && parentGeometries.length === 0) {
     return {
@@ -31,6 +33,29 @@ export function calculateAbsolutePosition(
       height
     }
   }
+
+  // // console.log(`[HTTP Requests] isLine is ${isLabel}`)
+  // if (isLabel && parentGeometry && parentGeometry.getElementsByTagName('mxPoint')[0]) {
+  //   // 親要素の座標を計算
+  //   let totalParentX = 0
+  //   let totalParentY = 0
+  //   height = parseFloat(geometry.getAttribute('height') || '20') * scaleFactor
+    
+  //   let diffX = parseFloat( parentGeometry.getElementsByTagName('mxPoint')[0].getAttribute('x') || '0') + parseFloat( parentGeometry.getElementsByTagName('mxPoint')[0].getAttribute('x') || '0');
+  //   let diffY = parseFloat( parentGeometry.getElementsByTagName('mxPoint')[1].getAttribute('y') || '0') + parseFloat( parentGeometry.getElementsByTagName('mxPoint')[0].getAttribute('y') || '0');
+
+  //   totalParentX += diffX / 2 * scaleFactor;
+  //   totalParentY += diffY / 2 * scaleFactor;
+
+  //   return {
+  //     x: totalParentX + relativeX,
+  //     y: totalParentY + relativeY,
+  //     width,
+  //     height
+  //   }
+  // }
+
+
 
   // 親要素の座標を計算
   let totalParentX = 0
