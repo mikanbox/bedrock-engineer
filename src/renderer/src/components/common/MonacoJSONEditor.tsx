@@ -1,7 +1,6 @@
 import React, { useRef } from 'react'
 import Editor, { Monaco, OnMount } from '@monaco-editor/react'
 import { useTheme } from '@renderer/hooks/useTheme'
-import { useTranslation } from 'react-i18next'
 
 interface MonacoJSONEditorProps {
   value: string
@@ -20,7 +19,6 @@ export const MonacoJSONEditor: React.FC<MonacoJSONEditorProps> = ({
   className = '',
   readOnly = false
 }) => {
-  const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const editorRef = useRef<any>(null)
 

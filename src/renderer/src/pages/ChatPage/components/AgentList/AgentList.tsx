@@ -31,7 +31,7 @@ export const AgentList: React.FC<AgentListProps> = ({
     useAgentFilter(agents)
 
   return (
-    <>
+    <div className="p-4">
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -103,6 +103,6 @@ export const AgentList: React.FC<AgentListProps> = ({
           )
         })}
       </div>
-    </>
+    </div>
   )
 }

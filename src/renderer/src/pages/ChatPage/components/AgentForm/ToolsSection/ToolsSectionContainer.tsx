@@ -95,11 +95,6 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
           onClose={() => setToolInfoToShow(null)}
         />
       )}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Agent Tools</h3>
-        </div>
-      </div>
 
       {/* タブナビゲーション */}
       <div className="border-b border-gray-200 dark:border-gray-700">

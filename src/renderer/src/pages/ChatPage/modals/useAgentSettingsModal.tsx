@@ -124,6 +124,12 @@ const AgentSettingsModal = React.memo(
       }
     }
 
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    const togglePanel = () => {
+      setIsExpanded(!isExpanded)
+    }
+
     return (
       <Modal
         dismissible
@@ -143,16 +149,35 @@ const AgentSettingsModal = React.memo(
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
               {editingAgent ? t('editAgent') : t('customAgents')}
             </h3>
+            <div className="pt-2 pl-4">
+              <div
+                className="flex items-center cursor-pointer text-blue-600 dark:text-blue-400 hover:underline mb-2"
+                onClick={togglePanel}
+              >
+                <FiInfo className="mr-1" />
+                <span className="text-sm font-medium">{t('agentSettings.infoTitle')}</span>
+              </div>
+            </div>
           </div>
+
+          {isExpanded && (
+            <div className="bg-blue-50 dark:bg-gray-800 p-4 rounded-lg border border-blue-200 dark:border-gray-700 transition-all duration-300">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {t('agentSettings.description')}
+              </p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                {t('agentSettings.sharedAgentsDescription')}
+              </p>
+            </div>
+          )}
         </Modal.Header>
         <Modal.Body
-          className="p-6"
+          className="p-0"
           onClick={(e) => {
             // モーダルボディのクリックイベントは伝播させない
             e.stopPropagation()
           }}
         >
-          <InfoPanel />
           <div className="space-y-6 min-h-[1100px]">
             {editingAgent ? (
               <AgentForm
@@ -180,36 +205,3 @@ const AgentSettingsModal = React.memo(
 )
 
 AgentSettingsModal.displayName = 'AgentSettingsModal'
-
-// 情報パネルコンポーネント
-const InfoPanel = () => {
-  const { t } = useTranslation()
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  const togglePanel = () => {
-    setIsExpanded(!isExpanded)
-  }
-
-  return (
-    <div className="mb-4">
-      <div
-        className="flex items-center cursor-pointer text-blue-600 dark:text-blue-400 hover:underline mb-2"
-        onClick={togglePanel}
-      >
-        <FiInfo className="mr-1" />
-        <span className="text-sm font-medium">{t('agentSettings.infoTitle')}</span>
-      </div>
-
-      {isExpanded && (
-        <div className="bg-blue-50 dark:bg-gray-800 p-4 rounded-lg border border-blue-200 dark:border-gray-700 transition-all duration-300">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            {t('agentSettings.description')}
-          </p>
-          <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-            {t('agentSettings.sharedAgentsDescription')}
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
