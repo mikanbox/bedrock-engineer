@@ -1,4 +1,4 @@
-import { dialog, OpenDialogOptions } from 'electron'
+import { dialog, OpenDialogOptions, SaveDialogOptions } from 'electron'
 import { ipcRenderer } from 'electron'
 import { promisify } from 'util'
 import fs from 'fs'
@@ -155,12 +155,30 @@ async function saveSharedAgent(
   }
 }
 
+/**
+ * ファイルを保存するための関数
+ * @param buffer ファイルの内容（バイナリ）
+ * @param filename デフォルトのファイル名
+ * @param filters ファイルタイプフィルター
+ * @returns 保存先のパス（キャンセルされた場合はundefined）
+ */
+async function saveFile(buffer: Buffer, filename: string, filters?: string): Promise<string | undefined> {
+  try {
+    // IPC経由でファイル保存ダイアログを表示
+    return await ipcRenderer.invoke('save-file', buffer, filename, filters)
+  } catch (error) {
+    console.error('Error saving file:', error)
+    throw error
+  }
+}
+
 export const file = {
   handleFolderOpen: () => ipcRenderer.invoke('open-directory'),
   handleFileOpen: () => ipcRenderer.invoke('open-file'),
   readSharedAgents,
   readDirectoryAgents,
-  saveSharedAgent
+  saveSharedAgent,
+  saveFile
 }
 
 export default file

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Menu, MenuItem } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Menu, MenuItem, dialog } from 'electron'
 import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.ico?asset'
@@ -314,7 +314,7 @@ app.whenReady().then(() => {
   // Local image loading handler
   ipcMain.handle('get-local-image', async (_, path: string) => {
     try {
-      const data = await fs.promises.readFile(path)
+      const data = await fs.promises.readFile(path, { encoding: null })
       const ext = path.split('.').pop()?.toLowerCase() || 'png'
       const base64 = data.toString('base64')
       return `data:image/${ext};base64,${base64}`
@@ -327,11 +327,122 @@ app.whenReady().then(() => {
     }
   })
 
+  // File save handler for PPTX export
+  ipcMain.handle('save-file', async (event, buffer: Buffer, filename: string, filters?: string) => {
+    try {
+      const browserWindow = BrowserWindow.fromWebContents(event.sender)
+      if (!browserWindow) {
+        throw new Error('No browser window available')
+      }
+      
+      // Parse filter string into the required format
+      const filtersParsed = filters ? [{ name: filters.split('|')[0], extensions: [filters.split('|')[1].replace('*.', '')] }] : []
+      
+      const { canceled, filePath } = await dialog.showSaveDialog(browserWindow, {
+        title: 'Save Diagram as PowerPoint',
+        defaultPath: filename,
+        filters: filtersParsed.length > 0 ? filtersParsed : [
+          { name: 'PowerPoint Presentation', extensions: ['pptx'] }
+        ],
+        properties: ['createDirectory', 'showOverwriteConfirmation']
+      })
+      
+      if (canceled || !filePath) {
+        return undefined
+      }
+      
+      // Write buffer to file
+      await fs.promises.writeFile(filePath, buffer as unknown as Uint8Array)
+      log.info('File saved successfully', { filePath })
+      
+      return filePath
+    } catch (error) {
+      log.error('Failed to save file', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
+  })
+
   // Window focus state handler
   ipcMain.handle('window:isFocused', (event) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     return window?.isFocused() ?? false
   })
+  
+  // ディレクトリの内容を読み取るハンドラ（xmlToPptx用）
+  ipcMain.handle('read-directory', async (_, directoryPath: string) => {
+    try {
+      log.info('Reading directory contents', { path: directoryPath })
+      const files = await fs.promises.readdir(directoryPath)
+      return files
+    } catch (error) {
+      log.error('Failed to read directory', { 
+        path: directoryPath,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
+  })
+  
+  // ファイルを読み取るハンドラ（xmlToPptx用）
+  ipcMain.handle('read-file', async (_, filePath: string) => {
+    try {
+      log.info('Reading file', { path: filePath })
+      return await fs.promises.readFile(filePath, { encoding: 'utf-8' })
+    } catch (error) {
+      log.error('Failed to read file', { 
+        path: filePath,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
+  })
+  
+  // アイコン画像のBase64データを取得する共通ハンドラ（xmlToPptx用）
+  ipcMain.handle('get-icon', async (_, iconType: 'aws' | 'resource', name: string) => {
+    let fileNamePatterns: string[] = []
+    
+    fileNamePatterns = [
+      `Aws_48_Light/Arch_AWS-${name}_48.svg`,
+      `Aws_48_Light/Arch_Amazon-${name}_48.svg`,
+      `Aws_48_Light/Arch_${name}_48.svg`,
+      `Res_48_Light/Res_${name}_48_Light.svg`,
+      `Res_48_Light/Res_AWS-${name}_48_Light.svg`,
+      `Res_48_Light/Res_Amazon-${name}_48_Light.svg`
+    ]
+    
+    let basePath: string;
+    if (is.dev) {
+      basePath = app.getAppPath();
+    } else {
+      // プロダクション環境ではリソースディレクトリから取得
+      // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
+      basePath = process.resourcesPath;
+    }
+
+    for (const fileName of fileNamePatterns) {
+      const iconPath = join(basePath, `icons/`, fileName)
+      log.info(`Loading`, { name, path: iconPath, pattern: fileName })
+
+      try {  
+        const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
+        return `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
+      } catch (error) {
+        // 最後のパターンでも失敗した場合のみエラーログを出力
+        if (fileName === fileNamePatterns[fileNamePatterns.length - 1]) {
+          log.error(`Failed to get ${iconType} icon after trying all patterns`, { 
+            name,
+            triedPatterns: fileNamePatterns,
+            error: error instanceof Error ? error.message : String(error)
+          })
+        } 
+      }
+    }
+    
+    return null    
+  })
+  
 
   // Web fetch handler for Tool execution
   ipcMain.handle('fetch-website', async (_event, url: string, options?: any) => {

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { DrawIoEmbed, DrawIoEmbedRef } from 'react-drawio'
 import { useAgentChat } from '../ChatPage/hooks/useAgentChat'
 import { TextArea } from '../ChatPage/components/InputForm/TextArea'
@@ -13,6 +13,9 @@ import { WebLoader } from '../../components/WebLoader'
 import { DeepSearchButton } from '@renderer/components/DeepSearchButton'
 import { extractDrawioXml } from './utils/xmlParser'
 import { DIAGRAM_GENERATOR_SYSTEM_PROMPT } from '../ChatPage/constants/DEFAULT_AGENTS'
+import { PowerPointExportButton } from './components/PowerPointExportButton'
+import { handleDrawioExport } from './utils/exportPptx/onExport'
+
 
 export default function DiagramGeneratorPage() {
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -104,6 +107,7 @@ export default function DiagramGeneratorPage() {
     const lastUserMessage = messages.filter((m) => m.role === 'user').pop()
 
     if (lastAssistantMessage?.content && !loading && drawioRef.current) {
+
       const rawContent = lastAssistantMessage.content
         .map((c) => ('text' in c ? c.text : ''))
         .join('')
@@ -137,6 +141,15 @@ export default function DiagramGeneratorPage() {
     }
   }, [messages, loading])
 
+
+  // 履歴からダイアグラムを読み込む関数 [shuaki]
+  // 最新のXMLデータを取得する関数
+  const getLatestXml = useCallback(async (): Promise<string> => {
+    console.log('[XML Export] Returning current XML data')
+    return xml
+  }, [xml])
+
+
   // 履歴からダイアグラムを読み込む関数
   const loadDiagramFromHistory = (index: number) => {
     if (diagramHistory[index]) {
@@ -160,6 +173,12 @@ export default function DiagramGeneratorPage() {
         <span className="font-bold flex flex-col gap-2 w-full">
           <div className="flex justify-between">
             <h1 className="content-center dark:text-white text-lg">Diagram Generator</h1>
+            <PowerPointExportButton 
+              xml={xml} 
+              disabled={loading} 
+              drawioRef={drawioRef}
+              getLatestXml={getLatestXml} 
+            />
           </div>
           <div className="flex justify-between w-full">
             <div className="flex gap-2">
@@ -201,6 +220,7 @@ export default function DiagramGeneratorPage() {
                 dark: isDark,
                 lang: language
               }}
+              onExport={(data) => handleDrawioExport(data, setXml)} 
             />
           </div>
         )}
