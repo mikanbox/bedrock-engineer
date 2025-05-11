@@ -14,6 +14,7 @@ import { useSettings } from '@renderer/contexts/SettingsContext'
 import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
+import { useLightProcessingModel } from '@renderer/lib/modelSelection'
 
 import { AttachedImage } from '../components/InputForm/TextArea'
 import { ChatMessage } from '@/types/chat/history'
@@ -960,6 +961,9 @@ export const useAgentChat = (
     lastCachePoint.current = undefined
   }, [modelId, systemPrompt, abortCurrentRequest, createSession])
 
+  // 軽量処理用モデルIDを取得
+  const { getLightModelId } = useLightProcessingModel()
+
   // 現在のセッションにタイトルを生成する関数
   const generateTitleForCurrentSession = useCallback(async () => {
     if (!currentSessionId || !enableHistory) return
@@ -976,8 +980,11 @@ export const useAgentChat = (
       // "Chat "で始まるデフォルトタイトルのみ置き換える
       if (!session.title.startsWith('Chat ')) return
 
-      // タイトル生成 - フォールバック用に現在のモデルIDを渡す
-      const newTitle = await generateSessionTitle(session, modelId, t)
+      // 軽量処理用モデルIDを取得
+      const lightModelId = getLightModelId()
+
+      // 軽量モデルでタイトルを生成
+      const newTitle = await generateSessionTitle(session, lightModelId, t)
       if (newTitle) {
         await updateSessionTitle(currentSessionId, newTitle)
       }

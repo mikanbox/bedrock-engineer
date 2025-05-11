@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FiMoreHorizontal, FiEdit2, FiTrash2, FiZap } from 'react-icons/fi'
 import { RiArchiveStackLine } from 'react-icons/ri'
-import useSettings from '../../../../hooks/useSetting'
 import { SessionMetadata } from '@/types/chat/history'
 import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
 import { generateSessionTitle } from '../../utils/titleGenerator'
+import { useLightProcessingModel } from '@renderer/lib/modelSelection'
 
 interface ChatHistoryProps {
   onSessionSelect: (sessionId: string) => void
@@ -19,7 +19,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, curre
   const [isGlobalMenuOpen, setIsGlobalMenuOpen] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
-  const { currentLLM } = useSettings()
+  const { getLightModelId } = useLightProcessingModel()
   const { t } = useTranslation()
 
   // ChatHistoryContext から sessions と操作関数を取得
@@ -88,7 +88,11 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, curre
         throw new Error('Session not found')
       }
 
-      const newTitle = await generateSessionTitle(sessionDetails, currentLLM.modelId, t)
+      // 軽量処理用モデルIDを取得
+      const lightModelId = getLightModelId()
+
+      // 軽量モデルでタイトルを生成
+      const newTitle = await generateSessionTitle(sessionDetails, lightModelId, t)
 
       if (newTitle) {
         // タイトルを更新

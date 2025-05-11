@@ -7,7 +7,8 @@ import {
   agentSettings,
   agentToolsSettings,
   promptCacheSettings,
-  tokenAnalyticsSettings
+  tokenAnalyticsSettings,
+  lightModelSettings
 } from './settings'
 import { thinkingMode } from './thinkingMode'
 import { agentDirectory } from './agentDirectory'
@@ -235,6 +236,7 @@ const ja = {
   ...agentToolsSettings.ja,
   ...promptCacheSettings.ja,
   ...tokenAnalyticsSettings.ja,
+  ...lightModelSettings.ja,
   ...awsDiagramGenerator.ja,
   ...thinkingMode.ja,
   ...agentDirectory.ja,

@@ -38,6 +38,9 @@ type StoreScheme = {
   /** 現在選択されている言語モデル (LLM) の設定 */
   llm?: LLM
 
+  /** 軽微な処理（タイトル生成など）に使用するモデルの設定 */
+  lightProcessingModel?: LLM | null
+
   /** 言語モデルの推論パラメータ（温度、最大トークン数など） */
   inferenceParams: InferenceParameters
 
@@ -219,6 +222,13 @@ const init = () => {
   const guardrailSettings = electronStore.get('guardrailSettings')
   if (!guardrailSettings) {
     electronStore.set('guardrailSettings', DEFAULT_GUARDRAIL_SETTINGS)
+  }
+
+  // Initialize lightProcessingModel if not present
+  const lightProcessingModel = electronStore.get('lightProcessingModel')
+  if (lightProcessingModel === undefined) {
+    // デフォルトでは設定なし（null）で、この場合はメインモデルかフォールバックが使用される
+    electronStore.set('lightProcessingModel', null)
   }
 }
 

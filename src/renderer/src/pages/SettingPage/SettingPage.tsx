@@ -10,6 +10,7 @@ import {
   NotificationSection,
   GuardrailSettings
 } from './components/sections'
+import { LightModelSettings } from './components/LightModelSettings'
 import { ConfigDirSection } from './components/sections/ConfigDirSection'
 
 export const SettingPage: React.FC = () => {
@@ -111,6 +112,8 @@ export const SettingPage: React.FC = () => {
         guardrailSettings={guardrailSettings}
         onUpdateGuardrailSettings={updateGuardrailSettings}
       />
+
+      <LightModelSettings />
 
       <AdvancedSection sendMsgKey={sendMsgKey} onUpdateSendMsgKey={updateSendMsgKey} />
 

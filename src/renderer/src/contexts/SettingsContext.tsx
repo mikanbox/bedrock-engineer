@@ -50,6 +50,10 @@ export interface SettingsContextType {
   availableModels: LLM[]
   llmError: any
 
+  // 軽量処理用モデル設定
+  lightProcessingModel: LLM | null
+  updateLightProcessingModel: (model: LLM | null) => void
+
   // Thinking Mode Settings
   thinkingMode?: ThinkingMode
   updateThinkingMode: (mode: ThinkingMode) => void
@@ -207,6 +211,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [inferenceParams, setInferenceParams] =
     useState<InferenceParameters>(DEFAULT_INFERENCE_PARAMS)
 
+  // 軽量処理用モデル設定
+  const [lightProcessingModel, setLightProcessingModel] = useState<LLM | null>(null)
+
   const [thinkingMode, setThinkingMode] = useState<ThinkingMode>()
 
   const [bedrockSettings, setBedrockSettings] = useState<{
@@ -278,6 +285,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const notificationSetting = window.store.get('notification')
     if (notificationSetting !== undefined) {
       setStateNotification(notificationSetting)
+    }
+
+    // Load Light Processing Model Settings
+    const storedLightModel = window.store.get('lightProcessingModel')
+    if (storedLightModel) {
+      setLightProcessingModel(storedLightModel)
     }
 
     // Load recognizeImage Tool Settings
@@ -646,6 +659,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateLLM = (selectedModel: LLM) => {
     setCurrentLLM(selectedModel)
     window.store.set('llm', selectedModel)
+  }
+
+  const updateLightProcessingModel = (model: LLM | null) => {
+    setLightProcessingModel(model)
+    window.store.set('lightProcessingModel', model)
   }
 
   const updateInferenceParams = (params: Partial<InferenceParameters>) => {
@@ -1229,6 +1247,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updateLLM,
     availableModels,
     llmError,
+
+    // 軽量処理用モデル設定
+    lightProcessingModel,
+    updateLightProcessingModel,
 
     // Thinking Mode Settings
     thinkingMode,
