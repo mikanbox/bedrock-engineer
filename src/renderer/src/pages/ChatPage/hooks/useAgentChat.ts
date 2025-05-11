@@ -9,7 +9,9 @@ import { ToolState } from '@/types/agent-chat'
 import { generateMessageId } from '@/types/chat/metadata'
 import { StreamChatCompletionProps, streamChatCompletion } from '@renderer/lib/api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { generateSessionTitle } from '../utils/titleGenerator'
 import { useSettings } from '@renderer/contexts/SettingsContext'
+import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 
@@ -88,6 +90,10 @@ export const useAgentChat = (
   const abortController = useRef<AbortController | null>(null)
   // キャッシュポイントを保持するための状態
   const lastCachePoint = useRef<number | undefined>(undefined)
+  // タイトル生成済みフラグ（同じセッションで複数回生成しないため）
+  const titleGenerated = useRef<Set<string>>(new Set())
+  // メッセージ数が閾値を超えたときにタイトル生成を実行
+  const MESSAGE_THRESHOLD = 4 // タイトル生成のためのメッセージ数閾値
   const { t } = useTranslation()
   const {
     notification,
@@ -209,7 +215,7 @@ export const useAgentChat = (
 
             // メッセージ履歴からも削除
             if (currentSessionId) {
-              window.chatHistory.deleteMessage(currentSessionId, index)
+              deleteMessage(currentSessionId, index)
             }
           }
 
@@ -228,11 +234,21 @@ export const useAgentChat = (
     setExecutingTool(null)
   }, [messages, currentSessionId, t])
 
+  // ChatHistoryContext から操作関数を取得
+  const {
+    getSession,
+    createSession,
+    addMessage,
+    updateSessionTitle,
+    setActiveSession,
+    deleteMessage
+  } = useChatHistory()
+
   // セッションの初期化
   useEffect(() => {
     const initSession = async () => {
       if (sessionId) {
-        const session = window.chatHistory.getSession(sessionId)
+        const session = getSession(sessionId)
         if (session) {
           // 既存の通信があれば中断
           abortCurrentRequest()
@@ -243,11 +259,7 @@ export const useAgentChat = (
         }
       } else if (enableHistory) {
         // 履歴保存が有効な場合のみ新しいセッションを作成
-        const newSessionId = await window.chatHistory.createSession(
-          'defaultAgent',
-          modelId,
-          systemPrompt
-        )
+        const newSessionId = await createSession('defaultAgent', modelId, systemPrompt)
         setCurrentSessionId(newSessionId)
         // 新しいセッションを作成した場合はキャッシュポイントをリセット
         lastCachePoint.current = undefined
@@ -255,7 +267,7 @@ export const useAgentChat = (
     }
 
     initSession()
-  }, [sessionId, enableHistory])
+  }, [sessionId, enableHistory, getSession, createSession, abortCurrentRequest])
 
   // コンポーネントのアンマウント時にアクティブな通信を中断
   useEffect(() => {
@@ -269,15 +281,15 @@ export const useAgentChat = (
     if (currentSessionId) {
       // セッション切り替え時に進行中の通信を中断
       abortCurrentRequest()
-      const session = window.chatHistory.getSession(currentSessionId)
+      const session = getSession(currentSessionId)
       if (session) {
         setMessages(session.messages as Message[])
-        window.chatHistory.setActiveSession(currentSessionId)
+        setActiveSession(currentSessionId)
         // セッション切り替え時にキャッシュポイントをリセット
         lastCachePoint.current = undefined
       }
     }
-  }, [currentSessionId])
+  }, [currentSessionId, getSession, setActiveSession, abortCurrentRequest])
 
   // メッセージの永続化を行うラッパー関数
   const persistMessage = useCallback(
@@ -301,12 +313,12 @@ export const useAgentChat = (
             converseMetadata: message.metadata?.converseMetadata // メッセージ内のメタデータを使用
           }
         }
-        await window.chatHistory.addMessage(currentSessionId, chatMessage)
+        await addMessage(currentSessionId, chatMessage)
       }
 
       return message
     },
-    [currentSessionId, modelId, enabledTools, enableHistory]
+    [currentSessionId, modelId, enabledTools, enableHistory, addMessage]
   )
 
   const streamChat = async (props: StreamChatCompletionProps, currentMessages: Message[]) => {
@@ -938,11 +950,7 @@ export const useAgentChat = (
     abortCurrentRequest()
 
     // 新しいセッションを作成
-    const newSessionId = await window.chatHistory.createSession(
-      'defaultAgent',
-      modelId,
-      systemPrompt
-    )
+    const newSessionId = await createSession('defaultAgent', modelId, systemPrompt)
     setCurrentSessionId(newSessionId)
 
     // メッセージをクリア
@@ -950,15 +958,71 @@ export const useAgentChat = (
 
     // キャッシュポイントもリセット
     lastCachePoint.current = undefined
-  }, [modelId, systemPrompt, abortCurrentRequest])
+  }, [modelId, systemPrompt, abortCurrentRequest, createSession])
+
+  // 現在のセッションにタイトルを生成する関数
+  const generateTitleForCurrentSession = useCallback(async () => {
+    if (!currentSessionId || !enableHistory) return
+
+    // このセッションIDをタイトル生成済みとしてマーク
+    titleGenerated.current.add(currentSessionId)
+
+    try {
+      // セッションの詳細を取得
+      const session = getSession(currentSessionId)
+      if (!session) return
+
+      // セッションのタイトルが既にカスタマイズされている場合は生成しない
+      // "Chat "で始まるデフォルトタイトルのみ置き換える
+      if (!session.title.startsWith('Chat ')) return
+
+      // タイトル生成 - フォールバック用に現在のモデルIDを渡す
+      const newTitle = await generateSessionTitle(session, modelId, t)
+      if (newTitle) {
+        await updateSessionTitle(currentSessionId, newTitle)
+      }
+    } catch (error) {
+      console.error('Error generating title for current session:', error)
+    }
+  }, [currentSessionId, modelId, t, enableHistory, getSession, updateSessionTitle])
+
+  // メッセージ数を監視してタイトル生成を実行
+  useEffect(() => {
+    // メッセージが閾値を超え、まだタイトルが生成されていない場合に実行
+    if (
+      messages.length > MESSAGE_THRESHOLD &&
+      currentSessionId &&
+      !titleGenerated.current.has(currentSessionId) &&
+      enableHistory
+    ) {
+      generateTitleForCurrentSession()
+    }
+  }, [messages.length, currentSessionId, generateTitleForCurrentSession, enableHistory])
 
   const setSession = useCallback(
     (newSessionId: string) => {
+      // 既存のセッションにタイトルを生成
+      if (
+        currentSessionId &&
+        messages.length > MESSAGE_THRESHOLD &&
+        !titleGenerated.current.has(currentSessionId) &&
+        enableHistory
+      ) {
+        generateTitleForCurrentSession()
+      }
+
       // 進行中の通信を中断してから新しいセッションを設定
       abortCurrentRequest()
       setCurrentSessionId(newSessionId)
     },
-    [abortCurrentRequest]
+    [
+      abortCurrentRequest,
+      messages.length,
+      currentSessionId,
+      MESSAGE_THRESHOLD,
+      generateTitleForCurrentSession,
+      enableHistory
+    ]
   )
 
   return {

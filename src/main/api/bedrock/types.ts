@@ -1,5 +1,6 @@
 import {
   GuardrailConfiguration,
+  InferenceConfiguration,
   Message,
   SystemContentBlock,
   ToolConfiguration
@@ -12,6 +13,7 @@ export type CallConverseAPIProps = {
   system: SystemContentBlock[]
   toolConfig?: ToolConfiguration
   guardrailConfig?: GuardrailConfiguration
+  inferenceConfig?: InferenceConfiguration
 }
 
 export type AWSCredentials = {

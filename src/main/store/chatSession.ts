@@ -140,7 +140,6 @@ export class ChatSessionManager {
     if (!session) return
 
     session.title = title
-    session.updatedAt = Date.now()
 
     await this.writeSessionFile(sessionId, session)
     this.updateMetadata(sessionId, session)

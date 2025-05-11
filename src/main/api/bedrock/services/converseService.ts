@@ -41,7 +41,8 @@ export class ConverseService {
       converseLogger.debug('Sending converse request', {
         modelId: props.modelId,
         region: awsConfig.region,
-        messageCount: props.messages.length
+        messageCount: props.messages.length,
+        commandParams
       })
 
       // APIリクエストを送信
@@ -99,8 +100,8 @@ export class ConverseService {
     // メッセージを正規化
     const sanitizedMessages = this.normalizeMessages(processedMessages)
 
-    // 推論パラメータを取得
-    const inferenceParams = this.context.store.get('inferenceParams')
+    // 推論パラメータを取得（リクエストで明示的に指定された場合はグローバル設定を書きする）
+    const inferenceConfig = props?.inferenceConfig ?? this.context.store.get('inferenceParams')
 
     const thinkingMode = this.context.store.get('thinkingMode')
 
@@ -115,8 +116,8 @@ export class ConverseService {
           budget_tokens: thinkingMode.budget_tokens
         }
       }
-      inferenceParams.topP = undefined // reasoning は topP は不要
-      inferenceParams.temperature = 1 // reasoning は temperature を 1 必須
+      inferenceConfig.topP = undefined // reasoning は topP は不要
+      inferenceConfig.temperature = 1 // reasoning は temperature を 1 必須
 
       // Thinking Mode有効時の特別なログ出力
       converseLogger.debug('Enabling Thinking Mode', {
@@ -134,8 +135,8 @@ export class ConverseService {
       additionalModelRequestFields = {
         inferenceConfig: { topK: 1 }
       }
-      inferenceParams.topP = 1
-      inferenceParams.temperature = 1
+      inferenceConfig.topP = 1
+      inferenceConfig.temperature = 1
 
       // If the number of parallel executions is 3 or more, it may not be stable, so process it in stages.
       system[0].text =
@@ -148,7 +149,7 @@ export class ConverseService {
       messages: sanitizedMessages,
       system,
       toolConfig,
-      inferenceConfig: inferenceParams,
+      inferenceConfig,
       additionalModelRequestFields
     }
 
