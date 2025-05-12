@@ -33,7 +33,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   sendMsgKey = 'Enter'
 }) => {
   const { t } = useTranslation()
-  const { currentLLM } = useSettings()
+  const { currentLLM, planMode, setPlanMode } = useSettings()
   const [dragActive, setDragActive] = useState(false)
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -48,6 +48,22 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const placeholder = useMemo(() => {
     return t('textarea.placeholder', { modifier: modifierKey })
   }, [t, modifierKey])
+
+  // グローバルなキーボードショートカットのイベントリスナーを設定
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Cmd+Shift+A (または Ctrl+Shift+A) でPlan/Actモードを切り替え
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault()
+        setPlanMode(!planMode)
+      }
+    }
+
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown)
+    }
+  }, [planMode, setPlanMode, t])
 
   // テキストエリアの高さを自動調整する（10行まで）
   useEffect(() => {
@@ -133,14 +149,33 @@ export const TextArea: React.FC<TextAreaProps> = ({
   )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.shiftKey || isComposing) {
+    // Cmd+Shift+A でPlan/Actモードを切り替え（テキストエリア内でも有効にする）
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+      e.preventDefault()
+      setPlanMode(!planMode)
+
+      // モード切り替え通知
+      const newMode = !planMode ? 'Plan' : 'Act'
+      toast.success(t(`Switched to ${newMode} mode`), {
+        duration: 2000,
+        position: 'bottom-center',
+        icon: '🔄'
+      })
+      return
+    }
+
+    // メッセージ送信のキー入力処理
+    if (isComposing) {
       return
     }
 
     const cmdenter = e.key === 'Enter' && (e.metaKey || e.ctrlKey)
     const enter = e.key === 'Enter'
 
-    if ((sendMsgKey === 'Enter' && enter) || (sendMsgKey === 'Cmd+Enter' && cmdenter)) {
+    if (
+      (sendMsgKey === 'Enter' && enter && !e.shiftKey) ||
+      (sendMsgKey === 'Cmd+Enter' && cmdenter)
+    ) {
       e.preventDefault()
       handleSubmit()
     }

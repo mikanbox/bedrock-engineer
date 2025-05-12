@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '@renderer/contexts/SettingsContext'
 
@@ -15,6 +15,12 @@ export const PlanActToggle: React.FC<PlanActToggleProps> = ({ className = '' }) 
   const { t } = useTranslation()
   const { planMode, setPlanMode } = useSettings()
 
+  // プラットフォームに応じたキー表示を決定
+  const modifierKey = useMemo(() => {
+    const isMac = navigator.platform.toLowerCase().includes('mac')
+    return isMac ? '⌘' : 'Ctrl'
+  }, [])
+
   return (
     <div
       className={`flex rounded-full border dark:border-gray-700 overflow-hidden bg-gray-800 ${className}`}
@@ -25,7 +31,7 @@ export const PlanActToggle: React.FC<PlanActToggleProps> = ({ className = '' }) 
         }`}
         onClick={() => setPlanMode(true)}
         aria-pressed={planMode}
-        title={t('Plan mode - Read-only tools enabled')}
+        title={t(`Plan mode - Read-only tools enabled (${modifierKey}+Shift+A)`)}
       >
         Plan
       </button>
@@ -35,7 +41,7 @@ export const PlanActToggle: React.FC<PlanActToggleProps> = ({ className = '' }) 
         }`}
         onClick={() => setPlanMode(false)}
         aria-pressed={!planMode}
-        title={t('Act mode - All tools enabled')}
+        title={t(`Act mode - All tools enabled (${modifierKey}+Shift+A)`)}
       >
         Act
       </button>

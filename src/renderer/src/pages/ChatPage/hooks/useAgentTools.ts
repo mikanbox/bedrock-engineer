@@ -30,15 +30,11 @@ export const useAgentTools = (tools: ToolState[]): ToolState[] => {
     }
 
     // In Plan mode, only return read-only tools
-    return tools.map((tool) => {
+    return tools.filter((tool) => {
       const toolName = tool.toolSpec?.name as ToolName
       const isReadOnly = READ_ONLY_TOOLS.includes(toolName)
 
-      // Keep the original tool state but override the enabled property
-      return {
-        ...tool,
-        enabled: tool.enabled && isReadOnly
-      }
+      return tool.enabled && isReadOnly
     })
   }, [tools, planMode])
 }
