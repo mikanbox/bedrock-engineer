@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ModelSelector } from '../ModelSelector'
 import { ThinkingModeSelector } from '../ThinkingModeSelector'
+import { PlanActToggle } from './PlanActToggle'
 import { useSettings } from '@renderer/contexts/SettingsContext'
 
 export type AttachedImage = {
@@ -279,7 +280,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
             rows={3}
           />
 
-          {/* Model Selector and Thinking Mode at the bottom left of textarea */}
+          {/* Model Selector, Thinking Mode, and Plan/Act Toggle at the bottom of textarea */}
           <div className="absolute left-4 bottom-3.5 flex items-center gap-2.5 z-10 pointer-events-auto">
             <div>
               <ModelSelector openable={true} />
@@ -289,6 +290,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
                 <ThinkingModeSelector />
               </div>
             )}
+          </div>
+
+          {/* Plan/Act Toggle at the bottom right of textarea */}
+          <div className="absolute right-14 bottom-3.5 z-10 pointer-events-auto">
+            <PlanActToggle />
           </div>
 
           <button

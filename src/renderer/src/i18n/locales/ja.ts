@@ -12,6 +12,7 @@ import {
 } from './settings'
 import { thinkingMode } from './thinkingMode'
 import { agentDirectory } from './agentDirectory'
+import { planActMode } from './planActMode'
 
 const HomePage = {
   'set your aws credential':
@@ -240,7 +241,8 @@ const ja = {
   ...awsDiagramGenerator.ja,
   ...thinkingMode.ja,
   ...agentDirectory.ja,
-  ...AgentFormTabs
+  ...AgentFormTabs,
+  ...planActMode.ja
 }
 
 export default ja
