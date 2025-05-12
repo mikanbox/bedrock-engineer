@@ -86,6 +86,7 @@ export const useAgentChat = (
   const [loading, setLoading] = useState(false)
   const [reasoning, setReasoning] = useState(false)
   const [executingTool, setExecutingTool] = useState<ToolName | null>(null)
+  const [latestReasoningText, setLatestReasoningText] = useState<string>('')
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(sessionId)
   const lastAssistantMessageId = useRef<string | null>(null)
   const abortController = useRef<AbortController | null>(null)
@@ -483,6 +484,11 @@ export const useAgentChat = (
             if (reasoningContent?.text || reasoningContent?.signature) {
               reasoningContentText = reasoningContentText + (reasoningContent?.text || '')
               reasoningContentSignature = reasoningContent?.signature || ''
+
+              // 最新のreasoningTextを状態として保持
+              if (reasoningContent?.text) {
+                setLatestReasoningText(reasoningContentText)
+              }
 
               setMessages([
                 ...currentMessages,
@@ -1037,6 +1043,7 @@ export const useAgentChat = (
     loading,
     reasoning,
     executingTool,
+    latestReasoningText, // 最新のreasoningTextを外部に公開
     handleSubmit,
     setMessages,
     currentSessionId,

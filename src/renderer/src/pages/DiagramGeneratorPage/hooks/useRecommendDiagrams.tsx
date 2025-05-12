@@ -1,5 +1,6 @@
 import useSetting from '@renderer/hooks/useSetting'
 import { converse } from '@renderer/lib/api'
+import { getLightProcessingModelId } from '@renderer/lib/modelSelection'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -71,7 +72,7 @@ export const useRecommendDiagrams = () => {
 
   const [recommendDiagrams, setRecommendDiagrams] = useState(examplePrompts)
   const [recommendLoading, setRecommendLoading] = useState(false)
-  const { currentLLM: llm } = useSetting()
+  const { currentLLM: llm, lightProcessingModel } = useSetting()
 
   // Function to get diagram recommendations based on the current diagram XML
   const getRecommendDiagrams = async (diagramXml: string) => {
@@ -116,9 +117,13 @@ The value property should contain a detailed description of what to create. This
 
     try {
       const result = await converse({
-        modelId: llm.modelId,
+        modelId: getLightProcessingModelId(llm, lightProcessingModel),
         system: [{ text: systemPrompt }],
-        messages: [{ role: 'user', content: [{ text: diagramXml }] }]
+        messages: [{ role: 'user', content: [{ text: diagramXml }] }],
+        inferenceConfig: {
+          maxTokens: 4096,
+          temperature: 0.5
+        }
       })
 
       const recommendDiagrams = result.output.message?.content[0]?.text

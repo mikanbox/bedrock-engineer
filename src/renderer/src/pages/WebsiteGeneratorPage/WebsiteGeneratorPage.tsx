@@ -37,6 +37,7 @@ import { useRecommendChanges } from './hooks/useRecommendChanges'
 import { WebLoader } from '../../components/WebLoader'
 import { DeepSearchButton } from '../../components/DeepSearchButton'
 import { ToolState } from '@/types/agent-chat'
+import { LoaderWithReasoning } from './components/LoaderWithReasoning'
 
 export default function WebsiteGeneratorPage() {
   const [template, setTemplate] = useState<SupportedTemplate['id']>('react-ts')
@@ -174,6 +175,7 @@ function WebsiteGeneratorPageContents(props: WebsiteGeneratorPageContentsProps) 
     messages,
     loading,
     executingTool,
+    latestReasoningText,
     handleSubmit,
     clearChat: initChat
   } = useAgentChat(llm?.modelId, systemPrompt, websiteAgentId, sessionId, options)
@@ -244,15 +246,23 @@ function WebsiteGeneratorPageContents(props: WebsiteGeneratorPageContentsProps) 
     return true
   })
 
-  const getLoader = (tool: string | null) => {
-    if (tool === 'tavilySearch') {
-      return <WebLoader />
-    } else if (tool === 'retrieve') {
-      return <RagLoader />
-    }
+  // getLoader関数をuseCallbackでメモ化して不要な再レンダリングを防止
+  const getLoader = useCallback(
+    (tool: string | null) => {
+      let loader
 
-    return <Loader />
-  }
+      if (tool === 'tavilySearch') {
+        loader = <WebLoader />
+      } else if (tool === 'retrieve') {
+        loader = <RagLoader />
+      } else {
+        loader = <Loader />
+      }
+
+      return <LoaderWithReasoning reasoningText={latestReasoningText}>{loader}</LoaderWithReasoning>
+    },
+    [latestReasoningText]
+  )
 
   return (
     <div className={'flex flex-col h-[calc(100vh-11rem)] overflow-y-auto'}>

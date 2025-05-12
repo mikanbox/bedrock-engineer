@@ -41,7 +41,7 @@ export async function generateSessionTitle(
       modelId: modelId ?? 'anthropic.claude-3-haiku-20240307-v1:0',
       system,
       inferenceConfig: {
-        maxTokens: 4092,
+        maxTokens: 4096,
         temperature: 0.5
       },
       messages: [
