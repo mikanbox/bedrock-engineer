@@ -7,7 +7,8 @@ import {
   agentSettings,
   agentToolsSettings,
   promptCacheSettings,
-  tokenAnalyticsSettings
+  tokenAnalyticsSettings,
+  lightModelSettings
 } from './settings'
 import { thinkingMode } from './thinkingMode'
 import { agentDirectory } from './agentDirectory'
@@ -210,6 +211,7 @@ const en = {
   ...agentToolsSettings.en,
   ...promptCacheSettings.en,
   ...tokenAnalyticsSettings.en,
+  ...lightModelSettings.en,
   ...awsDiagramGenerator.en,
   ...thinkingMode.en,
   ...agentDirectory.en,

@@ -123,11 +123,7 @@ api.post(
     res.setHeader('Content-Type', 'application/json')
 
     try {
-      const result = await bedrock.converse({
-        modelId: req.body.modelId,
-        system: req.body.system,
-        messages: req.body.messages
-      })
+      const result = await bedrock.converse(req.body)
       return res.json(result)
     } catch (error: any) {
       bedrockLogger.error('Conversation error', {

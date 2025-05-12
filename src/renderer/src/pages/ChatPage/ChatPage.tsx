@@ -16,9 +16,9 @@ import { AttachedImage } from './components/InputForm/TextArea'
 import { ChatHistory } from './components/ChatHistory'
 import { useSystemPromptModal } from './modals/useSystemPromptModal'
 import { useTokenAnalyticsModal } from './modals/useTokenAnalyticsModal'
+import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
 
 export default function ChatPage() {
-  // userInputの状態を削除（InputFormContainerが管理するため）
   const { t } = useTranslation()
   const {
     currentLLM: llm,
@@ -55,7 +55,7 @@ export default function ChatPage() {
     [handleSubmit]
   )
 
-  // ContentBlock単位での削除機能は不要になったため、handleUpdateMessageは削除
+  const { deleteMessage } = useChatHistory()
 
   const handleDeleteMessage = (index: number) => {
     // メッセージの配列のコピーを作成
@@ -69,7 +69,7 @@ export default function ChatPage() {
 
     // チャット履歴が有効な場合は、対応するメッセージを削除
     if (currentSessionId) {
-      window.chatHistory.deleteMessage(currentSessionId, index)
+      deleteMessage(currentSessionId, index)
     }
   }
 

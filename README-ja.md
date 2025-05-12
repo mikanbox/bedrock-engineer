@@ -19,7 +19,7 @@ Bedrock Engineer はネイティブアプリです。アプリをダウンロー
 
 MacOS:
 
-[<img src="https://img.shields.io/badge/Download_FOR_MAC-Latest%20Release-blue?style=for-the-badge&logo=apple" alt="Download Latest Release" height="40">](https://github.com/aws-samples/bedrock-engineer/releases/latest/download/bedrock-engineer-1.9.0.dmg)
+[<img src="https://img.shields.io/badge/Download_FOR_MAC-Latest%20Release-blue?style=for-the-badge&logo=apple" alt="Download Latest Release" height="40">](https://github.com/aws-samples/bedrock-engineer/releases/latest/download/bedrock-engineer-1.10.0.dmg)
 
 MacOS に最適化されていますが、Windows, Linux OS でもビルドして使用できます。不具合があるばあい、issue に起票ください。
 
@@ -91,6 +91,7 @@ npm run build:linux
 - 🔄 チャット履歴の管理
 - 🌐 多言語対応
 - 🛡️ ガードレール対応
+- 💡 軽量処理用モデルによるコスト最適化 (v1.10.0+)
 
 | ![agent-chat-diagram](./assets/agent-chat-diagram.png) | ![agent-chat-search](./assets/agent-chat-search.png) |
 | :----------------------------------------------------: | :--------------------------------------------------: |

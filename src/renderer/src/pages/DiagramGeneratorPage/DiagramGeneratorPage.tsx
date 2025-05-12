@@ -13,6 +13,7 @@ import { WebLoader } from '../../components/WebLoader'
 import { DeepSearchButton } from '@renderer/components/DeepSearchButton'
 import { extractDrawioXml } from './utils/xmlParser'
 import { DIAGRAM_GENERATOR_SYSTEM_PROMPT } from '../ChatPage/constants/DEFAULT_AGENTS'
+import { LoaderWithReasoning } from './components/LoaderWithReasoning'
 
 export default function DiagramGeneratorPage() {
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -75,7 +76,7 @@ export default function DiagramGeneratorPage() {
     )
   }, [enableSearch, getAgentTools, diagramAgentId])
 
-  const { messages, loading, handleSubmit, executingTool } = useAgentChat(
+  const { messages, loading, handleSubmit, executingTool, latestReasoningText } = useAgentChat(
     llm?.modelId,
     systemPrompt,
     diagramAgentId,
@@ -187,7 +188,9 @@ export default function DiagramGeneratorPage() {
       <div className="flex-1 rounded-lg">
         {loading ? (
           <div className="flex h-[95%] justify-center items-center flex-col">
-            {executingTool === 'tavilySearch' ? <WebLoader /> : <Loader />}
+            <LoaderWithReasoning reasoningText={latestReasoningText}>
+              {executingTool === 'tavilySearch' ? <WebLoader /> : <Loader />}
+            </LoaderWithReasoning>
           </div>
         ) : (
           <div className="w-full h-[95%] border border-gray-200">

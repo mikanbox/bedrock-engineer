@@ -1,6 +1,11 @@
 import { LLM } from '@/types/llm'
 import { RetrieveAndGenerateCommandInput } from '@aws-sdk/client-bedrock-agent-runtime'
-import { ConverseStreamOutput, Message, ToolConfiguration } from '@aws-sdk/client-bedrock-runtime'
+import {
+  ConverseStreamOutput,
+  InferenceConfiguration,
+  Message,
+  ToolConfiguration
+} from '@aws-sdk/client-bedrock-runtime'
 
 export type StreamChatCompletionProps = {
   modelId: string
@@ -78,6 +83,10 @@ type ConverseProps = {
   system: { text: string }[] | undefined
   messages: Message[]
   toolConfig?: ToolConfiguration
+  /**
+   * 指定しない場合、グローバル設定値を使用
+   */
+  inferenceConfig?: InferenceConfiguration
 }
 
 export async function converse(props: ConverseProps, abortSignal?: AbortSignal) {
