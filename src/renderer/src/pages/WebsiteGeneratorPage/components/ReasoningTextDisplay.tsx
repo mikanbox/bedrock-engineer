@@ -40,7 +40,7 @@ const ReasoningTextDisplayComponent = ({ text }: ReasoningTextDisplayProps) => {
         <div className="px-4 py-3">
           <div
             ref={textAreaRef}
-            className="pb-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-light overflow-y-auto pr-2 max-h-[25rem]"
+            className="pb-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-light overflow-y-auto pr-2 max-h-[25rem] break-words overflow-wrap-anywhere"
           >
             {text || 'Thinking...'}
           </div>
