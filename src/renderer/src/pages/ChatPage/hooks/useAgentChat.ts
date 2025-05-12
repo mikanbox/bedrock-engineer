@@ -15,6 +15,7 @@ import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { useLightProcessingModel } from '@renderer/lib/modelSelection'
+import { useAgentTools } from './useAgentTools'
 
 import { AttachedImage } from '../components/InputForm/TextArea'
 import { ChatMessage } from '@/types/chat/history'
@@ -107,7 +108,7 @@ export const useAgentChat = (
   } = useSettings()
 
   // エージェントIDからツール設定を取得
-  const enabledTools = useMemo(() => {
+  const rawEnabledTools = useMemo(() => {
     // 明示的に渡されたツールがある場合はそちらを優先
     if (explicitTools) {
       return explicitTools.filter((tool) => tool.enabled)
@@ -149,6 +150,9 @@ export const useAgentChat = (
     // どちらもない場合は空の配列を返す
     return []
   }, [agentId, getAgentTools, explicitTools, agents])
+
+  // Plan/Act モードに基づいてツールをフィルタリング
+  const enabledTools = useAgentTools(rawEnabledTools)
 
   // 通信を中断する関数
   const abortCurrentRequest = useCallback(() => {

@@ -120,28 +120,32 @@ const ToolItem: React.FC<ToolItemProps> = ({
   return (
     <li
       className={`
-        border-b border-gray-100 dark:border-gray-700 transition-colors duration-150
-        ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 !border-l-blue-500' : 'border-l-2 border-l-transparent'}
-        ${isMcp ? 'bg-cyan-50 dark:bg-cyan-900/10' : ''}
-        cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 w-full
+        border-b border-gray-100 dark:border-gray-600 transition-colors duration-150
+        ${isSelected ? 'bg-blue-50 dark:bg-blue-900/30 border-l-2 !border-l-blue-500 dark:!border-l-blue-400' : 'border-l-2 border-l-transparent'}
+        ${isMcp ? 'bg-cyan-50 dark:bg-cyan-900/20' : ''}
+        cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/70 w-full
       `}
       onClick={() => onSelect()}
     >
       <div className="py-3 px-1 flex items-center justify-center lg:justify-between">
         <div className="flex items-center lg:gap-2.5 w-full justify-center lg:justify-start">
           <div
-            className="text-gray-500 dark:text-gray-400 flex-shrink-0 w-7 h-7 flex items-center justify-center"
+            className={`flex-shrink-0 w-7 h-7 flex items-center justify-center
+                        ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-300'}`}
             title={toolName}
           >
             {toolIcons[toolName as ToolName]}
           </div>
           <div className="lg:block hidden">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <span
+                className={`text-sm font-medium text-gray-700 dark:text-gray-100
+                              ${isSelected ? 'text-blue-700 dark:text-blue-300' : ''}`}
+              >
                 {toolName}
               </span>
               {isMcp && (
-                <span className="bg-cyan-100 text-cyan-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-cyan-900 dark:text-cyan-300">
+                <span className="bg-cyan-100 text-cyan-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-cyan-800/50 dark:text-cyan-200">
                   MCP
                 </span>
               )}
@@ -157,7 +161,7 @@ const ToolItem: React.FC<ToolItemProps> = ({
         >
           {isMcp ? (
             <div className="flex items-center">
-              <span className="text-xs text-cyan-600 dark:text-cyan-400 mr-2">Always enabled</span>
+              <span className="text-xs text-cyan-600 dark:text-cyan-300 mr-2">Always enabled</span>
               <ToggleSwitch checked={true} onChange={() => {}} disabled={true} label="" />
             </div>
           ) : (
@@ -298,8 +302,14 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
   const categorizedTools = getToolsByCategory()
 
   return (
-    <Modal dismissible size="7xl" show={isOpen} onClose={onClose}>
-      <Modal.Header className="border-b border-gray-200 dark:border-gray-700">
+    <Modal
+      dismissible
+      size="7xl"
+      show={isOpen}
+      onClose={onClose}
+      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-500 shadow-lg dark:shadow-gray-900/50"
+    >
+      <Modal.Header className="border-b border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-t-lg">
         {hasSelectedAgent ? (
           <div className="flex items-center">
             <span>Agent Tools: </span>
@@ -315,17 +325,17 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
         )}
       </Modal.Header>
 
-      <Modal.Body className="p-0 h-[700px]">
-        <div className="flex h-full w-full">
+      <Modal.Body className="p-0 h-[700px] dark:bg-gray-800 rounded-b-lg">
+        <div className="flex h-full w-full rounded-lg">
           {/* 左側サイドバー：ツールリスト - fixed height with own scrollbar */}
-          <div className="lg:w-1/3 w-[60px] border-r border-gray-200 dark:border-gray-700 overflow-y-auto h-full max-h-[700px] flex-shrink-0">
+          <div className="lg:w-1/3 w-[60px] border-r border-gray-200 dark:border-gray-600 overflow-y-auto h-full max-h-[700px] flex-shrink-0 dark:bg-gray-800 rounded-bl-lg">
             <div className="h-full">
               {/* カテゴリごとのセクション */}
               {categorizedTools.map((category) => (
                 <div key={category.id} className="mb-4">
                   {/* カテゴリヘッダー - 背景色と影を追加して重なり防止 */}
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 font-medium sticky top-0 z-20 shadow-sm lg:block hidden">
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700 font-medium sticky top-0 z-20 shadow-sm lg:block hidden">
+                    <div className="text-sm text-gray-700 dark:text-gray-100 font-semibold">
                       {t(`Tool Categories.${category.name}`)}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">
@@ -334,7 +344,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                   </div>
 
                   {/* ツールリスト */}
-                  <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                  <ul className="divide-y divide-gray-100 dark:divide-gray-600">
                     {category.toolsData.map((tool) => {
                       const toolName = tool.toolSpec?.name
                       if (!toolName) return null
@@ -359,28 +369,26 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
           </div>
 
           {/* 右側: 設定コンテンツエリア - separate scrollable area */}
-          <div className="lg:w-2/3 flex-1 overflow-y-auto h-full max-h-[700px]">
+          <div className="lg:w-2/3 flex-1 overflow-y-auto h-full max-h-[700px] dark:bg-gray-800 rounded-br-lg">
             {selectedTool ? (
               <div className="p-4">
-                <div className="sticky top-0 pt-1 pb-3 bg-white dark:bg-gray-700 z-20 mb-4">
-                  <h3 className="text-lg font-medium border-b border-gray-200 dark:border-gray-600 dark:text-gray-100 pb-3">
-                    {selectedTool}
-                  </h3>
+                <div className="sticky top-0 pt-1 pb-3 bg-white dark:bg-gray-800 z-20 mb-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium dark:text-white pb-3">{selectedTool}</h3>
                 </div>
 
                 {isMcpTool(selectedTool) ? (
                   // MCP ツールの詳細表示
                   <div className="prose dark:prose-invert max-w-none">
                     <div className="flex items-center gap-2 mb-4">
-                      <p className="text-gray-700 dark:text-gray-300 font-bold mb-0">
+                      <p className="text-gray-700 dark:text-gray-100 font-bold mb-0">
                         {selectedTool}
                       </p>
-                      <span className="bg-cyan-100 text-cyan-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-cyan-900 dark:text-cyan-300">
+                      <span className="bg-cyan-100 text-cyan-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-cyan-800/50 dark:text-cyan-200">
                         MCP
                       </span>
                     </div>
 
-                    <p className="mb-4 text-gray-700 dark:text-gray-300">
+                    <p className="mb-4 text-gray-700 dark:text-gray-200">
                       {selectedToolBody?.toolSpec?.description ?? ''}
                     </p>
 
@@ -429,20 +437,20 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">
-                    <p className="mb-4 text-gray-700 dark:text-gray-300 font-bold">
+                    <p className="mb-4 text-gray-700 dark:text-gray-100 font-bold">
                       {t(`tool descriptions.${selectedTool}`)}
                     </p>
 
-                    <p className="mb-2 text-gray-700 dark:text-gray-300">
+                    <p className="mb-2 text-gray-700 dark:text-gray-200">
                       {t(
                         `tool usage.${selectedTool}.description`,
                         `This tool can be used by the AI assistant when enabled.`
                       )}
                     </p>
 
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md mt-4">
-                      <h5 className="font-medium mb-2 dark:text-gray-200">{t('Tip')}</h5>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className="bg-blue-50 dark:bg-gray-800/80 dark:border dark:border-blue-700 p-4 rounded-md mt-4">
+                      <h5 className="font-medium mb-2 dark:text-blue-300">{t('Tip')}</h5>
+                      <p className="text-sm text-gray-700 dark:text-gray-200">
                         {t(
                           `tool usage.${selectedTool}.tip`,
                           `Toggle the switch to enable or disable this tool.`
@@ -453,7 +461,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                 )}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-[700px] text-center text-gray-500 dark:text-gray-300 p-4">
+              <div className="flex flex-col items-center justify-center h-[700px] text-center text-gray-500 dark:text-gray-200 p-4">
                 <div className="text-5xl mb-4">🛠️</div>
                 <p className="text-base">{t('Select a tool from the list')}</p>
                 <p className="text-sm mt-2">
@@ -464,8 +472,13 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
           </div>
         </div>
       </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={onClose}>{t('Close')}</Button>
+      <Modal.Footer className="dark:bg-gray-800 dark:border-t dark:border-gray-600 rounded-b-lg">
+        <Button
+          onClick={onClose}
+          className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
+        >
+          {t('Close')}
+        </Button>
       </Modal.Footer>
     </Modal>
   )

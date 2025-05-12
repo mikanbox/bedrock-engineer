@@ -41,27 +41,28 @@ export const AgentCard: React.FC<AgentCardProps> = ({
       <div className="flex-shrink-0 mr-4">
         <div
           className={`w-10 h-10 flex items-center justify-center
-            ${!isCustomAgent ? 'bg-gray-200 dark:bg-gray-900/40' : 'bg-blue-100 dark:bg-blue-900/40'}
-            rounded-lg`}
+            ${!isCustomAgent ? 'bg-gray-200 dark:bg-gray-700/80' : 'bg-blue-100 dark:bg-blue-800/80'}
+            rounded-lg border border-transparent dark:border-gray-600 shadow-sm dark:shadow-inner`}
         >
           {agent.icon ? (
             React.cloneElement(
               (AGENT_ICONS.find((opt) => opt.value === agent.icon)?.icon as React.ReactElement) ??
                 AGENT_ICONS[0].icon,
               {
-                className: 'w-5 h-5',
-                style: agent.iconColor
-                  ? { color: agent.iconColor }
-                  : isSelected
-                    ? { color: 'var(--tw-text-blue-700)' }
-                    : { color: 'var(--tw-text-blue-600)' }
+                className: `w-5 h-5 ${isSelected ? 'dark:text-blue-300' : 'dark:text-gray-100'}`,
+                style: {
+                  color:
+                    agent.iconColor ||
+                    (isSelected ? 'var(--tw-text-blue-600)' : 'var(--tw-text-gray-700)'),
+                  filter: 'brightness(1.2) contrast(1.2)'
+                }
               }
             )
           ) : (
             <TbRobot
               className={`w-5 h-5 ${
-                isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-blue-600 dark:text-blue-400'
-              }`}
+                isSelected ? 'text-blue-700 dark:text-blue-200' : 'text-blue-600 dark:text-gray-100'
+              } filter brightness-110 contrast-125`}
             />
           )}
         </div>

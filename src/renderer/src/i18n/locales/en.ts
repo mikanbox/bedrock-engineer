@@ -12,6 +12,7 @@ import {
 } from './settings'
 import { thinkingMode } from './thinkingMode'
 import { agentDirectory } from './agentDirectory'
+import { planActMode } from './planActMode'
 
 const HomePage = {
   'set your aws credential':
@@ -215,7 +216,8 @@ const en = {
   ...awsDiagramGenerator.en,
   ...thinkingMode.en,
   ...agentDirectory.en,
-  ...AgentFormTabs
+  ...AgentFormTabs,
+  ...planActMode.en
 }
 
 export default en

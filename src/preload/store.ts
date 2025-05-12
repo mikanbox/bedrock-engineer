@@ -35,6 +35,9 @@ type StoreScheme = {
   /** 現在選択されているプロジェクト（作業ディレクトリ）のパス */
   projectPath?: string
 
+  /** Plan/Act モードの設定 (true: Plan, false: Act) */
+  planMode?: boolean
+
   /** 現在選択されている言語モデル (LLM) の設定 */
   llm?: LLM
 
@@ -229,6 +232,12 @@ const init = () => {
   if (lightProcessingModel === undefined) {
     // デフォルトでは設定なし（null）で、この場合はメインモデルかフォールバックが使用される
     electronStore.set('lightProcessingModel', null)
+  }
+
+  // Initialize planMode if not present
+  const planMode = electronStore.get('planMode')
+  if (planMode === undefined) {
+    electronStore.set('planMode', false)
   }
 }
 

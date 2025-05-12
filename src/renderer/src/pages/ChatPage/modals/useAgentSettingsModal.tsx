@@ -139,19 +139,20 @@ const AgentSettingsModal = React.memo(
           onClose()
         }}
         size="8xl"
+        className="dark:bg-gray-800 border border-gray-200 dark:border-gray-500 shadow-lg dark:shadow-gray-900/50 rounded-lg"
         onClick={(e) => {
           // モーダル自体のクリックイベントは伝播させない
           e.stopPropagation()
         }}
       >
-        <Modal.Header className="border-b border-gray-200 dark:border-gray-700">
+        <Modal.Header className="border-b border-gray-200 dark:border-gray-600 dark:bg-gray-800 rounded-t-lg">
           <div className="flex items-center space-x-2">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
               {editingAgent ? t('editAgent') : t('customAgents')}
             </h3>
             <div className="pt-2 pl-4">
               <div
-                className="flex items-center cursor-pointer text-blue-600 dark:text-blue-400 hover:underline mb-2"
+                className="flex items-center cursor-pointer text-blue-600 dark:text-blue-300 hover:underline mb-2"
                 onClick={togglePanel}
               >
                 <FiInfo className="mr-1" />
@@ -161,18 +162,18 @@ const AgentSettingsModal = React.memo(
           </div>
 
           {isExpanded && (
-            <div className="bg-blue-50 dark:bg-gray-800 p-4 rounded-lg border border-blue-200 dark:border-gray-700 transition-all duration-300">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg border border-blue-200 dark:border-blue-600/30 transition-all duration-300">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
                 {t('agentSettings.description')}
               </p>
-              <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+              <p className="text-sm text-gray-700 dark:text-gray-200 mt-2">
                 {t('agentSettings.sharedAgentsDescription')}
               </p>
             </div>
           )}
         </Modal.Header>
         <Modal.Body
-          className="p-0"
+          className="p-0 dark:bg-gray-800 rounded-b-lg"
           onClick={(e) => {
             // モーダルボディのクリックイベントは伝播させない
             e.stopPropagation()

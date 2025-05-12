@@ -30,6 +30,10 @@ export interface SettingsContextType {
   sendMsgKey: SendMsgKey
   updateSendMsgKey: (key: SendMsgKey) => void
 
+  // Plan/Act Mode Settings
+  planMode: boolean
+  setPlanMode: (enabled: boolean) => void
+
   // Agent Chat Settings
   contextLength: number
   updateContextLength: (length: number) => void
@@ -185,6 +189,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Advanced Settings
   const [sendMsgKey, setSendMsgKey] = useState<SendMsgKey>('Enter')
 
+  // Plan/Act Mode Settings
+  const [planMode, setStatePlanMode] = useState<boolean>(false)
+
   // Agent Chat Settings
   const [contextLength, setContextLength] = useState<number>(60)
   const [enablePromptCache, setStateEnablePromptCache] = useState<boolean>(true)
@@ -280,6 +287,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Load Advanced Settings
     const advancedSetting = window.store.get('advancedSetting')
     setSendMsgKey(advancedSetting?.keybinding?.sendMsgKey)
+
+    // Load Plan/Act Mode Settings
+    const planModeSetting = window.store.get('planMode')
+    if (planModeSetting !== undefined) {
+      setStatePlanMode(planModeSetting)
+    }
 
     // Load Notification Settings
     const notificationSetting = window.store.get('notification')
@@ -1223,10 +1236,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return getToolsForCategory(category as AgentCategory, allWindowTools)
   }, [])
 
+  const setPlanMode = useCallback((enabled: boolean) => {
+    setStatePlanMode(enabled)
+    window.store.set('planMode', enabled)
+  }, [])
+
   const value = {
     // Advanced Settings
     sendMsgKey,
     updateSendMsgKey,
+
+    // Plan/Act Mode Settings
+    planMode,
+    setPlanMode,
 
     // Agent Chat Settings
     contextLength,

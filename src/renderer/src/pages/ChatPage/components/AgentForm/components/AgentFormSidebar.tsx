@@ -61,8 +61,8 @@ export const AgentFormSidebar: React.FC<{
               type="button"
               className={`flex items-center w-full px-3 py-2.5 rounded-lg text-left transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 dark:border-l-2 dark:border-blue-500'
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               onClick={tab.onClick}
               title={tab.label}

@@ -18,8 +18,8 @@ export const FormActionButtons: React.FC<{
       <button
         type="button"
         onClick={formEventUtils.createSafeHandler(onCancel)}
-        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800
-          border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700
+        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700
+          border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600
           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
       >
         {t('cancel')}
@@ -34,8 +34,8 @@ export const FormActionButtons: React.FC<{
           focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-all duration-200
           ${
             isGenerating
-              ? 'text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-70'
-              : 'text-white bg-blue-600 dark:bg-blue-700 border-transparent hover:bg-blue-700 dark:hover:bg-blue-600'
+              ? 'text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-600 border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-70'
+              : 'text-white bg-blue-600 dark:bg-blue-600 border-transparent hover:bg-blue-700 dark:hover:bg-blue-500'
           }`}
       >
         {isGenerating ? (
