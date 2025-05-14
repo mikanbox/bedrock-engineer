@@ -17,6 +17,7 @@ export type ToolName =
   | 'applyDiffEdit'
   | 'think'
   | 'recognizeImage'
+  | 'invokeFlow'
   | string // MCPツール名を許容するために文字列型も追加
 
 /**
@@ -184,6 +185,20 @@ export type RecognizeImageInput = {
   prompt?: string
 }
 
+// invokeFlow ツールの入力型
+export type InvokeFlowInput = {
+  type: 'invokeFlow'
+  flowIdentifier: string
+  flowAliasIdentifier: string
+  input: {
+    content: {
+      document: string
+    }
+    nodeName: string
+    nodeOutputName: string
+  }
+}
+
 // MCPツールの入力型
 export type McpToolInput = {
   type: string // MCPツール名
@@ -207,6 +222,7 @@ export type ToolInput =
   | ExecuteCommandInput
   | ApplyDiffEditInput
   | ThinkInput
+  | InvokeFlowInput
   | McpToolInput // MCPツール入力を追加
 
 // ツール名から入力型を取得するユーティリティ型
@@ -226,6 +242,7 @@ export type ToolInputTypeMap = {
   executeCommand: ExecuteCommandInput
   applyDiffEdit: ApplyDiffEditInput
   think: ThinkInput
+  invokeFlow: InvokeFlowInput
   [key: string]: any // MCPツールに対応するためのインデックスシグネチャ
 }
 
@@ -750,6 +767,54 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
             }
           },
           required: ['thought']
+        }
+      }
+    }
+  },
+  {
+    toolSpec: {
+      name: 'invokeFlow',
+      description:
+        'AWS Bedrock Flow を呼び出して、指定されたフローを実行します。フローは複数のステップからなるワークフローを自動化するために使用できます。',
+      inputSchema: {
+        json: {
+          type: 'object',
+          properties: {
+            flowIdentifier: {
+              type: 'string',
+              description: '実行する Flow の識別子'
+            },
+            flowAliasIdentifier: {
+              type: 'string',
+              description: 'Flow のエイリアス識別子'
+            },
+            input: {
+              type: 'object',
+              description: 'Flow への入力データ',
+              properties: {
+                content: {
+                  type: 'object',
+                  properties: {
+                    document: {
+                      type: 'string',
+                      description: 'Flow に送信するドキュメントまたはテキスト'
+                    }
+                  },
+                  required: ['document']
+                }
+                // nodeName: {
+                //   type: 'string',
+                //   description: '入力を受け取るノードの名前'
+                // },
+                // nodeOutputName: {
+                //   type: 'string',
+                //   description: 'ノード出力の名前'
+                // }
+              },
+              required: ['content']
+            }
+          },
+          required: ['flowIdentifier', 'flowAliasIdentifier', 'input']
         }
       }
     }

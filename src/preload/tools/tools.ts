@@ -179,6 +179,33 @@ export const executeTool = async (input: ToolInput): Promise<string | ToolResult
         )
       }
 
+      case 'invokeFlow': {
+        // 選択されているエージェントIDを取得
+        const selectedAgentId = store.get('selectedAgentId')
+
+        // エージェント固有のFlow設定を取得
+        const customAgents = store.get('customAgents') || []
+        const currentAgent = customAgents.find((agent) => agent.id === selectedAgentId)
+        const agentFlows = currentAgent?.flows || []
+
+        // 入力として指定されたflowIdentifierに一致するFlow設定を検索
+        const flowConfig = agentFlows.find((flow) => flow.flowId === input.flowIdentifier)
+
+        // 見つかった場合は設定値を使用、なければ入力値をそのまま使用
+        const flowIdentifier = flowConfig?.flowId || input.flowIdentifier
+        const flowAliasIdentifier = flowConfig?.flowAliasId || input.flowAliasIdentifier
+
+        return toolService.invokeFlow(bedrock, {
+          flowIdentifier,
+          flowAliasIdentifier,
+          input: {
+            content: input.input.content,
+            nodeName: 'FlowInputNode',
+            nodeOutputName: 'document'
+          }
+        })
+      }
+
       default: {
         // 未知のツール名の場合はエラー
         const unknownToolError = `Unknown tool type: ${input.type}`

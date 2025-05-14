@@ -1,6 +1,6 @@
 // 独自の型定義を使用
 
-import { CommandConfig } from '@/types/agent-chat'
+import { CommandConfig, FlowConfig } from '@/types/agent-chat'
 import { BedrockAgent } from '@/types/agent'
 import { KnowledgeBase } from 'src/types/agent-chat'
 
@@ -9,6 +9,7 @@ type PlaceHolders = {
   allowedCommands?: CommandConfig[]
   knowledgeBases?: KnowledgeBase[]
   bedrockAgents?: BedrockAgent[]
+  flows?: FlowConfig[]
 }
 
 export const replacePlaceholders = (text: string, placeholders: PlaceHolders) => {
@@ -16,7 +17,8 @@ export const replacePlaceholders = (text: string, placeholders: PlaceHolders) =>
     projectPath,
     allowedCommands = [],
     knowledgeBases = [],
-    bedrockAgents = []
+    bedrockAgents = [],
+    flows = []
   } = placeholders
   const yyyyMMdd = new Date().toISOString().slice(0, 10)
   return text
@@ -25,4 +27,5 @@ export const replacePlaceholders = (text: string, placeholders: PlaceHolders) =>
     .replace(/{{allowedCommands}}/g, JSON.stringify(allowedCommands))
     .replace(/{{knowledgeBases}}/g, JSON.stringify(knowledgeBases))
     .replace(/{{bedrockAgents}}/g, JSON.stringify(bedrockAgents))
+    .replace(/{{flows}}/g, JSON.stringify(flows))
 }

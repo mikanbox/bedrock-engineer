@@ -141,6 +141,11 @@ export function useToolsState(
           title: t('Bedrock Agent Settings'),
           isEnabled: checkToolEnabled('invokeBedrockAgent'),
           description: t('Configure Bedrock Agents for the invokeBedrockAgent tool')
+        },
+        invokeFlow: {
+          title: t('Flow Settings'),
+          isEnabled: checkToolEnabled('invokeFlow'),
+          description: t('Configure Bedrock Flows for the invokeFlow tool')
         }
       }
     },

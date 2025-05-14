@@ -55,8 +55,10 @@ export const agentToolsSettings = {
       'Configure allowed commands for the executeCommand tool',
     'Configure Bedrock Agents for the invokeBedrockAgent tool':
       'Configure Bedrock Agents for the invokeBedrockAgent tool',
-    'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.':
-      'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.',
+    'Configure Bedrock Flows for the invokeFlow tool':
+      'Configure Bedrock Flows for the invokeFlow tool',
+    'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.':
+      'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.',
     'Configure which knowledge bases this agent can access.':
       'Configure which knowledge bases this agent can access.',
     'Add New Knowledge Base': 'Add New Knowledge Base',
@@ -95,6 +97,16 @@ export const agentToolsSettings = {
     'No Bedrock Agents registered yet': 'No Bedrock Agents registered yet',
     'Edit agent': 'Edit agent',
     'Remove agent': 'Remove agent',
+    'Flow Settings': 'Flow Settings',
+    'Configure which Bedrock Flows this agent can access.':
+      'Configure which Bedrock Flows this agent can access.',
+    'Add New Bedrock Flow': 'Add New Bedrock Flow',
+    'Flow ID': 'Flow ID',
+    'Flow Alias ID': 'Flow Alias ID',
+    'Add Flow': 'Add Flow',
+    'Available Bedrock Flows': 'Available Bedrock Flows',
+    'Registered Bedrock Flows': 'Registered Bedrock Flows',
+    'No Bedrock Flows registered yet': 'No Bedrock Flows registered yet',
     descriptions: {
       createFolder: 'Create a new folder at the specified path',
       writeToFile: 'Write content to an existing file',
@@ -109,7 +121,9 @@ export const agentToolsSettings = {
       recognizeImage: 'Analyze and describe images using AI vision capabilities',
       retrieve: 'Retrieve information from a knowledge base',
       invokeBedrockAgent: 'Invoke an Amazon Bedrock Agent',
-      executeCommand: 'Execute a command or send input to a running process'
+      executeCommand: 'Execute a command or send input to a running process',
+      invokeFlow: 'Execute an AWS Bedrock Flow to automate multi-step workflows',
+      think: 'Use enhanced reasoning for complex problem solving'
     }
   },
   ja: {
@@ -166,8 +180,9 @@ export const agentToolsSettings = {
       'executeCommand ツール用の許可コマンドを設定',
     'Configure Bedrock Agents for the invokeBedrockAgent tool':
       'invokeBedrockAgent ツール用の Bedrock Agent を設定',
-    'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.':
-      '設定可能なツールが有効になっていません。retrieve、executeCommand、または invokeBedrockAgent ツールを有効にして設定にアクセスしてください。',
+    'Configure Bedrock Flows for the invokeFlow tool': 'invokeFlow ツール用の Bedrock Flow を設定',
+    'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.':
+      '設定可能なツールが有効になっていません。retrieve、executeCommand、invokeBedrockAgent、または invokeFlow ツールを有効にして設定にアクセスしてください。',
     'Configure which knowledge bases this agent can access.':
       'このエージェントがアクセスできるナレッジベースを設定します。',
     'Add New Knowledge Base': '新しいナレッジベースを追加',
@@ -206,6 +221,16 @@ export const agentToolsSettings = {
     'No Bedrock Agents registered yet': 'まだ Bedrock Agent が登録されていません',
     'Edit agent': 'エージェントを編集',
     'Remove agent': 'エージェントを削除',
+    'Flow Settings': 'フロー設定',
+    'Configure which Bedrock Flows this agent can access.':
+      'このエージェントがアクセスできる Bedrock Flow を設定します。',
+    'Add New Bedrock Flow': '新しい Bedrock Flow を追加',
+    'Flow ID': 'フローID',
+    'Flow Alias ID': 'フローエイリアスID',
+    'Add Flow': 'フローを追加',
+    'Available Bedrock Flows': '利用可能な Bedrock Flow',
+    'Registered Bedrock Flows': '登録済み Bedrock Flow',
+    'No Bedrock Flows registered yet': 'まだ Bedrock Flow が登録されていません',
     descriptions: {
       createFolder: '指定したパスに新しいフォルダを作成',
       writeToFile: '既存のファイルにコンテンツを書き込み',
@@ -220,7 +245,9 @@ export const agentToolsSettings = {
       recognizeImage: 'AIのビジョン機能を使用して画像を分析・説明',
       retrieve: 'ナレッジベースから情報を取得',
       invokeBedrockAgent: 'Amazon Bedrock Agentを呼び出し',
-      executeCommand: 'コマンドを実行または実行中のプロセスに入力を送信'
+      executeCommand: 'コマンドを実行または実行中のプロセスに入力を送信',
+      invokeFlow: 'AWS Bedrock Flowを実行して複数ステップのワークフローを自動化',
+      think: '複雑な問題解決のための高度な推論を使用'
     }
   }
 }

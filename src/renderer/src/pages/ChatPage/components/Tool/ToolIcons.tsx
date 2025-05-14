@@ -13,7 +13,8 @@ import {
   FaTerminal,
   FaBrain,
   FaServer,
-  FaCamera
+  FaCamera,
+  FaProjectDiagram
 } from 'react-icons/fa'
 import { BiFace } from 'react-icons/bi'
 import { MdDifference } from 'react-icons/md'
@@ -34,7 +35,8 @@ const standardToolIcons = {
   invokeBedrockAgent: <BiFace className="text-purple-700 size-6" />,
   executeCommand: <FaTerminal className="text-gray-500 size-6" />,
   applyDiffEdit: <MdDifference className="text-cyan-500 size-6" />,
-  think: <FaBrain className="text-amber-500 size-6" />
+  think: <FaBrain className="text-amber-500 size-6" />,
+  invokeFlow: <FaProjectDiagram className="text-blue-600 size-6" />
 }
 
 // MCPツール用のアイコン（すべてのMCPツールで共通）

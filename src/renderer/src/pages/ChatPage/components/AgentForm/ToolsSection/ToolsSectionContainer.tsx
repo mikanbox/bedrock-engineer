@@ -26,6 +26,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   onAllowedCommandsChange,
   bedrockAgents = [],
   onBedrockAgentsChange,
+  flows = [],
+  onFlowsChange,
   mcpServers = [],
   tempMcpTools = [],
   isLoadingMcpTools = false
@@ -131,7 +133,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
                 return (
                   tool.toolSpec?.name === 'retrieve' ||
                   tool.toolSpec?.name === 'invokeBedrockAgent' ||
-                  tool.toolSpec?.name === 'executeCommand'
+                  tool.toolSpec?.name === 'executeCommand' ||
+                  tool.toolSpec?.name === 'invokeFlow'
                 )
               }).length > 0 && (
                 <span className="inline-flex items-center justify-center w-4 h-4 ml-2 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
@@ -183,6 +186,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
           onBedrockAgentsChange={
             onBedrockAgentsChange || (() => console.warn('onBedrockAgentsChange not provided'))
           }
+          flows={flows}
+          onFlowsChange={onFlowsChange || (() => console.warn('onFlowsChange not provided'))}
         />
       )}
     </div>

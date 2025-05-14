@@ -75,7 +75,7 @@ export const ToolItem: React.FC<ToolItemProps> = ({
               </p>
             ) : (
               <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 overflow-hidden">
-                {toolName ? t(`tool descriptions.${toolName}`) : ''}
+                {toolName ? t(`descriptions.${toolName}`) : ''}
               </p>
             )}
           </div>

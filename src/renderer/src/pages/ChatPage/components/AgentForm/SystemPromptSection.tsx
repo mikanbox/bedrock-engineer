@@ -10,7 +10,8 @@ const PLACEHOLDERS = [
   { key: 'date', translationKey: 'datePlaceholder' },
   { key: 'allowedCommands', translationKey: 'allowedCommandsPlaceholder' },
   { key: 'knowledgeBases', translationKey: 'knowledgeBasesPlaceholder' },
-  { key: 'bedrockAgents', translationKey: 'bedrockAgentsPlaceholder' }
+  { key: 'bedrockAgents', translationKey: 'bedrockAgentsPlaceholder' },
+  { key: 'flows', translationKey: 'flowsPlaceholder' }
 ]
 
 export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
@@ -25,7 +26,8 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
   projectPath,
   allowedCommands,
   knowledgeBases,
-  bedrockAgents
+  bedrockAgents,
+  flows = []
 }) => {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
@@ -38,7 +40,8 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
       projectPath: path,
       allowedCommands,
       knowledgeBases,
-      bedrockAgents
+      bedrockAgents,
+      flows
     })
   }
 

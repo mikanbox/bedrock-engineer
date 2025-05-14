@@ -28,7 +28,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     id: 'ai-services',
     name: 'AI Services',
     description: 'Tools that utilize AWS AI services',
-    tools: ['generateImage', 'recognizeImage', 'retrieve', 'invokeBedrockAgent']
+    tools: ['generateImage', 'recognizeImage', 'retrieve', 'invokeBedrockAgent', 'invokeFlow']
   },
   {
     id: 'system',
@@ -47,6 +47,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     name: 'MCP',
     description: 'Model Context Protocol Tools',
     // MCPツールは動的に取得するので空配列として定義
-    tools: []
+    tools: [],
+    isMcpCategory: true
   }
 ]

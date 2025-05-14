@@ -3,7 +3,7 @@ import { ToolState } from '@/types/agent-chat'
 // カテゴリー毎のデフォルトツール設定（名前のみを定義）
 const DEFAULT_TOOL_NAMES: Record<string, string[]> = {
   // 一般的な目的向け - 基本的なツールのみ
-  general: ['readFiles', 'listFiles', 'tavilySearch', 'fetchWebsite', 'think'],
+  general: ['readFiles', 'listFiles', 'tavilySearch', 'fetchWebsite', 'invokeFlow', 'think'],
 
   // ソフトウェア開発向け - コード関連ツールを強化
   coding: [
@@ -16,11 +16,20 @@ const DEFAULT_TOOL_NAMES: Record<string, string[]> = {
     'copyFile',
     'tavilySearch',
     'executeCommand',
+    'invokeFlow',
     'think'
   ],
 
   // デザインとクリエイティブ向け
-  design: ['readFiles', 'listFiles', 'fetchWebsite', 'tavilySearch', 'generateImage', 'think'],
+  design: [
+    'readFiles',
+    'listFiles',
+    'fetchWebsite',
+    'tavilySearch',
+    'generateImage',
+    'invokeFlow',
+    'think'
+  ],
 
   // データ分析向け
   data: [
@@ -30,17 +39,26 @@ const DEFAULT_TOOL_NAMES: Record<string, string[]> = {
     'fetchWebsite',
     'retrieve',
     'executeCommand',
+    'invokeFlow',
     'think'
   ],
 
   // ビジネスと生産性向け
-  business: ['readFiles', 'listFiles', 'tavilySearch', 'fetchWebsite', 'retrieve', 'think'],
+  business: [
+    'readFiles',
+    'listFiles',
+    'tavilySearch',
+    'fetchWebsite',
+    'retrieve',
+    'invokeFlow',
+    'think'
+  ],
 
   // ダイアグラム生成向け
-  diagram: ['tavilySearch', 'think'],
+  diagram: ['tavilySearch', 'invokeFlow', 'think'],
 
   // ウェブサイト生成向け
-  website: ['tavilySearch', 'retrieve', 'think'],
+  website: ['tavilySearch', 'retrieve', 'invokeFlow', 'think'],
 
   all: [
     'createFolder',
@@ -56,6 +74,7 @@ const DEFAULT_TOOL_NAMES: Record<string, string[]> = {
     'generateImage',
     'invokeBedrockAgent',
     'executeCommand',
+    'invokeFlow',
     'think'
   ],
 

@@ -4,6 +4,7 @@ import { FiChevronDown, FiChevronRight } from 'react-icons/fi'
 import { KnowledgeBasesContent } from './KnowledgeBasesContent'
 import { CommandsContent } from './CommandsContent'
 import { BedrockAgentsContent } from './BedrockAgentsContent'
+import { FlowsContent } from './FlowsContent'
 import { ToolDetailsTabProps } from '../../types'
 import { preventEventPropagation } from '../../utils/eventUtils'
 
@@ -20,7 +21,9 @@ export const ToolDetailsTab: React.FC<ToolDetailsTabProps> = ({
   allowedCommands,
   onAllowedCommandsChange,
   bedrockAgents,
-  onBedrockAgentsChange
+  onBedrockAgentsChange,
+  flows = [],
+  onFlowsChange = () => console.warn('onFlowsChange not provided')
 }) => {
   const { t } = useTranslation()
 
@@ -145,13 +148,46 @@ export const ToolDetailsTab: React.FC<ToolDetailsTabProps> = ({
             </div>
           )}
 
+          {/* invokeFlow ツール設定 */}
+          {toolsWithConfigurations.invokeFlow.isEnabled && (
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <div
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer"
+                onClick={(e) => {
+                  preventEventPropagation(e)
+                  toggleToolExpand('invokeFlow')
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="text-gray-600 dark:text-gray-300">
+                    {expandedTools.invokeFlow ? <FiChevronDown /> : <FiChevronRight />}
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-800 dark:text-gray-200">
+                      {toolsWithConfigurations.invokeFlow.title}
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {toolsWithConfigurations.invokeFlow.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {expandedTools.invokeFlow && (
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                  <FlowsContent flows={flows} onChange={onFlowsChange} />
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 有効なツールがあるが、設定が必要なツールがない場合 */}
           {enabledTools.length > 0 &&
             !Object.values(toolsWithConfigurations).some((config) => config.isEnabled) && (
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md text-center">
                 <p className="text-gray-500 dark:text-gray-400">
                   {t(
-                    'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.'
+                    'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.'
                   )}
                 </p>
               </div>
