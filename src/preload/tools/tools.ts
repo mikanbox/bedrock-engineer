@@ -195,11 +195,47 @@ export const executeTool = async (input: ToolInput): Promise<string | ToolResult
         const flowIdentifier = flowConfig?.flowId || input.flowIdentifier
         const flowAliasIdentifier = flowConfig?.flowAliasId || input.flowAliasIdentifier
 
+        // 入力値の型変換処理を追加
+        let documentValue = input.input.content.document
+
+        // flowConfigに型情報がある場合、それを使って型変換
+        if (flowConfig?.inputType) {
+          try {
+            switch (flowConfig.inputType) {
+              case 'string':
+                documentValue = String(documentValue)
+                break
+              case 'number':
+                documentValue = Number(documentValue)
+                break
+              case 'boolean':
+                documentValue = Boolean(documentValue)
+                break
+              case 'object':
+              case 'array':
+                // 文字列の場合はJSONとしてパース
+                if (typeof documentValue === 'string') {
+                  documentValue = JSON.parse(documentValue)
+                }
+                // スキーマが設定されている場合はバリデーションなどを実装可能
+                // TODO: スキーマバリデーションの実装
+                break
+            }
+          } catch (error) {
+            logger.error(`Error converting input type for flow ${flowIdentifier}`, {
+              error: error instanceof Error ? error.message : String(error)
+            })
+            throw new Error(`Error parsing input data: ${error}`)
+          }
+        }
+
         return toolService.invokeFlow(bedrock, {
           flowIdentifier,
           flowAliasIdentifier,
           input: {
-            content: input.input.content,
+            content: {
+              document: documentValue
+            },
             nodeName: 'FlowInputNode',
             nodeOutputName: 'document'
           }

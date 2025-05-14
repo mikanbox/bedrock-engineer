@@ -231,10 +231,15 @@ export type KnowledgeBase = {
   description: string
 }
 
+// 入力タイプの定義を追加
+export type InputType = 'string' | 'number' | 'boolean' | 'object' | 'array'
+
 export type FlowConfig = {
   flowId: string
   flowAliasId: string
   description: string
+  inputType?: InputType // 新規: 入力の型
+  schema?: object // 新規: JSON Schema 定義 (objectとarrayの場合に使用)
 }
 
 // MCPサーバー設定の型定義

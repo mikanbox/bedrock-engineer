@@ -192,7 +192,7 @@ export type InvokeFlowInput = {
   flowAliasIdentifier: string
   input: {
     content: {
-      document: string
+      document: any // string | number | boolean | object | any[] から any に変更
     }
     nodeName: string
     nodeOutputName: string
@@ -796,8 +796,15 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
                   type: 'object',
                   properties: {
                     document: {
-                      type: 'string',
-                      description: 'Flow に送信するドキュメントまたはテキスト'
+                      description:
+                        'Flow に送信するデータ。文字列、数値、ブール値、オブジェクト、配列を受け付けます。',
+                      anyOf: [
+                        { type: 'string' },
+                        { type: 'number' },
+                        { type: 'boolean' },
+                        { type: 'object' },
+                        { type: 'array' }
+                      ]
                     }
                   },
                   required: ['document']
