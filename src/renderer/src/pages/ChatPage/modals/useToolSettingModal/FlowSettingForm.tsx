@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlowConfig, InputType } from '@/types/agent-chat'
 import JSONEditor from '@renderer/components/JSONViewer/JSONEditor'
+import JSONViewer from '@renderer/components/JSONViewer'
+import { EditIcon, RemoveIcon } from '@renderer/components/icons/ToolIcons'
 
 // オブジェクト型のサンプルスキーマ
 const OBJECT_SAMPLES = {
@@ -259,13 +261,31 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
   }
 
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-medium mb-4">{t('Flow Settings')}</h3>
-
-      <div className="bg-blue-50 dark:bg-gray-700 p-4 mb-6 rounded-lg">
-        <p className="text-sm text-gray-700 dark:text-gray-200">
-          {t('Configure which Bedrock Flows this agent can access.')}
+    <div>
+      {/* ツールの説明 */}
+      <div className="prose dark:prose-invert max-w-none">
+        <p className="mb-4 text-gray-700 dark:text-gray-300 font-bold">
+          {t(`tool descriptions.invokeFlow`)}
         </p>
+
+        <p className="mb-4 text-gray-700 dark:text-gray-300">
+          {t(
+            'tool info.invokeFlow.description',
+            'Invoke AWS Bedrock Flow to execute the specified flow. Flows can be used to automate workflows consisting of multiple steps.'
+          )}
+        </p>
+
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md mb-5">
+          <h5 className="font-medium mb-2 dark:text-gray-200">
+            {t('tool info.invokeFlow.about title', 'About AWS Bedrock Flow')}
+          </h5>
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            {t(
+              'tool info.invokeFlow.about description',
+              'AWS Bedrock Flow allows you to create and execute workflows that can process data, make decisions, and take actions based on AI model outputs. By configuring flows for your agent, you can enable it to perform complex operations that may involve multiple steps or services.'
+            )}
+          </p>
+        </div>
       </div>
 
       {/* 新しい Flow を登録するフォーム */}
@@ -338,83 +358,130 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
               {t('JSON Schema')}
             </label>
 
-            {/* サンプルリンク部分を追加 */}
-            <div className="flex flex-wrap gap-2 mb-2">
-              <span className="text-xs text-gray-500 dark:text-gray-400">{t('サンプル')}:</span>
-              {inputType === 'object' ? (
-                <>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={() => setSchema(OBJECT_SAMPLES.simple)}
-                    title={t('シンプルなオブジェクト（名前、年齢、状態）')}
-                  >
-                    {t('シンプル')}
-                  </button>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={() => setSchema(OBJECT_SAMPLES.nested)}
-                    title={t('ネストしたオブジェクト（ユーザー情報と設定）')}
-                  >
-                    {t('ネスト')}
-                  </button>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={() => setSchema(OBJECT_SAMPLES.complex)}
-                    title={t('複雑なオブジェクト（プロフィール、設定、タグなど）')}
-                  >
-                    {t('複雑')}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={() => setSchema(ARRAY_SAMPLES.simple)}
-                    title={t('文字列の配列')}
-                  >
-                    {t('シンプル')}
-                  </button>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={() => setSchema(ARRAY_SAMPLES.objects)}
-                    title={t('オブジェクトの配列（ID、名前、タグ）')}
-                  >
-                    {t('オブジェクト')}
-                  </button>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={() => setSchema(ARRAY_SAMPLES.complex)}
-                    title={t('複雑なオブジェクトの配列（タスクデータなど）')}
-                  >
-                    {t('複雑')}
-                  </button>
-                </>
-              )}
-            </div>
+            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800/50">
+              <div className="mb-3">
+                <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+                  {inputType === 'object'
+                    ? t('Define the structure of the object that will be sent to the Flow.')
+                    : t('Define the structure of the array that will be sent to the Flow.')}
+                </p>
+              </div>
 
-            <JSONEditor
-              value={schema}
-              onChange={setSchema}
-              height="200px"
-              error={schemaError}
-              defaultValue={
-                inputType === 'object'
-                  ? {
-                      type: 'object',
-                      properties: {
-                        // デフォルトのオブジェクトスキーマ
-                      },
-                      required: []
-                    }
-                  : {
-                      type: 'array',
-                      items: {
-                        // デフォルトの配列要素スキーマ
+              {/* サンプルリンク部分を改善 */}
+              <div className="mb-3">
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('flow.sample.title', 'サンプルテンプレート')}:
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {inputType === 'object' ? (
+                    <>
+                      <button
+                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                        onClick={() => setSchema(OBJECT_SAMPLES.simple)}
+                        title={t(
+                          'flow.sample.object.simple.tooltip',
+                          'シンプルなオブジェクト（名前、年齢、状態）'
+                        )}
+                      >
+                        {t('flow.sample.object.simple', 'シンプル')}
+                      </button>
+                      <button
+                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                        onClick={() => setSchema(OBJECT_SAMPLES.nested)}
+                        title={t(
+                          'flow.sample.object.nested.tooltip',
+                          'ネストしたオブジェクト（ユーザー情報と設定）'
+                        )}
+                      >
+                        {t('flow.sample.object.nested', 'ネスト')}
+                      </button>
+                      <button
+                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                        onClick={() => setSchema(OBJECT_SAMPLES.complex)}
+                        title={t(
+                          'flow.sample.object.complex.tooltip',
+                          '複雑なオブジェクト（プロフィール、設定、タグなど）'
+                        )}
+                      >
+                        {t('flow.sample.object.complex', '複雑')}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                        onClick={() => setSchema(ARRAY_SAMPLES.simple)}
+                        title={t('flow.sample.array.simple.tooltip', '文字列の配列')}
+                      >
+                        {t('flow.sample.array.simple', 'シンプル')}
+                      </button>
+                      <button
+                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                        onClick={() => setSchema(ARRAY_SAMPLES.objects)}
+                        title={t(
+                          'flow.sample.array.objects.tooltip',
+                          'オブジェクトの配列（ID、名前、タグ）'
+                        )}
+                      >
+                        {t('flow.sample.array.objects', 'オブジェクト')}
+                      </button>
+                      <button
+                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                        onClick={() => setSchema(ARRAY_SAMPLES.complex)}
+                        title={t(
+                          'flow.sample.array.complex.tooltip',
+                          '複雑なオブジェクトの配列（タスクデータなど）'
+                        )}
+                      >
+                        {t('flow.sample.array.complex', '複雑')}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-1">
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('flow.editor.title', 'スキーマエディタ')}:
+                </p>
+              </div>
+
+              <JSONEditor
+                value={schema}
+                onChange={setSchema}
+                height="200px"
+                error={schemaError}
+                defaultValue={
+                  inputType === 'object'
+                    ? {
+                        type: 'object',
+                        properties: {
+                          // デフォルトのオブジェクトスキーマ
+                        },
+                        required: []
                       }
-                    }
-              }
-            />
-            {schemaError && <p className="text-xs text-red-500 mt-1">{schemaError}</p>}
+                    : {
+                        type: 'array',
+                        items: {
+                          // デフォルトの配列要素スキーマ
+                        }
+                      }
+                }
+              />
+              {schemaError && <p className="text-xs text-red-500 mt-1">{schemaError}</p>}
+
+              <div className="mt-3 bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs text-gray-600 dark:text-gray-300">
+                <p className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                  {t('flow.hint.title', 'ヒント')}:
+                </p>
+                <p>
+                  {t(
+                    'flow.hint.description',
+                    'JSON Schemaを使用して、Flowに送信するデータの構造を定義します。これにより、AIがFlowに正しい形式のデータを送信できるようになります。'
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -462,7 +529,7 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
                     title="Edit"
                     aria-label="Edit flow"
                   >
-                    {t('Edit')}
+                    <EditIcon />
                   </button>
                   <button
                     onClick={() => removeFlow(index)}
@@ -470,7 +537,7 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
                     title="Remove"
                     aria-label="Remove flow"
                   >
-                    {t('Remove')}
+                    <RemoveIcon />
                   </button>
                 </div>
               </div>
@@ -497,12 +564,12 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
 
                 {flow.schema && (
                   <div className="flex flex-col w-full">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 font-medium mr-1">
-                      {t('Schema')}:
-                    </span>
-                    <pre className="w-full inline-block text-xs bg-gray-200 dark:bg-gray-800 px-3 py-2 rounded overflow-hidden text-ellipsis min-h-[10rem] max-h-[20rem] overflow-y-auto">
-                      {JSON.stringify(flow.schema, null, 1)}
-                    </pre>
+                    <JSONViewer
+                      data={flow.schema}
+                      title={t('Schema')}
+                      maxHeight="400px"
+                      showCopyButton={true}
+                    />
                   </div>
                 )}
               </div>

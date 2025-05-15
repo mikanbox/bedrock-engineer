@@ -76,6 +76,14 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   // ツール詳細設定に必要な設定
   const enabledTools = getEnabledTools()
+  const needSettingToolsLength = enabledTools.filter((tool) => {
+    return (
+      tool.toolSpec?.name === 'retrieve' ||
+      tool.toolSpec?.name === 'invokeBedrockAgent' ||
+      tool.toolSpec?.name === 'executeCommand' ||
+      tool.toolSpec?.name === 'invokeFlow'
+    )
+  }).length
   const toolsWithConfigurations = getToolsWithConfigurations(t)
 
   return (
@@ -129,24 +137,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
               }}
             >
               {t('Tool Detail Settings')}
-              {enabledTools.filter((tool) => {
-                return (
-                  tool.toolSpec?.name === 'retrieve' ||
-                  tool.toolSpec?.name === 'invokeBedrockAgent' ||
-                  tool.toolSpec?.name === 'executeCommand' ||
-                  tool.toolSpec?.name === 'invokeFlow'
-                )
-              }).length > 0 && (
+              {needSettingToolsLength > 0 && (
                 <span className="inline-flex items-center justify-center w-4 h-4 ml-2 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
-                  {
-                    enabledTools.filter((tool) => {
-                      return (
-                        tool.toolSpec?.name === 'retrieve' ||
-                        tool.toolSpec?.name === 'invokeBedrockAgent' ||
-                        tool.toolSpec?.name === 'executeCommand'
-                      )
-                    }).length
-                  }
+                  {needSettingToolsLength}
                 </span>
               )}
             </button>

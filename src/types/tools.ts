@@ -775,29 +775,29 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
     toolSpec: {
       name: 'invokeFlow',
       description:
-        'AWS Bedrock Flow を呼び出して、指定されたフローを実行します。フローは複数のステップからなるワークフローを自動化するために使用できます。',
+        'Invoke AWS Bedrock Flow to execute the specified flow. Flows can be used to automate workflows consisting of multiple steps.',
       inputSchema: {
         json: {
           type: 'object',
           properties: {
             flowIdentifier: {
               type: 'string',
-              description: '実行する Flow の識別子'
+              description: 'The identifier of the Flow to execute'
             },
             flowAliasIdentifier: {
               type: 'string',
-              description: 'Flow のエイリアス識別子'
+              description: 'The alias identifier of the Flow'
             },
             input: {
               type: 'object',
-              description: 'Flow への入力データ',
+              description: 'Input data for the Flow',
               properties: {
                 content: {
                   type: 'object',
                   properties: {
                     document: {
                       description:
-                        'Flow に送信するデータ。文字列、数値、ブール値、オブジェクト、配列を受け付けます。',
+                        'Data to send to the Flow. Accepts strings, numbers, booleans, objects, and arrays.',
                       anyOf: [
                         { type: 'string' },
                         { type: 'number' },
@@ -809,14 +809,6 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
                   },
                   required: ['document']
                 }
-                // nodeName: {
-                //   type: 'string',
-                //   description: '入力を受け取るノードの名前'
-                // },
-                // nodeOutputName: {
-                //   type: 'string',
-                //   description: 'ノード出力の名前'
-                // }
               },
               required: ['content']
             }
