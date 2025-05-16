@@ -55,8 +55,10 @@ export const agentToolsSettings = {
       'Configure allowed commands for the executeCommand tool',
     'Configure Bedrock Agents for the invokeBedrockAgent tool':
       'Configure Bedrock Agents for the invokeBedrockAgent tool',
-    'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.':
-      'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.',
+    'Configure Bedrock Flows for the invokeFlow tool':
+      'Configure Bedrock Flows for the invokeFlow tool',
+    'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.':
+      'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.',
     'Configure which knowledge bases this agent can access.':
       'Configure which knowledge bases this agent can access.',
     'Add New Knowledge Base': 'Add New Knowledge Base',
@@ -95,6 +97,52 @@ export const agentToolsSettings = {
     'No Bedrock Agents registered yet': 'No Bedrock Agents registered yet',
     'Edit agent': 'Edit agent',
     'Remove agent': 'Remove agent',
+    'Flow Settings': 'Flow Settings',
+    'Configure which Bedrock Flows this agent can access.':
+      'Configure which Bedrock Flows this agent can access.',
+    'Add New Bedrock Flow': 'Add New Bedrock Flow',
+    'Edit Bedrock Flow': 'Edit Bedrock Flow',
+    'Flow ID': 'Flow ID',
+    'Flow Alias ID': 'Flow Alias ID',
+    'Add Flow': 'Add Flow',
+    'Update Flow': 'Update Flow',
+    'Available Bedrock Flows': 'Available Bedrock Flows',
+    'Registered Bedrock Flows': 'Registered Bedrock Flows',
+    'No Bedrock Flows registered yet': 'No Bedrock Flows registered yet',
+    'Input Type': 'Input Type',
+    String: 'String',
+    Number: 'Number',
+    Boolean: 'Boolean',
+    Object: 'Object',
+    Array: 'Array',
+    'JSON Schema': 'JSON Schema',
+    Schema: 'Schema',
+    'Define the structure of the object that will be sent to the Flow.':
+      'Define the structure of the object that will be sent to the Flow.',
+    'Define the structure of the array that will be sent to the Flow.':
+      'Define the structure of the array that will be sent to the Flow.',
+    'flow.sample.title': 'Sample Templates',
+    'flow.sample.object.simple': 'Simple',
+    'flow.sample.object.nested': 'Nested',
+    'flow.sample.object.complex': 'Complex',
+    'flow.sample.array.simple': 'Simple',
+    'flow.sample.array.objects': 'Objects',
+    'flow.sample.array.complex': 'Complex',
+    'flow.sample.object.simple.tooltip': 'Simple object (name, age, state)',
+    'flow.sample.object.nested.tooltip': 'Nested object (user info and settings)',
+    'flow.sample.object.complex.tooltip': 'Complex object (profile, preferences, tags, etc.)',
+    'flow.sample.array.simple.tooltip': 'Array of strings',
+    'flow.sample.array.objects.tooltip': 'Array of objects (ID, name, tags)',
+    'flow.sample.array.complex.tooltip': 'Array of complex objects (task data, etc.)',
+    'flow.editor.title': 'Schema Editor',
+    'flow.hint.title': 'Hint',
+    'flow.hint.description':
+      'Use JSON Schema to define the structure of data sent to the Flow. This helps the AI send data in the correct format.',
+    'tool info.invokeFlow.description':
+      'Invoke AWS Bedrock Flow to execute the specified flow. Flows can be used to automate workflows consisting of multiple steps.',
+    'tool info.invokeFlow.about title': 'About AWS Bedrock Flow',
+    'tool info.invokeFlow.about description':
+      'AWS Bedrock Flow allows you to create and execute workflows that can process data, make decisions, and take actions based on AI model outputs. By configuring flows for your agent, you can enable it to perform complex operations that may involve multiple steps or services.',
     descriptions: {
       createFolder: 'Create a new folder at the specified path',
       writeToFile: 'Write content to an existing file',
@@ -109,7 +157,9 @@ export const agentToolsSettings = {
       recognizeImage: 'Analyze and describe images using AI vision capabilities',
       retrieve: 'Retrieve information from a knowledge base',
       invokeBedrockAgent: 'Invoke an Amazon Bedrock Agent',
-      executeCommand: 'Execute a command or send input to a running process'
+      executeCommand: 'Execute a command or send input to a running process',
+      invokeFlow: 'Execute an AWS Bedrock Flow to automate multi-step workflows',
+      think: 'Use enhanced reasoning for complex problem solving'
     }
   },
   ja: {
@@ -166,8 +216,9 @@ export const agentToolsSettings = {
       'executeCommand ツール用の許可コマンドを設定',
     'Configure Bedrock Agents for the invokeBedrockAgent tool':
       'invokeBedrockAgent ツール用の Bedrock Agent を設定',
-    'No configurable tools enabled. Enable retrieve, executeCommand, or invokeBedrockAgent tools to access their configurations.':
-      '設定可能なツールが有効になっていません。retrieve、executeCommand、または invokeBedrockAgent ツールを有効にして設定にアクセスしてください。',
+    'Configure Bedrock Flows for the invokeFlow tool': 'invokeFlow ツール用の Bedrock Flow を設定',
+    'No configurable tools enabled. Enable retrieve, executeCommand, invokeBedrockAgent, or invokeFlow tools to access their configurations.':
+      '設定可能なツールが有効になっていません。retrieve、executeCommand、invokeBedrockAgent、または invokeFlow ツールを有効にして設定にアクセスしてください。',
     'Configure which knowledge bases this agent can access.':
       'このエージェントがアクセスできるナレッジベースを設定します。',
     'Add New Knowledge Base': '新しいナレッジベースを追加',
@@ -206,6 +257,52 @@ export const agentToolsSettings = {
     'No Bedrock Agents registered yet': 'まだ Bedrock Agent が登録されていません',
     'Edit agent': 'エージェントを編集',
     'Remove agent': 'エージェントを削除',
+    'Flow Settings': 'フロー設定',
+    'Configure which Bedrock Flows this agent can access.':
+      'このエージェントがアクセスできる Bedrock Flow を設定します。',
+    'Add New Bedrock Flow': '新しい Bedrock Flow を追加',
+    'Edit Bedrock Flow': 'Bedrock Flow を編集',
+    'Flow ID': 'フローID',
+    'Flow Alias ID': 'フローエイリアスID',
+    'Add Flow': 'フローを追加',
+    'Update Flow': 'フローを更新',
+    'Available Bedrock Flows': '利用可能な Bedrock Flow',
+    'Registered Bedrock Flows': '登録済み Bedrock Flow',
+    'No Bedrock Flows registered yet': 'まだ Bedrock Flow が登録されていません',
+    'Input Type': '入力タイプ',
+    String: '文字列',
+    Number: '数値',
+    Boolean: '真偽値',
+    Object: 'オブジェクト',
+    Array: '配列',
+    'JSON Schema': 'JSONスキーマ',
+    Schema: 'スキーマ',
+    'Define the structure of the object that will be sent to the Flow.':
+      'Flowに送信されるオブジェクトの構造を定義します。',
+    'Define the structure of the array that will be sent to the Flow.':
+      'Flowに送信される配列の構造を定義します。',
+    'flow.sample.title': 'サンプルテンプレート',
+    'flow.sample.object.simple': 'シンプル',
+    'flow.sample.object.nested': 'ネスト',
+    'flow.sample.object.complex': '複雑',
+    'flow.sample.array.simple': 'シンプル',
+    'flow.sample.array.objects': 'オブジェクト',
+    'flow.sample.array.complex': '複雑',
+    'flow.sample.object.simple.tooltip': 'シンプルなオブジェクト（名前、年齢、状態）',
+    'flow.sample.object.nested.tooltip': 'ネストしたオブジェクト（ユーザー情報と設定）',
+    'flow.sample.object.complex.tooltip': '複雑なオブジェクト（プロフィール、設定、タグなど）',
+    'flow.sample.array.simple.tooltip': '文字列の配列',
+    'flow.sample.array.objects.tooltip': 'オブジェクトの配列（ID、名前、タグ）',
+    'flow.sample.array.complex.tooltip': '複雑なオブジェクトの配列（タスクデータなど）',
+    'flow.editor.title': 'スキーマエディタ',
+    'flow.hint.title': 'ヒント',
+    'flow.hint.description':
+      'JSON Schemaを使用して、Flowに送信するデータの構造を定義します。これにより、AIがFlowに正しい形式のデータを送信できるようになります。',
+    'tool info.invokeFlow.description':
+      'AWS Bedrock Flowを実行して指定されたフローを実行します。フローは複数のステップからなるワークフローを自動化するために使用できます。',
+    'tool info.invokeFlow.about title': 'AWS Bedrock Flowについて',
+    'tool info.invokeFlow.about description':
+      'AWS Bedrock Flowを使用すると、データを処理し、決定を下し、AIモデルの出力に基づいてアクションを実行するワークフローを作成および実行できます。エージェントにフローを設定することで、複数のステップやサービスを含む複雑な操作を実行できるようになります。',
     descriptions: {
       createFolder: '指定したパスに新しいフォルダを作成',
       writeToFile: '既存のファイルにコンテンツを書き込み',
@@ -220,7 +317,9 @@ export const agentToolsSettings = {
       recognizeImage: 'AIのビジョン機能を使用して画像を分析・説明',
       retrieve: 'ナレッジベースから情報を取得',
       invokeBedrockAgent: 'Amazon Bedrock Agentを呼び出し',
-      executeCommand: 'コマンドを実行または実行中のプロセスに入力を送信'
+      executeCommand: 'コマンドを実行または実行中のプロセスに入力を送信',
+      invokeFlow: 'AWS Bedrock Flowを実行して複数ステップのワークフローを自動化',
+      think: '複雑な問題解決のための高度な推論を使用'
     }
   }
 }

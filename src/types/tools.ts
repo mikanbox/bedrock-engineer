@@ -17,6 +17,7 @@ export type ToolName =
   | 'applyDiffEdit'
   | 'think'
   | 'recognizeImage'
+  | 'invokeFlow'
   | string // MCPツール名を許容するために文字列型も追加
 
 /**
@@ -184,6 +185,20 @@ export type RecognizeImageInput = {
   prompt?: string
 }
 
+// invokeFlow ツールの入力型
+export type InvokeFlowInput = {
+  type: 'invokeFlow'
+  flowIdentifier: string
+  flowAliasIdentifier: string
+  input: {
+    content: {
+      document: any // string | number | boolean | object | any[] から any に変更
+    }
+    nodeName: string
+    nodeOutputName: string
+  }
+}
+
 // MCPツールの入力型
 export type McpToolInput = {
   type: string // MCPツール名
@@ -207,6 +222,7 @@ export type ToolInput =
   | ExecuteCommandInput
   | ApplyDiffEditInput
   | ThinkInput
+  | InvokeFlowInput
   | McpToolInput // MCPツール入力を追加
 
 // ツール名から入力型を取得するユーティリティ型
@@ -226,6 +242,7 @@ export type ToolInputTypeMap = {
   executeCommand: ExecuteCommandInput
   applyDiffEdit: ApplyDiffEditInput
   think: ThinkInput
+  invokeFlow: InvokeFlowInput
   [key: string]: any // MCPツールに対応するためのインデックスシグネチャ
 }
 
@@ -750,6 +767,53 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
             }
           },
           required: ['thought']
+        }
+      }
+    }
+  },
+  {
+    toolSpec: {
+      name: 'invokeFlow',
+      description:
+        'Invoke AWS Bedrock Flow to execute the specified flow. Flows can be used to automate workflows consisting of multiple steps.',
+      inputSchema: {
+        json: {
+          type: 'object',
+          properties: {
+            flowIdentifier: {
+              type: 'string',
+              description: 'The identifier of the Flow to execute'
+            },
+            flowAliasIdentifier: {
+              type: 'string',
+              description: 'The alias identifier of the Flow'
+            },
+            input: {
+              type: 'object',
+              description: 'Input data for the Flow',
+              properties: {
+                content: {
+                  type: 'object',
+                  properties: {
+                    document: {
+                      description:
+                        'Data to send to the Flow. Accepts strings, numbers, booleans, objects, and arrays.',
+                      anyOf: [
+                        { type: 'string' },
+                        { type: 'number' },
+                        { type: 'boolean' },
+                        { type: 'object' },
+                        { type: 'array' }
+                      ]
+                    }
+                  },
+                  required: ['document']
+                }
+              },
+              required: ['content']
+            }
+          },
+          required: ['flowIdentifier', 'flowAliasIdentifier', 'input']
         }
       }
     }

@@ -81,6 +81,24 @@ interface InvokeBedrockAgentResult extends ToolResult<InvokeAgentResultOmitFile>
   name: 'invokeBedrockAgent'
 }
 
+interface InvokeFlowResult extends ToolResult {
+  name: 'invokeFlow'
+  result: {
+    executionId: string
+    flowStatus?: string
+    outputs: Array<{
+      content: {
+        document: string
+      }
+      nodeName: string
+      nodeOutputName: string
+    }>
+    requiresInput?: boolean
+    promptId?: string
+    inputNodeName?: string
+  }
+}
+
 interface TavilySearchSearchResponse {
   title: string
   url: string
@@ -1204,6 +1222,84 @@ export class ToolService {
       throw new Error(
         `Error in think tool: ${error instanceof Error ? error.message : String(error)}`
       )
+    }
+  }
+
+  /**
+   * invokeFlow ツールの実装
+   * AWS Bedrock Flow を呼び出し、結果を処理する
+   * BedrockService.invokeFlow を使用して実装
+   */
+  async invokeFlow(
+    bedrock: BedrockService,
+    toolInput: {
+      flowIdentifier: string
+      flowAliasIdentifier: string
+      input: {
+        content: {
+          document: string
+        }
+        nodeName: string
+        nodeOutputName: string
+      }
+    }
+  ): Promise<InvokeFlowResult> {
+    const { flowIdentifier, flowAliasIdentifier, input } = toolInput
+    const inputs = [input]
+
+    logger.debug('Invoking Bedrock Flow', {
+      flowIdentifier,
+      flowAliasIdentifier,
+      inputs
+    })
+
+    try {
+      logger.info('Calling Bedrock Flow service', {
+        flowIdentifier,
+        flowAliasIdentifier
+      })
+
+      const result = await bedrock.invokeFlow({
+        flowIdentifier,
+        flowAliasIdentifier,
+        inputs,
+        enableTrace: true
+      })
+
+      logger.info('Flow invocation successful', {
+        flowIdentifier,
+        executionId: result.executionId,
+        outputsCount: result.outputs.length,
+        requiresInput: result.requiresInput
+      })
+
+      return {
+        success: true,
+        name: 'invokeFlow',
+        message: `Invoked flow ${flowIdentifier} with alias ${flowAliasIdentifier}`,
+        result: {
+          executionId: result.executionId,
+          flowStatus: result.flowStatus,
+          outputs: result.outputs,
+          requiresInput: result.requiresInput,
+          promptId: result.promptId,
+          inputNodeName: result.inputNodeName
+        }
+      }
+    } catch (error: any) {
+      logger.error('Error invoking Bedrock Flow', {
+        flowIdentifier,
+        flowAliasIdentifier,
+        error: error.message,
+        errorName: error.name
+      })
+
+      throw `Error invoking flow: ${JSON.stringify({
+        success: false,
+        name: 'invokeFlow',
+        error: 'Failed to invoke flow',
+        message: error.message
+      })}`
     }
   }
 

@@ -3,7 +3,8 @@ import {
   ToolState,
   KnowledgeBase,
   CommandConfig,
-  McpServerConfig
+  McpServerConfig,
+  FlowConfig
 } from '@/types/agent-chat'
 import { BedrockAgent } from '@/types/agent'
 
@@ -16,6 +17,7 @@ export interface ToolCategory {
   description: string
   tools: string[]
   hasMcpServers?: boolean // MCPサーバーが設定されているかどうかを示すフラグ
+  isMcpCategory?: boolean // MCP ツールカテゴリかどうかを示すフラグ
 }
 
 /**
@@ -33,6 +35,8 @@ export interface ToolsSectionProps {
   onAllowedCommandsChange?: (commands: CommandConfig[]) => void
   bedrockAgents?: BedrockAgent[]
   onBedrockAgentsChange?: (agents: BedrockAgent[]) => void
+  flows?: FlowConfig[]
+  onFlowsChange?: (flows: FlowConfig[]) => void
   mcpServers?: McpServerConfig[]
   tempMcpTools?: ToolState[] // 一時的なMCPツール（タブ切替時に取得したもの）
   isLoadingMcpTools?: boolean // MCPツールを読み込み中かどうかを示すフラグ
@@ -120,6 +124,8 @@ export interface ToolDetailsTabProps {
   onAllowedCommandsChange: (commands: CommandConfig[]) => void
   bedrockAgents: BedrockAgent[]
   onBedrockAgentsChange: (agents: BedrockAgent[]) => void
+  flows?: FlowConfig[]
+  onFlowsChange?: (flows: FlowConfig[]) => void
 }
 
 /**

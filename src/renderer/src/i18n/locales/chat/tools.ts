@@ -75,7 +75,8 @@ export const tools = {
       invokeBedrockAgent: 'Invoke Amazon Bedrock Agent to interact with LLMs and external tools',
       executeCommand: 'Execute allowed commands with support for wildcards',
       applyDiffEdit: 'Apply partial updates to existing files with granular control',
-      think: 'Enable AI to perform complex step-by-step reasoning'
+      think: 'Enable AI to perform complex step-by-step reasoning',
+      invokeFlow: 'Invoke Amazon Bedrock Flow'
     },
     'tool info': {
       retrieve: {
@@ -275,7 +276,8 @@ export const tools = {
       invokeBedrockAgent: 'Amazon Bedrock Agent を実行',
       executeCommand: 'ワイルドカードをサポートする許可されたコマンドを実行',
       applyDiffEdit: 'ファイルに対して部分的な更新を適用',
-      think: 'AIが複雑なステップバイステップの思考を実行'
+      think: 'AIが複雑なステップバイステップの思考を実行',
+      invokeFlow: 'Amazon Bedrock Flow を実行'
     },
     'tool info': {
       retrieve: {

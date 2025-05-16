@@ -216,6 +216,7 @@ export type CustomAgent = Agent & {
   allowedCommands?: CommandConfig[] // エージェント固有の許可コマンド
   bedrockAgents?: BedrockAgent[] // エージェント固有のBedrock Agents
   knowledgeBases?: KnowledgeBase[] // エージェント固有のKnowledge Base
+  flows?: FlowConfig[] // エージェント固有のFlow設定
   mcpServers?: McpServerConfig[] // エージェント固有のMCPサーバー設定
   mcpTools?: ToolState[] // エージェント固有のMCPツール設定
   additionalInstruction?: string // エージェント生成時の追加指示
@@ -228,6 +229,17 @@ export type AgentSettings = {
 export type KnowledgeBase = {
   knowledgeBaseId: string
   description: string
+}
+
+// 入力タイプの定義を追加
+export type InputType = 'string' | 'number' | 'boolean' | 'object' | 'array'
+
+export type FlowConfig = {
+  flowId: string
+  flowAliasId: string
+  description: string
+  inputType?: InputType // 新規: 入力の型
+  schema?: object // 新規: JSON Schema 定義 (objectとarrayの場合に使用)
 }
 
 // MCPサーバー設定の型定義

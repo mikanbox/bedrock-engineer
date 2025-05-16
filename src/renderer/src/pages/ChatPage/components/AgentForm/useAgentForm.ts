@@ -6,7 +6,8 @@ import {
   AgentCategory,
   KnowledgeBase,
   McpServerConfig,
-  Scenario
+  Scenario,
+  FlowConfig
 } from '@/types/agent-chat'
 import { ToolName, isMcpTool } from '@/types/tools'
 import useSetting from '@renderer/hooks/useSetting'
@@ -77,6 +78,7 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
             | KnowledgeBase[]
             | CommandConfig[]
             | BedrockAgent[]
+            | FlowConfig[]
             | string[]
           )
         ]
@@ -120,7 +122,8 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
         ['mcpServers', [] as McpServerConfig[]],
         ['allowedCommands', [] as CommandConfig[]],
         ['knowledgeBases', [] as KnowledgeBase[]],
-        ['bedrockAgents', [] as BedrockAgent[]]
+        ['bedrockAgents', [] as BedrockAgent[]],
+        ['flows', [] as FlowConfig[]]
       ])
 
       return
@@ -150,7 +153,8 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
       ['mcpServers', initialAgent.mcpServers || []],
       ['knowledgeBases', initialAgent.knowledgeBases || []],
       ['allowedCommands', initialAgent.allowedCommands || []],
-      ['bedrockAgents', initialAgent.bedrockAgents || []]
+      ['bedrockAgents', initialAgent.bedrockAgents || []],
+      ['flows', initialAgent.flows || []]
     ])
   }, [initialAgent, getDefaultToolsForCategory, updateMultipleFields])
 

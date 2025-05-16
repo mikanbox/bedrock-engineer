@@ -3,6 +3,7 @@ import { ModelService } from './services/modelService'
 import { AgentService } from './services/agentService'
 import { ImageService } from './services/imageService'
 import { ImageRecognitionService } from './services/imageRecognitionService'
+import { FlowService, InvokeFlowInput, InvokeFlowResult } from './services/flowService'
 import type { ServiceContext } from './types'
 import type { GenerateImageRequest, GeneratedImage } from './types/image'
 import { GuardrailService } from './services/guardrailService'
@@ -15,6 +16,7 @@ export class BedrockService {
   private imageService: ImageService
   private imageRecognitionService: ImageRecognitionService
   private guardrailService: GuardrailService
+  private flowService: FlowService
 
   constructor(context: ServiceContext) {
     this.converseService = new ConverseService(context)
@@ -23,6 +25,7 @@ export class BedrockService {
     this.imageService = new ImageService(context)
     this.imageRecognitionService = new ImageRecognitionService(context)
     this.guardrailService = new GuardrailService(context)
+    this.flowService = new FlowService(context)
   }
 
   async listModels() {
@@ -63,6 +66,10 @@ export class BedrockService {
 
   async applyGuardrail(props: ApplyGuardrailRequest) {
     return this.guardrailService.applyGuardrail(props)
+  }
+
+  async invokeFlow(params: InvokeFlowInput): Promise<InvokeFlowResult> {
+    return this.flowService.invokeFlow(params)
   }
 }
 

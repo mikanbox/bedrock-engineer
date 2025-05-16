@@ -8,6 +8,7 @@ import { BedrockAgentSettingForm } from './BedrockAgentSettingForm'
 import { TavilySearchSettingForm } from './TavilySearchSettingForm'
 import { ThinkToolSettingForm } from './ThinkToolSettingForm'
 import { RecognizeImageSettingForm } from './RecognizeImageSettingForm'
+import { FlowSettingForm } from './FlowSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -15,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { ToolState } from '@/types/agent-chat'
 // JSONViewerコンポーネントのインポート
 import JSONViewer from '@renderer/components/JSONViewer'
+import { TOOL_CATEGORIES } from '../../components/AgentForm/ToolsSection/utils/toolCategories'
 
 export interface CommandConfig {
   pattern: string
@@ -28,70 +30,14 @@ export const AVAILABLE_SHELLS = [
   { value: '/bin/sh', label: 'Shell' }
 ]
 
-// ツールをカテゴリ分けするための定義
-interface ToolCategory {
-  id: string
-  name: string
-  description: string
-  tools: string[]
-  isMcpCategory?: boolean // MCP ツールカテゴリかどうかを示すフラグ
-}
-
-const TOOL_CATEGORIES: ToolCategory[] = [
-  {
-    id: 'file-system',
-    name: 'File System',
-    description: 'Tools for managing files and directories',
-    tools: [
-      'createFolder',
-      'writeToFile',
-      'readFiles',
-      'listFiles',
-      'moveFile',
-      'copyFile',
-      'applyDiffEdit'
-    ]
-  },
-  {
-    id: 'web-interaction',
-    name: 'Web & Search',
-    description: 'Tools for interacting with web resources',
-    tools: ['tavilySearch', 'fetchWebsite']
-  },
-  {
-    id: 'ai-services',
-    name: 'AI Services',
-    description: 'Tools that utilize AWS AI services',
-    tools: ['generateImage', 'recognizeImage', 'retrieve', 'invokeBedrockAgent']
-  },
-  {
-    id: 'system',
-    name: 'System',
-    description: 'Tools for system interaction',
-    tools: ['executeCommand']
-  },
-  {
-    id: 'thinking',
-    name: 'Thinking',
-    description: 'Tools for enhanced reasoning',
-    tools: ['think']
-  },
-  {
-    id: 'mcp-tools',
-    name: 'MCP',
-    description: 'Tools provided by MCP servers (always enabled)',
-    tools: [], // 動的に設定される
-    isMcpCategory: true
-  }
-]
-
 // 詳細設定が必要なツール
 const TOOLS_WITH_SETTINGS = [
   'executeCommand',
   'retrieve',
   'invokeBedrockAgent',
   'tavilySearch',
-  'recognizeImage'
+  'recognizeImage',
+  'invokeFlow'
 ]
 
 interface ToolSettingModalProps {
@@ -212,7 +158,9 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
     getAgentKnowledgeBases,
     updateAgentKnowledgeBases,
     getAgentBedrockAgents,
-    updateAgentBedrockAgents
+    updateAgentBedrockAgents,
+    getAgentFlows,
+    updateAgentFlows
   } = useSettings()
 
   // 選択されたツールの状態管理
@@ -434,6 +382,12 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                     )}
                     {selectedTool === 'recognizeImage' && <RecognizeImageSettingForm />}
                     {selectedTool === 'think' && <ThinkToolSettingForm />}
+                    {selectedTool === 'invokeFlow' && selectedAgentId && (
+                      <FlowSettingForm
+                        flows={getAgentFlows(selectedAgentId)}
+                        setFlows={(flows) => updateAgentFlows(selectedAgentId, flows)}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">

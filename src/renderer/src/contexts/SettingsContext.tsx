@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
-import { KnowledgeBase, McpServerConfig, SendMsgKey, ToolState } from 'src/types/agent-chat'
+import {
+  FlowConfig,
+  KnowledgeBase,
+  McpServerConfig,
+  SendMsgKey,
+  ToolState
+} from 'src/types/agent-chat'
 import { ToolName } from 'src/types/tools'
 import { listModels } from '@renderer/lib/api'
 import { CustomAgent } from '@/types/agent-chat'
@@ -161,6 +167,10 @@ export interface SettingsContextType {
   // エージェント固有のKnowledge Base設定
   getAgentKnowledgeBases: (agentId: string) => KnowledgeBase[]
   updateAgentKnowledgeBases: (agentId: string, bases: KnowledgeBase[]) => void
+
+  // エージェント固有のFlow設定
+  getAgentFlows: (agentId: string) => FlowConfig[]
+  updateAgentFlows: (agentId: string, flows: FlowConfig[]) => void
 
   // エージェント設定の一括更新
   updateAgentSettings: (
@@ -916,7 +926,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       projectPath,
       allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
       knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
-      bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || []
+      bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || [],
+      flows: allAgents.find((a) => a.id === selectedAgentId)?.flows || []
     })
   }, [currentAgent, selectedAgentId, projectPath, allAgents])
 
@@ -1166,6 +1177,33 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [customAgents]
   )
 
+  // エージェント固有のFlow設定を取得する関数
+  const getAgentFlows = useCallback(
+    (agentId: string): FlowConfig[] => {
+      // 現在選択されているエージェントを見つける
+      const agent = allAgents.find((a) => a.id === agentId)
+
+      // エージェント固有のFlow設定がある場合はそれを返す
+      // それ以外は空配列を返す
+      return (agent && agent.flows) || []
+    },
+    [allAgents]
+  )
+
+  // エージェントのFlow設定を更新する関数
+  const updateAgentFlows = useCallback(
+    (agentId: string, flows: FlowConfig[]) => {
+      // カスタムエージェントの場合のみ更新可能
+      const updatedAgents = customAgents.map((agent) =>
+        agent.id === agentId ? { ...agent, flows } : agent
+      )
+
+      setCustomAgents(updatedAgents)
+      window.store.set('customAgents', updatedAgents)
+    },
+    [customAgents]
+  )
+
   // エージェント設定の一括更新関数
   const updateAgentSettings = useCallback(
     (
@@ -1353,6 +1391,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updateAgentBedrockAgents,
     getAgentKnowledgeBases,
     updateAgentKnowledgeBases,
+    getAgentFlows,
+    updateAgentFlows,
     updateAgentSettings,
 
     // Shell Settings

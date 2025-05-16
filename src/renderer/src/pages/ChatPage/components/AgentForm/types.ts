@@ -1,4 +1,10 @@
-import { CustomAgent, KnowledgeBase, ToolState, AgentCategory } from '@/types/agent-chat'
+import {
+  CustomAgent,
+  KnowledgeBase,
+  ToolState,
+  AgentCategory,
+  FlowConfig
+} from '@/types/agent-chat'
 import { CommandConfig } from '../../modals/useToolSettingModal'
 import { BedrockAgent } from '@/types/agent'
 
@@ -32,6 +38,7 @@ export interface SystemPromptSectionProps {
   allowedCommands: CommandConfig[]
   knowledgeBases: KnowledgeBase[]
   bedrockAgents: BedrockAgent[]
+  flows?: FlowConfig[]
 }
 
 export interface ScenariosSectionProps {

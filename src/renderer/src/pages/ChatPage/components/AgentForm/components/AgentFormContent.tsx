@@ -83,6 +83,7 @@ export const AgentFormContent: React.FC<{
               allowedCommands={formData.allowedCommands || []}
               knowledgeBases={formData.knowledgeBases || []}
               bedrockAgents={formData.bedrockAgents || []}
+              flows={formData.flows || []}
             />
 
             <ScenariosSection
@@ -148,6 +149,8 @@ export const AgentFormContent: React.FC<{
               onAllowedCommandsChange={(commands) => updateField('allowedCommands', commands)}
               bedrockAgents={formData.bedrockAgents || []}
               onBedrockAgentsChange={(agents) => updateField('bedrockAgents', agents)}
+              flows={formData.flows || []}
+              onFlowsChange={(flows) => updateField('flows', flows)}
               mcpServers={formData.mcpServers || []}
               tempMcpTools={tempMcpTools}
               isLoadingMcpTools={isLoadingMcpTools}
