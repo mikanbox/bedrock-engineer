@@ -36,7 +36,6 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const { currentLLM, planMode, setPlanMode } = useSettings()
   const [dragActive, setDragActive] = useState(false)
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
-  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
   const [isManuallyResized, setIsManuallyResized] = useState(false)
   const [textareaHeight, setTextareaHeight] = useState<number>(72) // Initial height for 3 lines (24px * 3)
   const [isHovering, setIsHovering] = useState(false)
@@ -122,38 +121,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
   }, [value, isManuallyResized])
 
-  // Monitor scroll position to determine if scrolled to the bottom
-  useEffect(() => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const handleScroll = () => {
-      const isAtBottom = textarea.scrollHeight - textarea.scrollTop - textarea.clientHeight < 10
-      setIsScrolledToBottom(isAtBottom)
-    }
-
-    textarea.addEventListener('scroll', handleScroll)
-    // Set initial state
-    handleScroll()
-
-    return () => {
-      textarea.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
-  // Check scroll position when text content changes (especially for new lines)
-  useEffect(() => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    // Use setTimeout to ensure this runs after the textarea has been updated
-    const timeoutId = setTimeout(() => {
-      const isAtBottom = textarea.scrollHeight - textarea.scrollTop - textarea.clientHeight < 10
-      setIsScrolledToBottom(isAtBottom)
-    }, 0)
-
-    return () => clearTimeout(timeoutId)
-  }, [value])
+  // No scroll position monitoring needed as we're keeping the border visible at all times
 
   const validateAndProcessImage = useCallback(
     (file: File) => {
@@ -434,9 +402,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         </div>
 
         {/* Controls at the bottom */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg ${isScrolledToBottom ? '' : 'border-t border-gray-200 dark:border-gray-700'}`}
-        >
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg">
           <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
             <div>
               <ModelSelector openable={true} />
