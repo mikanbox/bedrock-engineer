@@ -141,6 +141,20 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
   }, [])
 
+  // Check scroll position when text content changes (especially for new lines)
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    // Use setTimeout to ensure this runs after the textarea has been updated
+    const timeoutId = setTimeout(() => {
+      const isAtBottom = textarea.scrollHeight - textarea.scrollTop - textarea.clientHeight < 10
+      setIsScrolledToBottom(isAtBottom)
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
+  }, [value])
+
   const validateAndProcessImage = useCallback(
     (file: File) => {
       if (file.size > 3.75 * 1024 * 1024) {
