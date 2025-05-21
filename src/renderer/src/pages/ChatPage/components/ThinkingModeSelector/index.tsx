@@ -54,9 +54,7 @@ export const ThinkingModeSelector: React.FC<ThinkingModeSelectorProps> = ({ clas
         title={t('thinkingMode.title')}
       >
         <LuBrain className="size-4 text-purple-600 dark:text-purple-400" />
-        <span className="whitespace-nowrap text-gray-600 dark:text-gray-300">
-          {getSelectedLabel()}
-        </span>
+        <span className="text-gray-600 dark:text-gray-300">{getSelectedLabel()}</span>
         <FiChevronDown className="text-gray-400 dark:text-gray-500" size={16} />
       </button>
 
@@ -82,9 +80,7 @@ export const ThinkingModeSelector: React.FC<ThinkingModeSelectorProps> = ({ clas
                 transition-colors
               `}
             >
-              <span className="text-sm whitespace-nowrap text-gray-800 dark:text-gray-100">
-                {option.label}
-              </span>
+              <span className="text-sm text-gray-800 dark:text-gray-100">{option.label}</span>
             </div>
           ))}
         </div>

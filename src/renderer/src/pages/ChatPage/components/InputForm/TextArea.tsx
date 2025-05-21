@@ -297,7 +297,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
             ref={textareaRef}
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={() => setIsComposing(false)}
-            className={`block w-full p-4 pb-16 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-white dark:bg-gray-800 z-9 resize-none ${
+            className={`block w-full p-4 pb-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-white dark:bg-gray-800 z-9 resize-none ${
               dragActive ? 'border-blue-500' : ''
             }`}
             placeholder={placeholder}
@@ -315,37 +315,39 @@ export const TextArea: React.FC<TextAreaProps> = ({
             rows={3}
           />
 
-          {/* Model Selector, Thinking Mode, and Plan/Act Toggle at the bottom of textarea */}
-          <div className="absolute left-4 bottom-3.5 flex items-center gap-2.5 z-10 pointer-events-auto">
-            <div>
-              <ModelSelector openable={true} />
-            </div>
-            {currentLLM.modelId.includes('anthropic.claude-3-7-sonnet') && (
+          {/* Fixed toolbar at the bottom with model selector, thinking mode, and plan/act toggle */}
+          <div className="flex items-center justify-between mt-2 px-1">
+            <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
               <div>
-                <ThinkingModeSelector />
+                <ModelSelector openable={true} />
               </div>
-            )}
-          </div>
+              {currentLLM.modelId.includes('anthropic.claude-3-7-sonnet') && (
+                <div>
+                  <ThinkingModeSelector />
+                </div>
+              )}
+            </div>
 
-          {/* Plan/Act Toggle at the bottom right of textarea */}
-          <div className="absolute right-14 bottom-3.5 z-10 pointer-events-auto">
-            <PlanActToggle />
+            <div className="flex items-center gap-2">
+              <div>
+                <PlanActToggle />
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={disabled}
+                className={`rounded-lg ${
+                  disabled ? '' : 'hover:bg-gray-200'
+                } px-2 py-2 dark:text-white dark:hover:bg-gray-700`}
+                aria-label={disabled ? t('textarea.aria.sending') : t('textarea.aria.sendMessage')}
+              >
+                {disabled ? (
+                  <FiLoader className="text-xl animate-spin" />
+                ) : (
+                  <FiSend className="text-xl" />
+                )}
+              </button>
+            </div>
           </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={disabled}
-            className={`absolute end-2.5 bottom-2.5 rounded-lg ${
-              disabled ? '' : 'hover:bg-gray-200'
-            } px-2 py-2 dark:text-white dark:hover:bg-gray-700`}
-            aria-label={disabled ? t('textarea.aria.sending') : t('textarea.aria.sendMessage')}
-          >
-            {disabled ? (
-              <FiLoader className="text-xl animate-spin" />
-            ) : (
-              <FiSend className="text-xl" />
-            )}
-          </button>
         </div>
       </div>
     </div>

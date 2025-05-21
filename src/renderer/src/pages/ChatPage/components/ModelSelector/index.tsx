@@ -94,7 +94,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ openable }) => {
         >
           <span className="flex items-center gap-1.5">
             <span className={modelColors.icon}>{getModelIcon(currentLLM.modelId)}</span>
-            <span className="text-left whitespace-nowrap">{currentLLM.modelName}</span>
+            <span className="text-left">{currentLLM.modelName}</span>
             <FiChevronDown className="text-gray-400 dark:text-gray-500" size={16} />
           </span>
         </button>
