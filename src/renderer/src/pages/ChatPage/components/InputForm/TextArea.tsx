@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useMemo, useRef, useEffect } from 'react'
-import { FiLoader, FiSend, FiX } from 'react-icons/fi'
+import { FiLoader, FiSend, FiX, FiChevronUp, FiChevronDown } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ModelSelector } from '../ModelSelector'
@@ -37,6 +37,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const [dragActive, setDragActive] = useState(false)
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
+  const [isManuallyResized, setIsManuallyResized] = useState(false)
+  const [textareaHeight, setTextareaHeight] = useState<number>(72) // 3行分の初期高さ (24px * 3)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // プラットフォームに応じた Modifire キーの表示を決定
@@ -66,9 +68,41 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
   }, [planMode, setPlanMode, t])
 
-  // テキストエリアの高さを自動調整する（10行まで）
+  // ユーザーが手動でリサイズしたことを検知する
   useEffect(() => {
-    if (textareaRef.current) {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // リサイズハンドルでのマウスダウンを検知
+      const { clientX, clientY } = e
+      const { bottom, right } = textarea.getBoundingClientRect()
+      const resizeHandleSize = 16 // リサイズハンドルのサイズ（ピクセル）
+
+      // マウスがテキストエリアの右下隅（リサイズハンドル）にあるかどうかを確認
+      if (
+        clientX > right - resizeHandleSize &&
+        clientX < right &&
+        clientY > bottom - resizeHandleSize &&
+        clientY < bottom
+      ) {
+        const handleMouseUp = () => {
+          setIsManuallyResized(true)
+          document.removeEventListener('mouseup', handleMouseUp)
+        }
+        document.addEventListener('mouseup', handleMouseUp)
+      }
+    }
+
+    textarea.addEventListener('mousedown', handleMouseDown)
+    return () => {
+      textarea.removeEventListener('mousedown', handleMouseDown)
+    }
+  }, [])
+
+  // テキストエリアの高さを自動調整する（ユーザーが手動でリサイズしていない場合のみ）
+  useEffect(() => {
+    if (textareaRef.current && !isManuallyResized) {
       // テキストエリアのスクロールの高さまでリサイズする（最小の高さは3行分、最大は10行分）
       textareaRef.current.style.height = 'auto'
       const lineHeight = 24 // 1行あたり約24px
@@ -85,7 +119,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         textareaRef.current.style.overflowY = 'hidden' // スクロールバーを非表示
       }
     }
-  }, [value])
+  }, [value, isManuallyResized])
 
   // スクロール位置を監視して、最下部までスクロールしたかどうかを判定する
   useEffect(() => {
@@ -315,30 +349,72 @@ export const TextArea: React.FC<TextAreaProps> = ({
         }`}
         onDragEnter={handleDrag}
       >
-        {/* Textarea without border */}
-        <textarea
-          ref={textareaRef}
-          onCompositionStart={() => setIsComposing(true)}
-          onCompositionEnd={() => setIsComposing(false)}
-          className="block w-full p-4 pb-16 text-sm text-gray-900 border-none bg-transparent dark:text-white resize-none focus:outline-none focus:ring-0"
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => {
-            onChange(e.target.value)
-          }}
-          onKeyDown={(e) => !disabled && handleKeyDown(e)}
-          onPaste={handlePaste}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          required
-          rows={3}
-        />
+        <div className="relative textarea-container">
+          {/* Resize bar at the top */}
+          <div
+            className="resize-bar h-2 w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 cursor-ns-resize rounded-t-lg"
+            onMouseDown={(e) => {
+              e.preventDefault()
+
+              // 初期位置を記録
+              const startY = e.clientY
+              // 現在のテキストエリアの実際の高さを取得（stateではなく実際のDOM要素から）
+              const startHeight = textareaRef.current
+                ? textareaRef.current.clientHeight
+                : textareaHeight
+
+              // マウスの移動を追跡
+              const handleMouseMove = (moveEvent: MouseEvent) => {
+                // 移動距離を計算（上に移動すると高さ増加、下に移動すると高さ減少）
+                const deltaY = startY - moveEvent.clientY
+                // 現在の高さから直接変更する（最小値と最大値の制約あり）
+                const newHeight = Math.max(72, Math.min(500, startHeight + deltaY))
+
+                if (textareaRef.current) {
+                  setTextareaHeight(newHeight)
+                  textareaRef.current.style.height = `${newHeight}px`
+                  setIsManuallyResized(true)
+                }
+              }
+
+              // マウスボタンが離されたときのハンドラ
+              const handleMouseUp = () => {
+                document.removeEventListener('mousemove', handleMouseMove)
+                document.removeEventListener('mouseup', handleMouseUp)
+              }
+
+              // イベントリスナーを追加
+              document.addEventListener('mousemove', handleMouseMove)
+              document.addEventListener('mouseup', handleMouseUp)
+            }}
+          />
+
+          {/* Textarea without border */}
+          <textarea
+            ref={textareaRef}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={() => setIsComposing(false)}
+            className="block w-full p-4 pb-16 text-sm text-gray-900 border-none bg-transparent dark:text-white resize-none focus:outline-none focus:ring-0"
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => {
+              onChange(e.target.value)
+            }}
+            onKeyDown={(e) => !disabled && handleKeyDown(e)}
+            onPaste={handlePaste}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            required
+            rows={3}
+            style={{ height: `${textareaHeight}px` }}
+          />
+        </div>
 
         {/* Controls at the bottom */}
         <div
-          className={`absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg ${isScrolledToBottom ? '' : 'border-t border-gray-200 dark:border-gray-700'}`}
+          className={`absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg ${isScrolledToBottom ? 'border-t border-gray-200 dark:border-gray-700' : ''}`}
         >
           <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
             <div>
