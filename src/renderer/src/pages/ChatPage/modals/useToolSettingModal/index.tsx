@@ -1,6 +1,7 @@
 import { useSettings } from '@renderer/contexts/SettingsContext'
 import toast from 'react-hot-toast'
 import { ToolName, isMcpTool } from '@/types/tools'
+import { PlanModeCompatibilityBadge } from './PlanModeCompatibilityBadge'
 import { toolIcons } from '../../components/Tool/ToolIcons'
 import { KnowledgeBaseSettingForm } from './KnowledgeBaseSettingForm'
 import { CommandForm } from './CommandForm'
@@ -111,7 +112,10 @@ const ToolItem: React.FC<ToolItemProps> = ({
               <ToggleSwitch checked={true} onChange={() => {}} disabled={true} label="" />
             </div>
           ) : (
-            <ToggleSwitch checked={enabled} onChange={() => onToggle()} label="" />
+            <div className="flex items-center gap-2">
+              <PlanModeCompatibilityBadge toolName={toolName} />
+              <ToggleSwitch checked={enabled} onChange={() => onToggle()} label="" />
+            </div>
           )}
         </div>
       </div>
@@ -350,6 +354,14 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                   </div>
                 ) : TOOLS_WITH_SETTINGS.includes(selectedTool) ? (
                   <div className="w-full">
+                    <div className="prose dark:prose-invert max-w-none mb-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <p className="text-gray-700 dark:text-gray-100 font-bold mb-0">
+                          {t(`tool descriptions.${selectedTool}`)}
+                        </p>
+                        <PlanModeCompatibilityBadge toolName={selectedTool} />
+                      </div>
+                    </div>
                     {selectedTool === 'retrieve' && selectedAgentId && (
                       <KnowledgeBaseSettingForm
                         knowledgeBases={getAgentKnowledgeBases(selectedAgentId)}
@@ -391,9 +403,12 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">
-                    <p className="mb-4 text-gray-700 dark:text-gray-100 font-bold">
-                      {t(`tool descriptions.${selectedTool}`)}
-                    </p>
+                    <div className="flex items-center gap-2 mb-4">
+                      <p className="text-gray-700 dark:text-gray-100 font-bold mb-0">
+                        {t(`tool descriptions.${selectedTool}`)}
+                      </p>
+                      <PlanModeCompatibilityBadge toolName={selectedTool} />
+                    </div>
 
                     <p className="mb-2 text-gray-700 dark:text-gray-200">
                       {t(
