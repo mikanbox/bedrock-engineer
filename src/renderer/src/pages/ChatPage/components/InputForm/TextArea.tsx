@@ -41,21 +41,21 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const [textareaHeight, setTextareaHeight] = useState<number>(72) // Initial height for 3 lines (24px * 3)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Determine the modifier key display based on the platform
+  // プラットフォームに応じた Modifire キーの表示を決定
   const modifierKey = useMemo(() => {
     const isMac = navigator.platform.toLowerCase().includes('mac')
     return isMac ? '⌘' : 'Ctrl'
   }, [])
 
-  // Generate placeholder text
+  // プレースホルダーテキストの生成
   const placeholder = useMemo(() => {
     return t('textarea.placeholder', { modifier: modifierKey })
   }, [t, modifierKey])
 
-  // Set up global keyboard shortcut event listeners
+  // グローバルなキーボードショートカットのイベントリスナーを設定
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Toggle Plan/Act mode with Cmd+Shift+A (or Ctrl+Shift+A)
+      // Cmd+Shift+A (または Ctrl+Shift+A) でPlan/Actモードを切り替え
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault()
         setPlanMode(!planMode)
@@ -68,7 +68,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
   }, [planMode, setPlanMode, t])
 
-  // Detect when the user manually resizes the textarea
+  // テキストエリアの高さを自動調整する（10行まで）
   useEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
@@ -203,12 +203,12 @@ export const TextArea: React.FC<TextAreaProps> = ({
   )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Toggle Plan/Act mode with Cmd+Shift+A (also works within textarea)
+    // Cmd+Shift+A でPlan/Actモードを切り替え（テキストエリア内でも有効にする）
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
       e.preventDefault()
       setPlanMode(!planMode)
 
-      // Mode switch notification
+      // モード切り替え通知
       const newMode = !planMode ? 'Plan' : 'Act'
       toast.success(t(`Switched to ${newMode} mode`), {
         duration: 2000,
@@ -218,7 +218,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
       return
     }
 
-    // Message sending key input handling
+    // メッセージ送信のキー入力処理
     if (isComposing) {
       return
     }
@@ -264,7 +264,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
       const allFiles = Array.from(e.dataTransfer.files)
 
-      // Separate image files and non-image files
+      // 画像ファイルと非画像ファイルを分ける
       const imageFiles = allFiles.filter((file) => {
         const fileType = file.type.split('/')[0]
         return fileType === 'image'
@@ -275,7 +275,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         return fileType !== 'image'
       })
 
-      // Process image files
+      // 画像ファイルを処理
       const validImageFiles = imageFiles.filter((file) => {
         const type = file.type.split('/')[1]?.toLowerCase()
         if (!type || !['png', 'jpeg', 'jpg', 'gif', 'webp'].includes(type)) {
@@ -294,11 +294,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
       validImageFiles.forEach(validateAndProcessImage)
 
-      // Add non-image file paths to the textarea
+      // 非画像ファイルのパスをテキストエリアに追加
       if (nonImageFiles.length > 0) {
         const filePaths = nonImageFiles.map((file) => file.path || file.name).join('\n')
 
-        // Insert at current cursor position or at the end of text
+        // 現在のカーソル位置またはテキスト末尾に挿入
         if (textareaRef.current) {
           const cursorPos = textareaRef.current.selectionStart
           const currentValue = value
@@ -307,7 +307,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
           onChange(newValue)
         } else {
-          // If textarea reference is not available, append to the end
+          // テキストエリア参照がない場合は末尾に追加
           onChange(value + (value ? '\n' : '') + filePaths)
         }
       }
