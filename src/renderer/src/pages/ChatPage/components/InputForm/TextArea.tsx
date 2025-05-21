@@ -39,6 +39,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
   const [isManuallyResized, setIsManuallyResized] = useState(false)
   const [textareaHeight, setTextareaHeight] = useState<number>(72) // Initial height for 3 lines (24px * 3)
+  const [isHovering, setIsHovering] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // プラットフォームに応じた Modifire キーの表示を決定
@@ -352,7 +353,13 @@ export const TextArea: React.FC<TextAreaProps> = ({
         <div className="relative textarea-container">
           {/* Resize bar at the top */}
           <div
-            className="resize-bar h-2 w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 cursor-ns-resize rounded-t-lg"
+            className={`resize-bar h-2 w-full cursor-ns-resize rounded-t-lg transition-opacity duration-200 ${
+              isHovering
+                ? 'opacity-100 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
+                : 'opacity-0'
+            }`}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             onMouseDown={(e) => {
               e.preventDefault()
 
