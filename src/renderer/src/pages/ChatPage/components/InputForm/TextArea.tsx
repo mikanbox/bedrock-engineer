@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useMemo, useRef, useEffect } from 'react'
-import { FiLoader, FiSend, FiX, FiChevronUp, FiChevronDown } from 'react-icons/fi'
+import { FiLoader, FiSend, FiX } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ModelSelector } from '../ModelSelector'
@@ -38,24 +38,24 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
   const [isManuallyResized, setIsManuallyResized] = useState(false)
-  const [textareaHeight, setTextareaHeight] = useState<number>(72) // 3行分の初期高さ (24px * 3)
+  const [textareaHeight, setTextareaHeight] = useState<number>(72) // Initial height for 3 lines (24px * 3)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // プラットフォームに応じた Modifire キーの表示を決定
+  // Determine the modifier key display based on the platform
   const modifierKey = useMemo(() => {
     const isMac = navigator.platform.toLowerCase().includes('mac')
     return isMac ? '⌘' : 'Ctrl'
   }, [])
 
-  // プレースホルダーテキストの生成
+  // Generate placeholder text
   const placeholder = useMemo(() => {
     return t('textarea.placeholder', { modifier: modifierKey })
   }, [t, modifierKey])
 
-  // グローバルなキーボードショートカットのイベントリスナーを設定
+  // Set up global keyboard shortcut event listeners
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Cmd+Shift+A (または Ctrl+Shift+A) でPlan/Actモードを切り替え
+      // Toggle Plan/Act mode with Cmd+Shift+A (or Ctrl+Shift+A)
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault()
         setPlanMode(!planMode)
@@ -68,18 +68,18 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
   }, [planMode, setPlanMode, t])
 
-  // ユーザーが手動でリサイズしたことを検知する
+  // Detect when the user manually resizes the textarea
   useEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
 
     const handleMouseDown = (e: MouseEvent) => {
-      // リサイズハンドルでのマウスダウンを検知
+      // Detect mouse down on the resize handle
       const { clientX, clientY } = e
       const { bottom, right } = textarea.getBoundingClientRect()
-      const resizeHandleSize = 16 // リサイズハンドルのサイズ（ピクセル）
+      const resizeHandleSize = 16 // Size of the resize handle (pixels)
 
-      // マウスがテキストエリアの右下隅（リサイズハンドル）にあるかどうかを確認
+      // Check if the mouse is in the bottom-right corner of the textarea (resize handle)
       if (
         clientX > right - resizeHandleSize &&
         clientX < right &&
@@ -100,28 +100,28 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
   }, [])
 
-  // テキストエリアの高さを自動調整する（ユーザーが手動でリサイズしていない場合のみ）
+  // Automatically adjust textarea height (only if not manually resized by user)
   useEffect(() => {
     if (textareaRef.current && !isManuallyResized) {
-      // テキストエリアのスクロールの高さまでリサイズする（最小の高さは3行分、最大は10行分）
+      // Resize to the scroll height (minimum 3 lines, maximum 10 lines)
       textareaRef.current.style.height = 'auto'
-      const lineHeight = 24 // 1行あたり約24px
-      const minHeight = 3 * lineHeight // 3行分の高さ
-      const maxHeight = 10 * lineHeight // 4行分の高さ（これを超えるとスクロール）
+      const lineHeight = 24 // Approximately 24px per line
+      const minHeight = 3 * lineHeight // Height for 3 lines
+      const maxHeight = 10 * lineHeight // Height for 10 lines (will scroll beyond this)
       const scrollHeight = textareaRef.current.scrollHeight
 
-      // 高さを制限し、10行を超える場合はオーバーフロー設定を変更
+      // Limit height and change overflow settings if exceeding 10 lines
       if (scrollHeight > maxHeight) {
         textareaRef.current.style.height = `${maxHeight}px`
-        textareaRef.current.style.overflowY = 'auto' // スクロールバーを表示
+        textareaRef.current.style.overflowY = 'auto' // Show scrollbar
       } else {
         textareaRef.current.style.height = `${Math.max(minHeight, scrollHeight)}px`
-        textareaRef.current.style.overflowY = 'hidden' // スクロールバーを非表示
+        textareaRef.current.style.overflowY = 'hidden' // Hide scrollbar
       }
     }
   }, [value, isManuallyResized])
 
-  // スクロール位置を監視して、最下部までスクロールしたかどうかを判定する
+  // Monitor scroll position to determine if scrolled to the bottom
   useEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
@@ -132,7 +132,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
     }
 
     textarea.addEventListener('scroll', handleScroll)
-    // 初期状態を設定
+    // Set initial state
     handleScroll()
 
     return () => {
@@ -203,12 +203,12 @@ export const TextArea: React.FC<TextAreaProps> = ({
   )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Cmd+Shift+A でPlan/Actモードを切り替え（テキストエリア内でも有効にする）
+    // Toggle Plan/Act mode with Cmd+Shift+A (also works within textarea)
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
       e.preventDefault()
       setPlanMode(!planMode)
 
-      // モード切り替え通知
+      // Mode switch notification
       const newMode = !planMode ? 'Plan' : 'Act'
       toast.success(t(`Switched to ${newMode} mode`), {
         duration: 2000,
@@ -218,7 +218,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
       return
     }
 
-    // メッセージ送信のキー入力処理
+    // Message sending key input handling
     if (isComposing) {
       return
     }
@@ -264,7 +264,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
       const allFiles = Array.from(e.dataTransfer.files)
 
-      // 画像ファイルと非画像ファイルを分ける
+      // Separate image files and non-image files
       const imageFiles = allFiles.filter((file) => {
         const fileType = file.type.split('/')[0]
         return fileType === 'image'
@@ -275,7 +275,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         return fileType !== 'image'
       })
 
-      // 画像ファイルを処理
+      // Process image files
       const validImageFiles = imageFiles.filter((file) => {
         const type = file.type.split('/')[1]?.toLowerCase()
         if (!type || !['png', 'jpeg', 'jpg', 'gif', 'webp'].includes(type)) {
@@ -294,11 +294,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
       validImageFiles.forEach(validateAndProcessImage)
 
-      // 非画像ファイルのパスをテキストエリアに追加
+      // Add non-image file paths to the textarea
       if (nonImageFiles.length > 0) {
         const filePaths = nonImageFiles.map((file) => file.path || file.name).join('\n')
 
-        // 現在のカーソル位置またはテキスト末尾に挿入
+        // Insert at current cursor position or at the end of text
         if (textareaRef.current) {
           const cursorPos = textareaRef.current.selectionStart
           const currentValue = value
@@ -307,7 +307,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
           onChange(newValue)
         } else {
-          // テキストエリア参照がない場合は末尾に追加
+          // If textarea reference is not available, append to the end
           onChange(value + (value ? '\n' : '') + filePaths)
         }
       }
@@ -356,18 +356,18 @@ export const TextArea: React.FC<TextAreaProps> = ({
             onMouseDown={(e) => {
               e.preventDefault()
 
-              // 初期位置を記録
+              // Record initial position
               const startY = e.clientY
-              // 現在のテキストエリアの実際の高さを取得（stateではなく実際のDOM要素から）
+              // Get the actual height of the textarea from the DOM element (not from state)
               const startHeight = textareaRef.current
                 ? textareaRef.current.clientHeight
                 : textareaHeight
 
-              // マウスの移動を追跡
+              // Track mouse movement
               const handleMouseMove = (moveEvent: MouseEvent) => {
-                // 移動距離を計算（上に移動すると高さ増加、下に移動すると高さ減少）
+                // Calculate movement distance (moving up increases height, moving down decreases height)
                 const deltaY = startY - moveEvent.clientY
-                // 現在の高さから直接変更する（最小値と最大値の制約あり）
+                // Change directly from current height (with min and max constraints)
                 const newHeight = Math.max(72, Math.min(500, startHeight + deltaY))
 
                 if (textareaRef.current) {
@@ -377,13 +377,13 @@ export const TextArea: React.FC<TextAreaProps> = ({
                 }
               }
 
-              // マウスボタンが離されたときのハンドラ
+              // Handler for when the mouse button is released
               const handleMouseUp = () => {
                 document.removeEventListener('mousemove', handleMouseMove)
                 document.removeEventListener('mouseup', handleMouseUp)
               }
 
-              // イベントリスナーを追加
+              // Add event listeners
               document.addEventListener('mousemove', handleMouseMove)
               document.addEventListener('mouseup', handleMouseUp)
             }}
