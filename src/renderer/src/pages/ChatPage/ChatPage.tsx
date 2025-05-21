@@ -129,6 +129,9 @@ export default function ChatPage() {
   }, [loading, messages.length])
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const DEFAULT_TEXTAREA_HEIGHT = 72 // Default height (3 lines * 24px)
+
+  const [textareaHeight, setTextareaHeight] = useState(DEFAULT_TEXTAREA_HEIGHT)
 
   const handleSessionSelect = (sessionId: string) => {
     setCurrentSessionId(sessionId)
@@ -214,7 +217,15 @@ export default function ChatPage() {
 
             {/* メッセージエリア - スクロール可能 */}
             <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-y-auto mb-2">
+              {/* Adjusts the bottom padding of the message area based on the height of the text area */}
+              <div
+                className="flex-1 overflow-y-auto mb-2"
+                style={{
+                  // Additional padding is applied only when the text area grows larger
+                  // This ensures that as the text area gets taller, the bottom padding of the message area increases by the same amount
+                  paddingBottom: `${textareaHeight - DEFAULT_TEXTAREA_HEIGHT * 2}px`
+                }}
+              >
                 {messages.length === 0 ? (
                   <div className="flex flex-col pt-12 h-full w-full justify-center items-center content-center align-center gap-1">
                     <div className="flex flex-row gap-3 items-center mb-2">
@@ -257,6 +268,7 @@ export default function ChatPage() {
                   onClearChat={handleClearChat}
                   onStopGeneration={stopGeneration}
                   hasMessages={messages.length > 0}
+                  onHeightChange={setTextareaHeight}
                 />
               </div>
             </div>

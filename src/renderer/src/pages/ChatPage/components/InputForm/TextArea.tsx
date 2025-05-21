@@ -21,6 +21,7 @@ type TextAreaProps = {
   isComposing: boolean
   setIsComposing: (value: boolean) => void
   sendMsgKey?: 'Enter' | 'Cmd+Enter'
+  onHeightChange?: (height: number) => void
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -30,7 +31,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
   disabled = false,
   isComposing,
   setIsComposing,
-  sendMsgKey = 'Enter'
+  sendMsgKey = 'Enter',
+  onHeightChange
 }) => {
   const { t } = useTranslation()
   const { currentLLM, planMode, setPlanMode } = useSettings()
@@ -111,15 +113,24 @@ export const TextArea: React.FC<TextAreaProps> = ({
       const scrollHeight = textareaRef.current.scrollHeight
 
       // Limit height and change overflow settings if exceeding 10 lines
+      let newHeight: number
       if (scrollHeight > maxHeight) {
-        textareaRef.current.style.height = `${maxHeight}px`
+        newHeight = maxHeight
+        textareaRef.current.style.height = `${newHeight}px`
         textareaRef.current.style.overflowY = 'auto' // Show scrollbar
       } else {
-        textareaRef.current.style.height = `${Math.max(minHeight, scrollHeight)}px`
+        newHeight = Math.max(minHeight, scrollHeight)
+        textareaRef.current.style.height = `${newHeight}px`
         textareaRef.current.style.overflowY = 'hidden' // Hide scrollbar
       }
+
+      // Update height state and notify parent
+      setTextareaHeight(newHeight)
+      if (onHeightChange) {
+        onHeightChange(newHeight)
+      }
     }
-  }, [value, isManuallyResized])
+  }, [value, isManuallyResized, onHeightChange])
 
   // No scroll position monitoring needed as we're keeping the border visible at all times
 
@@ -363,6 +374,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
                   setTextareaHeight(newHeight)
                   textareaRef.current.style.height = `${newHeight}px`
                   setIsManuallyResized(true)
+
+                  // Notify parent of height change
+                  if (onHeightChange) {
+                    onHeightChange(newHeight)
+                  }
                 }
               }
 
