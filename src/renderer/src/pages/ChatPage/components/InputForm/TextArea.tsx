@@ -36,6 +36,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   const { currentLLM, planMode, setPlanMode } = useSettings()
   const [dragActive, setDragActive] = useState(false)
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // プラットフォームに応じた Modifire キーの表示を決定
@@ -85,6 +86,25 @@ export const TextArea: React.FC<TextAreaProps> = ({
       }
     }
   }, [value])
+
+  // スクロール位置を監視して、最下部までスクロールしたかどうかを判定する
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const handleScroll = () => {
+      const isAtBottom = textarea.scrollHeight - textarea.scrollTop - textarea.clientHeight < 10
+      setIsScrolledToBottom(isAtBottom)
+    }
+
+    textarea.addEventListener('scroll', handleScroll)
+    // 初期状態を設定
+    handleScroll()
+
+    return () => {
+      textarea.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   const validateAndProcessImage = useCallback(
     (file: File) => {
@@ -288,65 +308,67 @@ export const TextArea: React.FC<TextAreaProps> = ({
         </div>
       )}
 
+      {/* Container with border that wraps both textarea and controls */}
       <div
-        className={`relative ${dragActive ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
+        className={`relative border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 ${
+          dragActive ? 'border-blue-500' : ''
+        }`}
         onDragEnter={handleDrag}
       >
-        <div className="relative">
-          <textarea
-            ref={textareaRef}
-            onCompositionStart={() => setIsComposing(true)}
-            onCompositionEnd={() => setIsComposing(false)}
-            className={`block w-full p-4 pb-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-white dark:bg-gray-800 z-9 resize-none ${
-              dragActive ? 'border-blue-500' : ''
-            }`}
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => {
-              onChange(e.target.value)
-            }}
-            onKeyDown={(e) => !disabled && handleKeyDown(e)}
-            onPaste={handlePaste}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-            required
-            rows={3}
-          />
+        {/* Textarea without border */}
+        <textarea
+          ref={textareaRef}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={() => setIsComposing(false)}
+          className="block w-full p-4 pb-16 text-sm text-gray-900 border-none bg-transparent dark:text-white resize-none focus:outline-none focus:ring-0"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value)
+          }}
+          onKeyDown={(e) => !disabled && handleKeyDown(e)}
+          onPaste={handlePaste}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+          required
+          rows={3}
+        />
 
-          {/* Fixed toolbar at the bottom with model selector, thinking mode, and plan/act toggle */}
-          <div className="flex items-center justify-between mt-2 px-1">
-            <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
+        {/* Controls at the bottom */}
+        <div
+          className={`absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg ${isScrolledToBottom ? '' : 'border-t border-gray-200 dark:border-gray-700'}`}
+        >
+          <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
+            <div>
+              <ModelSelector openable={true} />
+            </div>
+            {currentLLM.modelId.includes('anthropic.claude-3-7-sonnet') && (
               <div>
-                <ModelSelector openable={true} />
+                <ThinkingModeSelector />
               </div>
-              {currentLLM.modelId.includes('anthropic.claude-3-7-sonnet') && (
-                <div>
-                  <ThinkingModeSelector />
-                </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div>
+              <PlanActToggle />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={disabled}
+              className={`rounded-lg ${
+                disabled ? '' : 'hover:bg-gray-200'
+              } px-2 py-2 dark:text-white dark:hover:bg-gray-700`}
+              aria-label={disabled ? t('textarea.aria.sending') : t('textarea.aria.sendMessage')}
+            >
+              {disabled ? (
+                <FiLoader className="text-xl animate-spin" />
+              ) : (
+                <FiSend className="text-xl" />
               )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div>
-                <PlanActToggle />
-              </div>
-              <button
-                onClick={handleSubmit}
-                disabled={disabled}
-                className={`rounded-lg ${
-                  disabled ? '' : 'hover:bg-gray-200'
-                } px-2 py-2 dark:text-white dark:hover:bg-gray-700`}
-                aria-label={disabled ? t('textarea.aria.sending') : t('textarea.aria.sendMessage')}
-              >
-                {disabled ? (
-                  <FiLoader className="text-xl animate-spin" />
-                ) : (
-                  <FiSend className="text-xl" />
-                )}
-              </button>
-            </div>
+            </button>
           </div>
         </div>
       </div>
