@@ -414,7 +414,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
         {/* Controls at the bottom */}
         <div
-          className={`absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg ${isScrolledToBottom ? 'border-t border-gray-200 dark:border-gray-700' : ''}`}
+          className={`absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg ${isScrolledToBottom ? '' : 'border-t border-gray-200 dark:border-gray-700'}`}
         >
           <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
             <div>
