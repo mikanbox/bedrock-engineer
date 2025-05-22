@@ -137,7 +137,7 @@ export const usModels: LLM[] = [
     modelId: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
     modelName: 'Claude Sonnet 4 (cross-region)',
     toolUse: true,
-    maxTokensLimit: 64000,
+    maxTokensLimit: 8192,
     supportsThinking: true,
     regions: usRegions
   },
@@ -250,7 +250,7 @@ export const apacModels: LLM[] = [
     modelId: 'apac.anthropic.claude-sonnet-4-20250514-v1:0',
     modelName: 'Claude Sonnet 4 (cross-region)',
     toolUse: true,
-    maxTokensLimit: 64000,
+    maxTokensLimit: 8192,
     supportsThinking: true,
     regions: apacRegions
   }
