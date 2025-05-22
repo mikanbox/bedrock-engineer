@@ -19,6 +19,7 @@ type InputFormProps = {
   onClearChat: () => void
   onStopGeneration?: () => void // 停止ボタンのハンドラ
   hasMessages: boolean
+  onHeightChange?: (height: number) => void // Text area height change handler
 }
 
 export const InputForm: React.FC<InputFormProps> = ({
@@ -33,7 +34,8 @@ export const InputForm: React.FC<InputFormProps> = ({
   onOpenIgnoreModal,
   onClearChat,
   onStopGeneration,
-  hasMessages
+  hasMessages,
+  onHeightChange
 }) => {
   const [isComposing, setIsComposing] = useState(false)
   const { t } = useTranslation()
@@ -85,6 +87,7 @@ export const InputForm: React.FC<InputFormProps> = ({
           isComposing={isComposing}
           setIsComposing={setIsComposing}
           sendMsgKey={sendMsgKey}
+          onHeightChange={onHeightChange}
         />
       </div>
     </div>

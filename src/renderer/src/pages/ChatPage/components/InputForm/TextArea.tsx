@@ -21,6 +21,7 @@ type TextAreaProps = {
   isComposing: boolean
   setIsComposing: (value: boolean) => void
   sendMsgKey?: 'Enter' | 'Cmd+Enter'
+  onHeightChange?: (height: number) => void
 }
 
 export const TextArea: React.FC<TextAreaProps> = ({
@@ -30,12 +31,16 @@ export const TextArea: React.FC<TextAreaProps> = ({
   disabled = false,
   isComposing,
   setIsComposing,
-  sendMsgKey = 'Enter'
+  sendMsgKey = 'Enter',
+  onHeightChange
 }) => {
   const { t } = useTranslation()
   const { currentLLM, planMode, setPlanMode } = useSettings()
   const [dragActive, setDragActive] = useState(false)
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
+  const [isManuallyResized, setIsManuallyResized] = useState(false)
+  const [textareaHeight, setTextareaHeight] = useState<number>(72) // Initial height for 3 lines (24px * 3)
+  const [isHovering, setIsHovering] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // プラットフォームに応じた Modifire キーの表示を決定
@@ -67,24 +72,67 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
   // テキストエリアの高さを自動調整する（10行まで）
   useEffect(() => {
-    if (textareaRef.current) {
-      // テキストエリアのスクロールの高さまでリサイズする（最小の高さは3行分、最大は10行分）
-      textareaRef.current.style.height = 'auto'
-      const lineHeight = 24 // 1行あたり約24px
-      const minHeight = 3 * lineHeight // 3行分の高さ
-      const maxHeight = 10 * lineHeight // 4行分の高さ（これを超えるとスクロール）
-      const scrollHeight = textareaRef.current.scrollHeight
+    const textarea = textareaRef.current
+    if (!textarea) return
 
-      // 高さを制限し、10行を超える場合はオーバーフロー設定を変更
-      if (scrollHeight > maxHeight) {
-        textareaRef.current.style.height = `${maxHeight}px`
-        textareaRef.current.style.overflowY = 'auto' // スクロールバーを表示
-      } else {
-        textareaRef.current.style.height = `${Math.max(minHeight, scrollHeight)}px`
-        textareaRef.current.style.overflowY = 'hidden' // スクロールバーを非表示
+    const handleMouseDown = (e: MouseEvent) => {
+      // Detect mouse down on the resize handle
+      const { clientX, clientY } = e
+      const { bottom, right } = textarea.getBoundingClientRect()
+      const resizeHandleSize = 16 // Size of the resize handle (pixels)
+
+      // Check if the mouse is in the bottom-right corner of the textarea (resize handle)
+      if (
+        clientX > right - resizeHandleSize &&
+        clientX < right &&
+        clientY > bottom - resizeHandleSize &&
+        clientY < bottom
+      ) {
+        const handleMouseUp = () => {
+          setIsManuallyResized(true)
+          document.removeEventListener('mouseup', handleMouseUp)
+        }
+        document.addEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [value])
+
+    textarea.addEventListener('mousedown', handleMouseDown)
+    return () => {
+      textarea.removeEventListener('mousedown', handleMouseDown)
+    }
+  }, [])
+
+  // Automatically adjust textarea height (only if not manually resized by user)
+  useEffect(() => {
+    if (textareaRef.current && !isManuallyResized) {
+      // Resize to the scroll height (minimum 3 lines, maximum 10 lines)
+      textareaRef.current.style.height = 'auto'
+      const lineHeight = 24 // Approximately 24px per line
+      const minHeight = 3 * lineHeight // Height for 3 lines
+      const maxHeight = 10 * lineHeight // Height for 10 lines (will scroll beyond this)
+      const scrollHeight = textareaRef.current.scrollHeight
+
+      // Limit height and change overflow settings if exceeding 10 lines
+      let newHeight: number
+      if (scrollHeight > maxHeight) {
+        newHeight = maxHeight
+        textareaRef.current.style.height = `${newHeight}px`
+        textareaRef.current.style.overflowY = 'auto' // Show scrollbar
+      } else {
+        newHeight = Math.max(minHeight, scrollHeight)
+        textareaRef.current.style.height = `${newHeight}px`
+        textareaRef.current.style.overflowY = 'hidden' // Hide scrollbar
+      }
+
+      // Update height state and notify parent
+      setTextareaHeight(newHeight)
+      if (onHeightChange) {
+        onHeightChange(newHeight)
+      }
+    }
+  }, [value, isManuallyResized, onHeightChange])
+
+  // No scroll position monitoring needed as we're keeping the border visible at all times
 
   const validateAndProcessImage = useCallback(
     (file: File) => {
@@ -288,18 +336,70 @@ export const TextArea: React.FC<TextAreaProps> = ({
         </div>
       )}
 
+      {/* Container with border that wraps both textarea and controls */}
       <div
-        className={`relative ${dragActive ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
+        className={`relative border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 ${
+          dragActive ? 'border-blue-500' : ''
+        }`}
         onDragEnter={handleDrag}
       >
-        <div className="relative">
+        <div className="relative textarea-container">
+          {/* Resize bar at the top */}
+          <div
+            className={`resize-bar h-2 w-full cursor-ns-resize rounded-t-lg transition-opacity duration-200 ${
+              isHovering
+                ? 'opacity-100 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
+                : 'opacity-0'
+            }`}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            onMouseDown={(e) => {
+              e.preventDefault()
+
+              // Record initial position
+              const startY = e.clientY
+              // Get the actual height of the textarea from the DOM element (not from state)
+              const startHeight = textareaRef.current
+                ? textareaRef.current.clientHeight
+                : textareaHeight
+
+              // Track mouse movement
+              const handleMouseMove = (moveEvent: MouseEvent) => {
+                // Calculate movement distance (moving up increases height, moving down decreases height)
+                const deltaY = startY - moveEvent.clientY
+                // Change directly from current height (with min and max constraints)
+                const newHeight = Math.max(72, Math.min(500, startHeight + deltaY))
+
+                if (textareaRef.current) {
+                  setTextareaHeight(newHeight)
+                  textareaRef.current.style.height = `${newHeight}px`
+                  setIsManuallyResized(true)
+
+                  // Notify parent of height change
+                  if (onHeightChange) {
+                    onHeightChange(newHeight)
+                  }
+                }
+              }
+
+              // Handler for when the mouse button is released
+              const handleMouseUp = () => {
+                document.removeEventListener('mousemove', handleMouseMove)
+                document.removeEventListener('mouseup', handleMouseUp)
+              }
+
+              // Add event listeners
+              document.addEventListener('mousemove', handleMouseMove)
+              document.addEventListener('mouseup', handleMouseUp)
+            }}
+          />
+
+          {/* Textarea without border */}
           <textarea
             ref={textareaRef}
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={() => setIsComposing(false)}
-            className={`block w-full p-4 pb-16 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-white dark:bg-gray-800 z-9 resize-none ${
-              dragActive ? 'border-blue-500' : ''
-            }`}
+            className="block w-full p-4 pb-16 text-sm text-gray-900 border-none bg-transparent dark:text-white resize-none focus:outline-none focus:ring-0"
             placeholder={placeholder}
             value={value}
             onChange={(e) => {
@@ -313,10 +413,13 @@ export const TextArea: React.FC<TextAreaProps> = ({
             onDrop={handleDrop}
             required
             rows={3}
+            style={{ height: `${textareaHeight}px` }}
           />
+        </div>
 
-          {/* Model Selector, Thinking Mode, and Plan/Act Toggle at the bottom of textarea */}
-          <div className="absolute left-4 bottom-3.5 flex items-center gap-2.5 z-10 pointer-events-auto">
+        {/* Controls at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-lg">
+          <div className="flex items-center gap-2.5 z-10 pointer-events-auto">
             <div>
               <ModelSelector openable={true} />
             </div>
@@ -327,25 +430,25 @@ export const TextArea: React.FC<TextAreaProps> = ({
             )}
           </div>
 
-          {/* Plan/Act Toggle at the bottom right of textarea */}
-          <div className="absolute right-14 bottom-3.5 z-10 pointer-events-auto">
-            <PlanActToggle />
+          <div className="flex items-center gap-2">
+            <div>
+              <PlanActToggle />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={disabled}
+              className={`rounded-lg ${
+                disabled ? '' : 'hover:bg-gray-200'
+              } px-2 py-2 dark:text-white dark:hover:bg-gray-700`}
+              aria-label={disabled ? t('textarea.aria.sending') : t('textarea.aria.sendMessage')}
+            >
+              {disabled ? (
+                <FiLoader className="text-xl animate-spin" />
+              ) : (
+                <FiSend className="text-xl" />
+              )}
+            </button>
           </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={disabled}
-            className={`absolute end-2.5 bottom-2.5 rounded-lg ${
-              disabled ? '' : 'hover:bg-gray-200'
-            } px-2 py-2 dark:text-white dark:hover:bg-gray-700`}
-            aria-label={disabled ? t('textarea.aria.sending') : t('textarea.aria.sendMessage')}
-          >
-            {disabled ? (
-              <FiLoader className="text-xl animate-spin" />
-            ) : (
-              <FiSend className="text-xl" />
-            )}
-          </button>
         </div>
       </div>
     </div>
