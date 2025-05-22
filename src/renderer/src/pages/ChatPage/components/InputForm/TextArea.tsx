@@ -423,7 +423,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
             <div>
               <ModelSelector openable={true} />
             </div>
-            {currentLLM.modelId.includes('anthropic.claude-3-7-sonnet') && (
+            {currentLLM.supportsThinking && (
               <div>
                 <ThinkingModeSelector />
               </div>

@@ -11,6 +11,7 @@ import {
 import { createRuntimeClient } from '../client'
 import { processImageContent } from '../utils/imageUtils'
 import { getAlternateRegionOnThrottling } from '../utils/awsUtils'
+import { getThinkingSupportedModelIds } from '../models'
 import type { CallConverseAPIProps, ServiceContext } from '../types'
 import { createCategoryLogger } from '../../../../common/logger'
 
@@ -105,11 +106,17 @@ export class ConverseService {
 
     const thinkingMode = this.context.store.get('thinkingMode')
 
-    // Claude 3.7 Sonnet でThinking Modeが有効な場合、additionalModelRequestFieldsを追加
+    // models.tsでsupportsThinking=trueと定義されたモデルでThinking Modeが有効な場合、additionalModelRequestFieldsを追加
     let additionalModelRequestFields: Record<string, any> | undefined = undefined
 
-    // thinkingモードが有効かつmodelIdがClaude 3.7 Sonnetの場合のみ設定
-    if (modelId.includes('anthropic.claude-3-7-sonnet') && thinkingMode?.type === 'enabled') {
+    // Thinking対応モデルのIDリストを取得
+    const thinkingSupportedModelIds = getThinkingSupportedModelIds()
+
+    // thinkingモードが有効かつmodelIdがThinking対応モデルの場合のみ設定
+    if (
+      thinkingSupportedModelIds.some((id) => modelId.includes(id)) &&
+      thinkingMode?.type === 'enabled'
+    ) {
       additionalModelRequestFields = {
         thinking: {
           type: thinkingMode.type,
