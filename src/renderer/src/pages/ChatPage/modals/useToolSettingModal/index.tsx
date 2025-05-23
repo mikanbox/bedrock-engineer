@@ -9,6 +9,7 @@ import { BedrockAgentSettingForm } from './BedrockAgentSettingForm'
 import { TavilySearchSettingForm } from './TavilySearchSettingForm'
 import { ThinkToolSettingForm } from './ThinkToolSettingForm'
 import { RecognizeImageSettingForm } from './RecognizeImageSettingForm'
+import { GenerateImageSettingForm } from './GenerateImageSettingForm'
 import { FlowSettingForm } from './FlowSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
@@ -38,6 +39,7 @@ const TOOLS_WITH_SETTINGS = [
   'invokeBedrockAgent',
   'tavilySearch',
   'recognizeImage',
+  'generateImage',
   'invokeFlow'
 ]
 
@@ -393,6 +395,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                       />
                     )}
                     {selectedTool === 'recognizeImage' && <RecognizeImageSettingForm />}
+                    {selectedTool === 'generateImage' && <GenerateImageSettingForm />}
                     {selectedTool === 'think' && <ThinkToolSettingForm />}
                     {selectedTool === 'invokeFlow' && selectedAgentId && (
                       <FlowSettingForm

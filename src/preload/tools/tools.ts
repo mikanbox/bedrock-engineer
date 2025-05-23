@@ -84,16 +84,24 @@ export const executeTool = async (input: ToolInput): Promise<string | ToolResult
       case 'fetchWebsite':
         return toolService.fetchWebsite(input.url, input.options)
 
-      case 'generateImage':
+      case 'generateImage': {
+        // ストアから設定されたモデルIDを取得（設定がない場合はデフォルトを使用）
+        const generateImageSettings = store.get('generateImageTool') || {}
+        const modelId =
+          typeof generateImageSettings === 'object' && 'modelId' in generateImageSettings
+            ? (generateImageSettings.modelId as string)
+            : 'amazon.titan-image-generator-v2:0'
+
         return toolService.generateImage(bedrock, {
           prompt: input.prompt,
           outputPath: input.outputPath,
-          modelId: input.modelId,
+          modelId: modelId as import('../../main/api/bedrock/types/image').ImageGeneratorModel, // 設定から取得したモデルIDを使用
           negativePrompt: input.negativePrompt,
           aspect_ratio: input.aspect_ratio,
           seed: input.seed,
           output_format: input.output_format
         })
+      }
 
       case 'retrieve':
         return toolService.retrieve(bedrock, {

@@ -45,7 +45,8 @@ const MODEL_DEFINITIONS: ModelDefinition[] = [
     toolUse: true,
     maxTokensLimit: 8192,
     availability: {
-      base: [
+      base: [],
+      crossRegion: [
         'us-east-1',
         'us-west-2',
         'ap-northeast-1',
@@ -56,8 +57,7 @@ const MODEL_DEFINITIONS: ModelDefinition[] = [
         'eu-west-2',
         'eu-west-3',
         'sa-east-1'
-      ],
-      crossRegion: ['us-east-1', 'us-west-2']
+      ]
     }
   },
   // Claude 3 Haiku
@@ -125,7 +125,8 @@ const MODEL_DEFINITIONS: ModelDefinition[] = [
     toolUse: true,
     maxTokensLimit: 8192,
     availability: {
-      base: [
+      base: [],
+      crossRegion: [
         'us-east-1',
         'us-east-2',
         'us-west-2',
@@ -135,8 +136,7 @@ const MODEL_DEFINITIONS: ModelDefinition[] = [
         'ap-south-1',
         'ap-southeast-1',
         'ap-southeast-2'
-      ],
-      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+      ]
     }
   },
   // Claude 3.7 Sonnet
@@ -147,7 +147,7 @@ const MODEL_DEFINITIONS: ModelDefinition[] = [
     maxTokensLimit: 64000,
     supportsThinking: true,
     availability: {
-      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2', 'ap-northeast-1', 'ap-northeast-3']
     }
   },
   // Claude 3 Opus
@@ -179,7 +179,7 @@ const MODEL_DEFINITIONS: ModelDefinition[] = [
     maxTokensLimit: 8192,
     supportsThinking: true,
     availability: {
-      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2', 'ap-northeast-1', 'ap-northeast-3']
     }
   }
 ]
@@ -201,21 +201,8 @@ const NOVA_MODELS: ModelDefinition[] = [
     toolUse: true,
     maxTokensLimit: 5120,
     availability: {
-      base: [
-        'us-east-1',
-        'us-west-2',
-        'ap-northeast-1',
-        'ap-northeast-2',
-        'ap-south-1',
-        'ap-southeast-1',
-        'ap-southeast-2',
-        'eu-central-1',
-        'eu-north-1',
-        'eu-south-1',
-        'eu-south-2',
-        'eu-west-3'
-      ],
-      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+      base: [],
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2', 'ap-northeast-1', 'ap-northeast-2']
     }
   },
   {
@@ -224,8 +211,10 @@ const NOVA_MODELS: ModelDefinition[] = [
     toolUse: true,
     maxTokensLimit: 5120,
     availability: {
-      base: [
+      base: [],
+      crossRegion: [
         'us-east-1',
+        'us-east-2',
         'us-west-2',
         'ap-northeast-1',
         'ap-northeast-2',
@@ -237,8 +226,7 @@ const NOVA_MODELS: ModelDefinition[] = [
         'eu-south-1',
         'eu-south-2',
         'eu-west-3'
-      ],
-      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+      ]
     }
   },
   {
@@ -247,8 +235,10 @@ const NOVA_MODELS: ModelDefinition[] = [
     toolUse: true,
     maxTokensLimit: 5120,
     availability: {
-      base: [
+      base: [],
+      crossRegion: [
         'us-east-1',
+        'us-east-2',
         'us-west-2',
         'ap-northeast-1',
         'ap-northeast-2',
@@ -260,8 +250,7 @@ const NOVA_MODELS: ModelDefinition[] = [
         'eu-south-1',
         'eu-south-2',
         'eu-west-3'
-      ],
-      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+      ]
     }
   }
 ]
@@ -275,6 +264,93 @@ const OTHER_MODELS: ModelDefinition[] = [
     maxTokensLimit: 32768,
     availability: {
       crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+    }
+  }
+]
+
+// 画像生成モデル定義
+const IMAGE_GENERATION_MODELS: ModelDefinition[] = [
+  // Stability AI models
+  {
+    baseId: 'stability.sd3-5-large-v1:0',
+    name: 'Stability SD3.5 Large',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.sd3-large-v1:0',
+    name: 'Stability SD3 Large',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-core-v1:0',
+    name: 'Stability Stable Image Core v1.0',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-core-v1:1',
+    name: 'Stability Stable Image Core v1.1',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-ultra-v1:0',
+    name: 'Stability Stable Image Ultra v1.0',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-ultra-v1:1',
+    name: 'Stability Stable Image Ultra v1.1',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  // Amazon models
+  {
+    baseId: 'amazon.nova-canvas-v1:0',
+    name: 'Amazon Nova Canvas',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-east-1', 'ap-northeast-1', 'eu-west-1']
+    }
+  },
+  {
+    baseId: 'amazon.titan-image-generator-v2:0',
+    name: 'Amazon Titan Image Generator v2',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-east-1', 'us-west-2']
+    }
+  },
+  {
+    baseId: 'amazon.titan-image-generator-v1',
+    name: 'Amazon Titan Image Generator v1',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-east-1', 'us-west-2', 'eu-west-1', 'eu-west-2', 'ap-south-1']
     }
   }
 ]
@@ -339,6 +415,33 @@ export const getModelsForRegion = (region: BedrockSupportRegion): LLM[] => {
 // Thinking対応モデルのIDリストを取得する関数
 export const getThinkingSupportedModelIds = (): string[] => {
   return allModels.filter((model) => model.supportsThinking === true).map((model) => model.modelId)
+}
+
+// 画像生成モデルのリージョン別取得
+export const getImageGenerationModelsForRegion = (region: BedrockSupportRegion) => {
+  const models: Array<{ id: string; name: string }> = []
+
+  IMAGE_GENERATION_MODELS.forEach((def) => {
+    if (def.availability.base?.includes(region)) {
+      models.push({
+        id: def.baseId,
+        name: def.name
+      })
+    }
+  })
+
+  return models.sort((a, b) => {
+    // プロバイダー順: Amazon → Stability
+    const providerOrderA = a.id.startsWith('amazon') ? 0 : 1
+    const providerOrderB = b.id.startsWith('amazon') ? 0 : 1
+
+    if (providerOrderA !== providerOrderB) {
+      return providerOrderA - providerOrderB
+    }
+
+    // 同じプロバイダー内では名前順
+    return a.name.localeCompare(b.name)
+  })
 }
 
 // Prompt Router support

@@ -56,6 +56,12 @@ type StoreScheme = {
     modelId: string
   }
 
+  /** 画像生成ツールの設定 */
+  generateImageTool?: {
+    /** 使用するモデルID */
+    modelId: string
+  }
+
   /** アプリケーションの表示言語設定（日本語または英語） */
   language: 'ja' | 'en'
 

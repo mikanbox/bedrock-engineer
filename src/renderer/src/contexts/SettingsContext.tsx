@@ -54,6 +54,10 @@ export interface SettingsContextType {
   recognizeImageModel: string
   setRecognizeImageModel: (modelId: string) => void
 
+  // generateImage Tool Settings
+  generateImageModel: string
+  setGenerateImageModel: (modelId: string) => void
+
   // LLM Settings
   currentLLM: LLM
   updateLLM: (selectedModel: LLM) => void
@@ -214,6 +218,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     'anthropic.claude-3-sonnet-20240229-v1:0'
   )
 
+  // generateImage Tool Settings
+  const [generateImageModel, setStateGenerateImageModel] = useState<string>(
+    'amazon.titan-image-generator-v2:0'
+  )
+
   // LLM Settings
   const [llmError, setLLMError] = useState<any>()
   const defaultModel = {
@@ -320,6 +329,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const recognizeImageSetting = window.store.get('recognizeImageTool')
     if (recognizeImageSetting?.modelId) {
       setStateRecognizeImageModel(recognizeImageSetting.modelId)
+    }
+
+    // Load generateImage Tool Settings
+    const generateImageSetting = window.store.get('generateImageTool')
+    if (generateImageSetting?.modelId) {
+      setStateGenerateImageModel(generateImageSetting.modelId)
     }
 
     // Load LLM Settings
@@ -1023,6 +1038,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('recognizeImageTool', { modelId })
   }, [])
 
+  const setGenerateImageModel = useCallback((modelId: string) => {
+    setStateGenerateImageModel(modelId)
+    window.store.set('generateImageTool', { modelId })
+  }, [])
+
   // エージェント固有のツール設定を取得する関数
   const getAgentTools = useCallback(
     (agentId: string): ToolState[] => {
@@ -1301,6 +1321,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // recognizeImage Tool Settings
     recognizeImageModel,
     setRecognizeImageModel,
+
+    // generateImage Tool Settings
+    generateImageModel,
+    setGenerateImageModel,
 
     // LLM Settings
     currentLLM,
