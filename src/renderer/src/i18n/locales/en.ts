@@ -181,6 +181,8 @@ const AgentFormTabs = {
   'Server Configuration (JSON)': 'Server Configuration (JSON)',
   'Add Server': 'Add Server',
   'Update Server': 'Update Server',
+  'Server updated successfully': 'Server updated successfully',
+  'Multiple servers updated successfully': 'Multiple servers updated successfully',
   'Registered MCP Servers': 'Registered MCP Servers',
   'No MCP servers registered yet': 'No MCP servers registered yet',
   'Required fields are missing or invalid. Check the JSON format.':

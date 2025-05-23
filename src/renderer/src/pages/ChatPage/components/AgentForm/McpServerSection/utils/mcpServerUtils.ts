@@ -177,19 +177,40 @@ export function parseServerConfigJson(
 
 /**
  * サーバー設定を編集する際のJSONを生成する
- * @param server 編集対象のサーバー設定
+ * @param server 編集対象のサーバー設定（単一サーバー）
+ * @param servers 編集対象のサーバー設定（複数サーバー）
  * @returns {string} JSON文字列
  */
-export function generateEditJson(server: McpServerConfig): string {
-  const serverConfig = {
-    name: server.name,
-    description: server.description,
-    command: server.command,
-    args: server.args,
-    env: server.env || {}
+export function generateEditJson(server?: McpServerConfig, servers?: McpServerConfig[]): string {
+  // 複数サーバーの場合
+  if (servers) {
+    const mcpServers: Record<string, any> = {}
+
+    servers.forEach((srv) => {
+      mcpServers[srv.name] = {
+        command: srv.command,
+        args: srv.args,
+        ...(srv.env && Object.keys(srv.env).length > 0 ? { env: srv.env } : {})
+      }
+    })
+
+    return JSON.stringify({ mcpServers }, null, 2)
   }
 
-  return JSON.stringify(serverConfig, null, 2)
+  // 単一サーバーの場合（後方互換性）
+  if (server) {
+    const mcpServers: Record<string, any> = {}
+
+    mcpServers[server.name] = {
+      command: server.command,
+      args: server.args,
+      ...(server.env && Object.keys(server.env).length > 0 ? { env: server.env } : {})
+    }
+
+    return JSON.stringify({ mcpServers }, null, 2)
+  }
+
+  return JSON.stringify({ mcpServers: {} }, null, 2)
 }
 
 /**

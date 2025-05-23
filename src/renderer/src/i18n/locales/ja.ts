@@ -192,6 +192,8 @@ const AgentFormTabs = {
   'Server Configuration (JSON)': 'サーバー設定（JSON）',
   'Add Server': 'サーバーを追加',
   'Update Server': 'サーバーを更新',
+  'Server updated successfully': 'サーバーが正常に更新されました',
+  'Multiple servers updated successfully': '複数のサーバーが正常に更新されました',
   'Registered MCP Servers': '登録済みMCPサーバー',
   'No MCP servers registered yet': 'まだMCPサーバーが登録されていません',
   'Required fields are missing or invalid. Check the JSON format.':
