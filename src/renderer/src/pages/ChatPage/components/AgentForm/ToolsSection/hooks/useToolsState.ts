@@ -11,10 +11,10 @@ export function useToolsState(
   initialTools: ToolState[],
   initialCategory: AgentCategory = 'general',
   mcpServers: McpServerConfig[] = [],
-  agentMcpTools: ToolState[] = [],
+  _agentMcpTools: ToolState[] = [],
   onChange: (tools: ToolState[]) => void,
-  onCategoryChange?: (category: AgentCategory) => void,
-  getDefaultToolsForCategory?: (category: string) => ToolState[]
+  _onCategoryChange?: (category: AgentCategory) => void,
+  _getDefaultToolsForCategory?: (category: string) => ToolState[]
 ) {
   // 基本状態
   const [agentTools, setAgentTools] = useState<ToolState[]>(initialTools || [])
@@ -50,53 +50,6 @@ export function useToolsState(
       onChange(updatedTools)
     },
     [agentTools, onChange]
-  )
-
-  // カテゴリー選択のハンドラ
-  const handleCategoryChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const newCategory = event.target.value
-      setSelectedCategory(newCategory)
-
-      if (!getDefaultToolsForCategory) {
-        console.warn('getDefaultToolsForCategory is not provided')
-        return
-      }
-
-      // カテゴリーに基づいたデフォルトツール設定をロード
-      const defaultTools = getDefaultToolsForCategory(newCategory)
-
-      // 最新のMCPツールを取得（信頼できるソースから直接取得）
-      // 常に有効化されたMCPツールとして設定
-      const mcpToolsWithState = agentMcpTools.map((tool) => ({
-        ...tool,
-        enabled: true
-      }))
-
-      // 標準ツールとMCPツールを統合
-      const mergedTools = [...defaultTools, ...mcpToolsWithState]
-
-      // 更新後のツール一覧をコンソールに出力（デバッグ用）
-      console.log(
-        'Category changed:',
-        newCategory,
-        'Standard tools:',
-        defaultTools.length,
-        'MCP tools:',
-        mcpToolsWithState.length,
-        'Total:',
-        mergedTools.length
-      )
-
-      setAgentTools(mergedTools)
-      onChange(mergedTools)
-
-      // 親コンポーネントのカテゴリ変更ハンドラがあれば呼び出す
-      if (onCategoryChange && newCategory) {
-        onCategoryChange(newCategory as AgentCategory)
-      }
-    },
-    [getDefaultToolsForCategory, agentMcpTools, onChange, onCategoryChange]
   )
 
   // 各カテゴリのツールを取得する
@@ -169,7 +122,6 @@ export function useToolsState(
 
     // ハンドラーと計算値
     handleToggleTool,
-    handleCategoryChange,
     toggleToolExpand,
     getEnabledTools,
     categorizedTools,

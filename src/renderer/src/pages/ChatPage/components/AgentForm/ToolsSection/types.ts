@@ -66,9 +66,7 @@ export interface CategorizedToolData extends ToolCategory {
  */
 export interface AvailableToolsTabProps {
   categorizedTools: CategorizedToolData[]
-  selectedCategory: string
   mcpServers?: McpServerConfig[]
-  onCategoryChange: (event: React.ChangeEvent<HTMLSelectElement>) => void
   onToggleTool: (toolName: string) => void
   onShowToolInfo: (toolName: string) => void
   isLoadingMcpTools?: boolean // MCPツールを読み込み中かどうかを示すフラグ
