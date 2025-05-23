@@ -1,20 +1,12 @@
-// Define supported regions as a const array for better type inference
-export const BEDROCK_SUPPORTED_REGIONS = [
-  'us-east-1',
-  'us-east-2',
-  'us-west-2',
-  'eu-central-1',
-  'eu-west-1',
-  'eu-west-3',
-  'ap-northeast-1',
-  'ap-northeast-2',
-  'ap-south-1',
-  'ap-southeast-1',
-  'ap-southeast-2'
-] as const
+import { AWS_REGIONS } from './aws-regions'
 
-// Create a union type from the array
-export type BedrockSupportRegion = (typeof BEDROCK_SUPPORTED_REGIONS)[number]
+// Extract Bedrock supported regions from AWS_REGIONS
+export const BEDROCK_SUPPORTED_REGIONS = AWS_REGIONS.filter(
+  (region) => region.bedrockSupported
+).map((region) => region.id)
+
+// Create a union type from the aws-regions
+export type BedrockSupportRegion = (typeof AWS_REGIONS)[number]['id']
 
 // Define thinking mode budget tokens
 export enum ThinkingModeBudget {

@@ -1,6 +1,6 @@
 import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts'
 import type { AWSCredentials } from '../types'
-import { baseModels, usModels, euModels, apacModels } from '../models'
+import { allModels } from '../models'
 import type { LLM } from '../../../../types/llm'
 import { fromIni } from '@aws-sdk/credential-providers'
 
@@ -9,7 +9,6 @@ import { fromIni } from '@aws-sdk/credential-providers'
  */
 function findModelById(modelId: string): LLM | undefined {
   // すべてのモデルリストを結合して検索
-  const allModels = [...baseModels, ...usModels, ...euModels, ...apacModels]
   return allModels.find((model) => model.modelId === modelId)
 }
 

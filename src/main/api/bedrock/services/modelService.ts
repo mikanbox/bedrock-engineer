@@ -4,9 +4,6 @@ import type { ServiceContext, AWSCredentials } from '../types'
 import { BedrockSupportRegion } from '../../../../types/llm'
 
 export class ModelService {
-  private static readonly CACHE_LIFETIME = 1000 * 60 * 5 // 5 min
-  private modelCache: { [key: string]: any } = {}
-
   constructor(private context: ServiceContext) {}
 
   async listModels() {
@@ -19,29 +16,11 @@ export class ModelService {
       return []
     }
 
-    const cacheKey = useProfile
-      ? `${region}-${awsCredentials.profile || 'default'}`
-      : `${region}-${accessKeyId}`
-    const cachedData = this.modelCache[cacheKey]
-
-    if (
-      cachedData &&
-      cachedData.timestamp &&
-      Date.now() - cachedData.timestamp < ModelService.CACHE_LIFETIME
-    ) {
-      return cachedData.models
-    }
-
     try {
       const models = getModelsForRegion(region as BedrockSupportRegion)
-
       const accountId = await getAccountId(awsCredentials)
       const promptRouterModels = accountId ? getDefaultPromptRouter(accountId, region) : []
       const result = [...models, ...promptRouterModels]
-      this.modelCache[cacheKey] = {
-        models: models,
-        timestamp: Date.now()
-      }
 
       return result
     } catch (error) {
