@@ -27,7 +27,7 @@ export const ThinkingModeSelector: React.FC<ThinkingModeSelectorProps> = ({ clas
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Only show for Claude 3.7 Sonnet
+  // Only show for models that support thinking (Claude 3.7 Sonnet, Claude 4)
   if (!currentLLM.supportsThinking) {
     return null
   }

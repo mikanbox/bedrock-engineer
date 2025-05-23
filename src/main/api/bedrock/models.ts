@@ -122,6 +122,23 @@ export const usModels: LLM[] = [
     modelName: 'Claude 3.7 Sonnet (cross-region)',
     toolUse: true,
     maxTokensLimit: 64000,
+    supportsThinking: true,
+    regions: usRegions
+  },
+  {
+    modelId: 'us.anthropic.claude-opus-4-20250514-v1:0',
+    modelName: 'Claude Opus 4 (cross-region)',
+    toolUse: true,
+    maxTokensLimit: 32768,
+    supportsThinking: true,
+    regions: usRegions
+  },
+  {
+    modelId: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
+    modelName: 'Claude Sonnet 4 (cross-region)',
+    toolUse: true,
+    maxTokensLimit: 8192,
+    supportsThinking: true,
     regions: usRegions
   },
   {
@@ -220,6 +237,22 @@ export const apacModels: LLM[] = [
     toolUse: true,
     maxTokensLimit: 4096,
     regions: ['ap-northeast-1']
+  },
+  {
+    modelId: 'apac.anthropic.claude-3-7-sonnet-20250219-v1:0',
+    modelName: 'Claude 3.7 Sonnet (cross-region)',
+    toolUse: true,
+    maxTokensLimit: 64000,
+    supportsThinking: true,
+    regions: usRegions
+  },
+  {
+    modelId: 'apac.anthropic.claude-sonnet-4-20250514-v1:0',
+    modelName: 'Claude Sonnet 4 (cross-region)',
+    toolUse: true,
+    maxTokensLimit: 8192,
+    supportsThinking: true,
+    regions: apacRegions
   }
 ]
 
@@ -245,6 +278,12 @@ export const getModelsForRegion = (region: BedrockSupportRegion): LLM[] => {
   // sort by model name
 
   return models.sort((a, b) => a.modelName.localeCompare(b.modelName))
+}
+
+// Thinking対応モデルのIDリストを取得する関数
+export const getThinkingSupportedModelIds = (): string[] => {
+  const allModels = [...baseModels, ...usModels, ...euModels, ...apacModels]
+  return allModels.filter((model) => model.supportsThinking === true).map((model) => model.modelId)
 }
 
 // Prompt Router support
