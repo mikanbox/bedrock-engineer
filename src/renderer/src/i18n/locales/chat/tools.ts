@@ -91,7 +91,10 @@ export const tools = {
           'The invokeBedrockAgent tool allows the AI assistant to interact with your custom Amazon Bedrock Agents to perform specialized tasks.',
         'about title': 'About Bedrock Agents',
         'about description':
-          'Amazon Bedrock Agents let you build AI agents that can retrieve information from your data sources, reason over the data, and take actions to complete tasks. Agents can connect to your systems and APIs to perform actions like booking travel, processing orders, or querying databases.'
+          'Amazon Bedrock Agents let you build AI agents that can retrieve information from your data sources, reason over the data, and take actions to complete tasks. Agents can connect to your systems and APIs to perform actions like booking travel, processing orders, or querying databases.',
+        'file limitations title': 'File Sending Limitations',
+        'file limitations description':
+          'File sending is experimental and may not work consistently. Currently, CSV files are partially supported with CHAT use case, but other file formats may fail with validation errors. CODE_INTERPRETER use case is currently not supported.'
       },
       tavilySearch: {
         description:
@@ -292,7 +295,10 @@ export const tools = {
           'invokeBedrockAgent ツールを使用すると、AIアシスタントはカスタムAmazon Bedrock Agentと連携して、専門的なタスクを実行できます。',
         'about title': 'Bedrock Agentsについて',
         'about description':
-          'Amazon Bedrock Agentsを使用すると、データソースから情報を取得し、データを処理し、タスクを完了するためのアクションを実行するAIエージェントを構築できます。エージェントはシステムやAPIに接続して、旅行の予約、注文の処理、データベースのクエリなどのアクションを実行できます。'
+          'Amazon Bedrock Agentsを使用すると、データソースから情報を取得し、データを処理し、タスクを完了するためのアクションを実行するAIエージェントを構築できます。エージェントはシステムやAPIに接続して、旅行の予約、注文の処理、データベースのクエリなどのアクションを実行できます。',
+        'file limitations title': 'ファイル送信の制限事項',
+        'file limitations description':
+          'ファイル送信機能は実験的であり、一貫して動作しない可能性があります。現在、CSVファイルはCHATユースケースで部分的にサポートされていますが、他のファイル形式ではバリデーションエラーで失敗する可能性があります。CODE_INTERPRETERユースケースは現在サポートされていません。'
       },
       tavilySearch: {
         description:

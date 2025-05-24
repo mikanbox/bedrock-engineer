@@ -52,7 +52,8 @@ export const agent = {
       'A list of Knowledge Base IDs and descriptions to use for the search',
     bedrockAgentsPlaceholder:
       'A list of Bedrock Agents identifier (agentId and aliasId) and description',
-    flowsPlaceholder: 'A list of Bedrock Flows identifier (flowId and flowAliasId) and description',
+    flowsPlaceholder:
+      'A list of Bedrock Flows identifier (flowIdentifier and flowAliasIdentifier) and description',
     scenariosDescription:
       'Register commonly used interaction patterns as scenarios. Enter the title and specific content of the scenario.',
     scenarioTitle: 'Scenario title',
@@ -148,7 +149,7 @@ export const agent = {
     allowedCommandsPlaceholder: '許可されたコマンド',
     knowledgeBasesPlaceholder: '検索に使用する Knowledge Base の ID と説明のリスト',
     bedrockAgentsPlaceholder: 'Bedrock Agent ID、Alias ID、説明のリスト',
-    flowsPlaceholder: 'Bedrock Flow ID、Flow Alias ID、説明のリスト',
+    flowsPlaceholder: 'Bedrock Flow Identifier、Flow Alias Identifier、説明のリスト',
     scenariosDescription:
       'よく使用するやり取りのパターンをシナリオとして登録できます。シナリオのタイトルと具体的な内容を入力してください。',
     scenarioTitle: 'シナリオのタイトル',

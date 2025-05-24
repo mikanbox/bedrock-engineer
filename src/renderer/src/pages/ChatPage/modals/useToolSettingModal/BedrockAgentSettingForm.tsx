@@ -77,6 +77,15 @@ export const BedrockAgentSettingForm = memo(
               {t('tool info.invokeBedrockAgent.about description')}
             </p>
           </div>
+
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md mb-5">
+            <h5 className="font-medium mb-2 text-yellow-800 dark:text-yellow-200">
+              {t('tool info.invokeBedrockAgent.file limitations title')}
+            </h5>
+            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+              {t('tool info.invokeBedrockAgent.file limitations description')}
+            </p>
+          </div>
         </div>
 
         {/* Agent 追加フォーム */}
