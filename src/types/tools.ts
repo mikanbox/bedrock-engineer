@@ -561,21 +561,6 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
               description:
                 'Path where the generated image should be saved, including filename (e.g., "/path/to/image.png")'
             },
-            modelId: {
-              type: 'string',
-              description:
-                'Model to use. Includes Stability.ai models and Amazon models. Note that Amazon models have specific region availability.',
-              enum: [
-                'stability.sd3-5-large-v1:0',
-                'stability.sd3-large-v1:0',
-                'stability.stable-image-core-v1:1',
-                'stability.stable-image-ultra-v1:1',
-                'amazon.nova-canvas-v1:0',
-                'amazon.titan-image-generator-v2:0',
-                'amazon.titan-image-generator-v1'
-              ],
-              default: 'stability.sd3-5-large-v1:0'
-            },
             negativePrompt: {
               type: 'string',
               description: 'Optional. Things to exclude from the image'
@@ -616,7 +601,7 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
               default: 'png'
             }
           },
-          required: ['prompt', 'outputPath', 'modelId']
+          required: ['prompt', 'outputPath']
         }
       }
     }

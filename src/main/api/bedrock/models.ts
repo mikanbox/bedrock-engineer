@@ -1,289 +1,447 @@
 import { BedrockSupportRegion, LLM } from '../../../types/llm'
 
-// Base models without cross-region inference
-export const baseModels: LLM[] = [
+// ヘルパー関数: リージョンからプレフィックスを取得
+function getRegionPrefix(region: string): string {
+  if (region.startsWith('us-') || region.startsWith('ca-')) return 'us'
+  if (region.startsWith('eu-')) return 'eu'
+  if (region.startsWith('ap-') || region.startsWith('sa-')) return 'apac'
+  return 'us' // デフォルト
+}
+
+// ヘルパー関数: リージョンをプレフィックスでグループ化
+function groupRegionsByPrefix(
+  regions: BedrockSupportRegion[]
+): Record<string, BedrockSupportRegion[]> {
+  return regions.reduce(
+    (groups, region) => {
+      const prefix = getRegionPrefix(region)
+      if (!groups[prefix]) groups[prefix] = []
+      groups[prefix].push(region)
+      return groups
+    },
+    {} as Record<string, BedrockSupportRegion[]>
+  )
+}
+
+// モデル定義の型
+interface ModelDefinition {
+  baseId: string
+  name: string
+  toolUse: boolean
+  maxTokensLimit: number
+  supportsThinking?: boolean
+  availability: {
+    base?: BedrockSupportRegion[]
+    crossRegion?: BedrockSupportRegion[]
+  }
+}
+
+// 統合されたモデル定義（AWS公式ドキュメント準拠）
+const MODEL_DEFINITIONS: ModelDefinition[] = [
+  // Claude 3 Sonnet
   {
-    modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet',
+    baseId: 'claude-3-sonnet-20240229-v1:0',
+    name: 'Claude 3 Sonnet',
     toolUse: true,
     maxTokensLimit: 8192,
-    regions: [
-      'us-east-1',
-      'us-east-2',
-      'us-west-2',
-      'eu-central-1',
-      'eu-west-1',
-      'eu-west-3',
-      // 'ap-northeast-1',  // クロスリージョン推論のみ対応
-      // 'ap-northeast-2', // クロスリージョン推論のみ対応
-      'ap-south-1',
-      // 'ap-southeast-1', // クロスリージョン推論のみ対応
-      'ap-southeast-2'
-    ]
+    availability: {
+      base: [],
+      crossRegion: [
+        'us-east-1',
+        'us-west-2',
+        'ap-northeast-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'eu-central-1',
+        'eu-west-1',
+        'eu-west-2',
+        'eu-west-3',
+        'sa-east-1'
+      ]
+    }
   },
+  // Claude 3 Haiku
   {
-    modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku',
+    baseId: 'claude-3-haiku-20240307-v1:0',
+    name: 'Claude 3 Haiku',
     toolUse: true,
     maxTokensLimit: 4096,
-    regions: [
-      'us-east-1',
-      // 'us-east-2',
-      'us-west-2',
-      'eu-central-1',
-      'eu-west-1',
-      'eu-west-3',
-      'ap-northeast-1',
-      // 'ap-northeast-2', // クロスリージョン推論のみ対応
-      'ap-south-1',
-      'ap-southeast-1',
-      'ap-southeast-2'
-    ]
+    availability: {
+      base: [
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+        'ca-central-1',
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'eu-central-1',
+        'eu-west-1',
+        'eu-west-2',
+        'eu-west-3'
+      ],
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+    }
   },
+  // Claude 3.5 Haiku
   {
-    modelId: 'anthropic.claude-3-5-haiku-20241022-v1:0',
-    modelName: 'Claude 3.5 Haiku',
+    baseId: 'claude-3-5-haiku-20241022-v1:0',
+    name: 'Claude 3.5 Haiku',
     toolUse: true,
     maxTokensLimit: 8192,
-    regions: [
-      // 'us-east-1',
-      // 'us-east-2',
-      'us-west-2'
-    ]
+    availability: {
+      base: ['us-west-2'],
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+    }
   },
+  // Claude 3.5 Sonnet
   {
-    modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
-    modelName: 'Claude 3.5 Sonnet',
+    baseId: 'claude-3-5-sonnet-20240620-v1:0',
+    name: 'Claude 3.5 Sonnet',
     toolUse: true,
     maxTokensLimit: 8192,
-    regions: [
-      'us-east-1',
-      // 'us-east-2',
-      'us-west-2',
-      'eu-central-1',
-      'eu-west-1',
-      // 'eu-west-3',
-      'ap-northeast-1',
-      // 'ap-northeast-2', // クロスリージョン推論のみ対応
-      'ap-south-1'
-      // 'ap-southeast-1',
-      // 'ap-southeast-2'
-    ]
+    availability: {
+      base: [
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+        'ap-northeast-1',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'eu-central-1',
+        'eu-west-1',
+        'eu-west-3'
+      ],
+      crossRegion: ['us-east-1', 'us-west-2']
+    }
   },
+  // Claude 3.5 Sonnet v2
   {
-    modelId: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
-    modelName: 'Claude 3.5 Sonnet v2',
+    baseId: 'claude-3-5-sonnet-20241022-v2:0',
+    name: 'Claude 3.5 Sonnet v2',
     toolUse: true,
     maxTokensLimit: 8192,
-    regions: ['us-west-2']
-  }
-]
-const usRegions = ['us-east-1', 'us-east-2', 'us-west-2'] as BedrockSupportRegion[]
-
-// US cross-region inference models
-export const usModels: LLM[] = [
-  {
-    modelId: 'us.anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: ['us-east-1', 'us-west-2']
+    availability: {
+      base: [],
+      crossRegion: [
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-northeast-3',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2'
+      ]
+    }
   },
+  // Claude 3.7 Sonnet
   {
-    modelId: 'us.anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: usRegions
-  },
-  {
-    modelId: 'us.anthropic.claude-3-5-haiku-20241022-v1:0',
-    modelName: 'Claude 3.5 Haiku (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: usRegions
-  },
-  {
-    modelId: 'us.anthropic.claude-3-5-sonnet-20240620-v1:0',
-    modelName: 'Claude 3.5 Sonnet (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: usRegions
-  },
-  {
-    modelId: 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
-    modelName: 'Claude 3.5 Sonnet v2 (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: usRegions
-  },
-  {
-    modelId: 'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
-    modelName: 'Claude 3.7 Sonnet (cross-region)',
+    baseId: 'claude-3-7-sonnet-20250219-v1:0',
+    name: 'Claude 3.7 Sonnet',
     toolUse: true,
     maxTokensLimit: 64000,
     supportsThinking: true,
-    regions: usRegions
+    availability: {
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2', 'ap-northeast-1', 'ap-northeast-3']
+    }
   },
+  // Claude 3 Opus
   {
-    modelId: 'us.anthropic.claude-opus-4-20250514-v1:0',
-    modelName: 'Claude Opus 4 (cross-region)',
+    baseId: 'claude-3-opus-20240229-v1:0',
+    name: 'Claude 3 Opus',
+    toolUse: true,
+    maxTokensLimit: 8192,
+    availability: {
+      crossRegion: ['us-east-1', 'us-west-2']
+    }
+  },
+  // Claude Opus 4
+  {
+    baseId: 'claude-opus-4-20250514-v1:0',
+    name: 'Claude Opus 4',
     toolUse: true,
     maxTokensLimit: 32768,
     supportsThinking: true,
-    regions: usRegions
+    availability: {
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+    }
   },
+  // Claude Sonnet 4
   {
-    modelId: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
-    modelName: 'Claude Sonnet 4 (cross-region)',
+    baseId: 'claude-sonnet-4-20250514-v1:0',
+    name: 'Claude Sonnet 4',
     toolUse: true,
     maxTokensLimit: 8192,
     supportsThinking: true,
-    regions: usRegions
-  },
+    availability: {
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2', 'ap-northeast-1', 'ap-northeast-3']
+    }
+  }
+]
+
+// Amazon Nova モデル定義
+const NOVA_MODELS: ModelDefinition[] = [
   {
-    modelId: 'us.amazon.nova-premier-v1:0',
-    modelName: 'Amazon Nova Premier (cross-region)',
+    baseId: 'nova-premier-v1:0',
+    name: 'Amazon Nova Premier',
     toolUse: true,
     maxTokensLimit: 32000,
-    regions: usRegions
+    availability: {
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+    }
   },
   {
-    modelId: 'us.amazon.nova-pro-v1:0',
-    modelName: 'Amazon Nova Pro (cross-region)',
+    baseId: 'nova-pro-v1:0',
+    name: 'Amazon Nova Pro',
     toolUse: true,
     maxTokensLimit: 5120,
-    regions: usRegions
+    availability: {
+      base: [],
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2', 'ap-northeast-1', 'ap-northeast-2']
+    }
   },
   {
-    modelId: 'us.amazon.nova-lite-v1:0',
-    modelName: 'Amazon Nova Lite (cross-region)',
+    baseId: 'nova-lite-v1:0',
+    name: 'Amazon Nova Lite',
     toolUse: true,
     maxTokensLimit: 5120,
-    regions: usRegions
+    availability: {
+      base: [],
+      crossRegion: [
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'eu-central-1',
+        'eu-north-1',
+        'eu-south-1',
+        'eu-south-2',
+        'eu-west-3'
+      ]
+    }
   },
   {
-    modelId: 'us.amazon.nova-micro-v1:0',
-    modelName: 'Amazon Nova Micro (cross-region)',
+    baseId: 'nova-micro-v1:0',
+    name: 'Amazon Nova Micro',
     toolUse: true,
     maxTokensLimit: 5120,
-    regions: usRegions
-  },
-  // DeepSeek
+    availability: {
+      base: [],
+      crossRegion: [
+        'us-east-1',
+        'us-east-2',
+        'us-west-2',
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'eu-central-1',
+        'eu-north-1',
+        'eu-south-1',
+        'eu-south-2',
+        'eu-west-3'
+      ]
+    }
+  }
+]
+
+// その他のモデル定義
+const OTHER_MODELS: ModelDefinition[] = [
   {
-    modelId: 'us.deepseek.r1-v1:0',
-    modelName: 'DeepSeek R1 (cross-region)',
+    baseId: 'r1-v1:0',
+    name: 'DeepSeek R1',
     toolUse: false,
     maxTokensLimit: 32768,
-    regions: usRegions
+    availability: {
+      crossRegion: ['us-east-1', 'us-east-2', 'us-west-2']
+    }
   }
 ]
 
-const euRegions = ['eu-central-1', 'eu-west-1', 'eu-west-3'] as BedrockSupportRegion[]
-
-// EU cross-region inference models
-export const euModels: LLM[] = [
+// 画像生成モデル定義
+const IMAGE_GENERATION_MODELS: ModelDefinition[] = [
+  // Stability AI models
   {
-    modelId: 'eu.anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: euRegions
+    baseId: 'stability.sd3-5-large-v1:0',
+    name: 'Stability SD3.5 Large',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
   },
   {
-    modelId: 'eu.anthropic.claude-3-5-sonnet-20240620-v1:0',
-    modelName: 'Claude 3.5 Sonnet (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: euRegions
+    baseId: 'stability.sd3-large-v1:0',
+    name: 'Stability SD3 Large',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
   },
   {
-    modelId: 'eu.anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 4096,
-    regions: euRegions
+    baseId: 'stability.stable-image-core-v1:0',
+    name: 'Stability Stable Image Core v1.0',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-core-v1:1',
+    name: 'Stability Stable Image Core v1.1',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-ultra-v1:0',
+    name: 'Stability Stable Image Ultra v1.0',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  {
+    baseId: 'stability.stable-image-ultra-v1:1',
+    name: 'Stability Stable Image Ultra v1.1',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-west-2']
+    }
+  },
+  // Amazon models
+  {
+    baseId: 'amazon.nova-canvas-v1:0',
+    name: 'Amazon Nova Canvas',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-east-1', 'ap-northeast-1', 'eu-west-1']
+    }
+  },
+  {
+    baseId: 'amazon.titan-image-generator-v2:0',
+    name: 'Amazon Titan Image Generator v2',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-east-1', 'us-west-2']
+    }
+  },
+  {
+    baseId: 'amazon.titan-image-generator-v1',
+    name: 'Amazon Titan Image Generator v1',
+    toolUse: false,
+    maxTokensLimit: 0,
+    availability: {
+      base: ['us-east-1', 'us-west-2', 'eu-west-1', 'eu-west-2', 'ap-south-1']
+    }
   }
 ]
 
-const apacRegions = [
-  'ap-northeast-1',
-  'ap-northeast-2',
-  'ap-northeast-3',
-  'ap-south-1',
-  'ap-southeast-1',
-  'ap-southeast-2'
-] as BedrockSupportRegion[]
-
-// APAC cross-region inference models
-export const apacModels: LLM[] = [
-  {
-    modelId: 'apac.anthropic.claude-3-5-sonnet-20241022-v2:0',
-    modelName: 'Claude 3.5 Sonnet v2 (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: apacRegions
-  },
-  {
-    modelId: 'apac.anthropic.claude-3-sonnet-20240229-v1:0',
-    modelName: 'Claude 3 Sonnet (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    regions: ['ap-northeast-1']
-  },
-  {
-    modelId: 'apac.anthropic.claude-3-haiku-20240307-v1:0',
-    modelName: 'Claude 3 Haiku (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 4096,
-    regions: ['ap-northeast-1']
-  },
-  {
-    modelId: 'apac.anthropic.claude-3-7-sonnet-20250219-v1:0',
-    modelName: 'Claude 3.7 Sonnet (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 64000,
-    supportsThinking: true,
-    regions: usRegions
-  },
-  {
-    modelId: 'apac.anthropic.claude-sonnet-4-20250514-v1:0',
-    modelName: 'Claude Sonnet 4 (cross-region)',
-    toolUse: true,
-    maxTokensLimit: 8192,
-    supportsThinking: true,
-    regions: apacRegions
-  }
+// 全モデル定義を統合
+const ALL_MODEL_DEFINITIONS = [
+  ...MODEL_DEFINITIONS.map((def) => ({ ...def, provider: 'anthropic' })),
+  ...NOVA_MODELS.map((def) => ({ ...def, provider: 'amazon' })),
+  ...OTHER_MODELS.map((def) => ({ ...def, provider: 'deepseek' }))
 ]
 
-// Combine all models based on region
+// モデル生成関数
+function generateModelsFromDefinitions(): LLM[] {
+  const models: LLM[] = []
+
+  ALL_MODEL_DEFINITIONS.forEach((def) => {
+    // ベースモデル
+    if (def.availability.base?.length) {
+      const modelId = `${def.provider}.${def.baseId}`
+      models.push({
+        modelId,
+        modelName: def.name,
+        toolUse: def.toolUse,
+        maxTokensLimit: def.maxTokensLimit,
+        supportsThinking: def.supportsThinking,
+        regions: def.availability.base
+      })
+    }
+
+    // クロスリージョンモデル（リージョンごとに個別に生成）
+    if (def.availability.crossRegion?.length) {
+      // リージョンをプレフィックスでグループ化
+      const regionGroups = groupRegionsByPrefix(def.availability.crossRegion)
+
+      Object.entries(regionGroups).forEach(([prefix, regions]) => {
+        const modelId = `${prefix}.${def.provider}.${def.baseId}`
+
+        models.push({
+          modelId,
+          modelName: `${def.name} (cross-region)`,
+          toolUse: def.toolUse,
+          maxTokensLimit: def.maxTokensLimit,
+          supportsThinking: def.supportsThinking,
+          regions
+        })
+      })
+    }
+  })
+
+  return models
+}
+
+// 生成されたモデル一覧
+export const allModels = generateModelsFromDefinitions()
+
+// リージョン別のモデル取得
 export const getModelsForRegion = (region: BedrockSupportRegion): LLM[] => {
-  const models = baseModels.filter((model) => model.regions?.includes(region))
-
-  // Add US models for US regions
-  if (usRegions.includes(region)) {
-    models.push(...usModels.filter((model) => model.regions?.includes(region)))
-  }
-
-  // Add EU models for EU regions
-  if (euRegions.includes(region)) {
-    models.push(...euModels.filter((model) => model.regions?.includes(region)))
-  }
-
-  // Add APAC models for APAC regions
-  if (apacRegions.includes(region)) {
-    models.push(...apacModels.filter((model) => model.regions?.includes(region)))
-  }
-
-  // sort by model name
-
+  const models = allModels.filter((model) => model.regions?.includes(region))
   return models.sort((a, b) => a.modelName.localeCompare(b.modelName))
 }
 
 // Thinking対応モデルのIDリストを取得する関数
 export const getThinkingSupportedModelIds = (): string[] => {
-  const allModels = [...baseModels, ...usModels, ...euModels, ...apacModels]
   return allModels.filter((model) => model.supportsThinking === true).map((model) => model.modelId)
+}
+
+// 画像生成モデルのリージョン別取得
+export const getImageGenerationModelsForRegion = (region: BedrockSupportRegion) => {
+  const models: Array<{ id: string; name: string }> = []
+
+  IMAGE_GENERATION_MODELS.forEach((def) => {
+    if (def.availability.base?.includes(region)) {
+      models.push({
+        id: def.baseId,
+        name: def.name
+      })
+    }
+  })
+
+  return models.sort((a, b) => {
+    // プロバイダー順: Amazon → Stability
+    const providerOrderA = a.id.startsWith('amazon') ? 0 : 1
+    const providerOrderB = b.id.startsWith('amazon') ? 0 : 1
+
+    if (providerOrderA !== providerOrderB) {
+      return providerOrderA - providerOrderB
+    }
+
+    // 同じプロバイダー内では名前順
+    return a.name.localeCompare(b.name)
+  })
 }
 
 // Prompt Router support

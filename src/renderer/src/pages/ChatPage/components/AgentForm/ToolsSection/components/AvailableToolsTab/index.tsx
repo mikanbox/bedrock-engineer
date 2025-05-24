@@ -1,6 +1,5 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { CategorySelector } from './CategorySelector'
 import { ToolCategorySection } from './ToolCategorySection'
 import { AvailableToolsTabProps } from '../../types'
 import { preventEventPropagation } from '../../utils/eventUtils'
@@ -10,9 +9,7 @@ import { preventEventPropagation } from '../../utils/eventUtils'
  */
 export const AvailableToolsTab: React.FC<AvailableToolsTabProps> = ({
   categorizedTools,
-  selectedCategory,
   mcpServers,
-  onCategoryChange,
   onToggleTool,
   onShowToolInfo,
   isLoadingMcpTools = false
@@ -21,10 +18,6 @@ export const AvailableToolsTab: React.FC<AvailableToolsTabProps> = ({
 
   return (
     <div className="space-y-3" onClick={preventEventPropagation}>
-      <div className="flex items-center justify-end">
-        <CategorySelector selectedCategory={selectedCategory} onChange={onCategoryChange} />
-      </div>
-
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 mt-1">{t('tools.description')}</p>
 
       {/* ツールカテゴリセクションをループで表示 */}

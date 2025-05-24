@@ -5,6 +5,8 @@ import { store } from './store'
 import { BedrockService } from '../main/api/bedrock'
 import { getMcpToolSpecs, testMcpServerConnection, testAllMcpServerConnections } from './mcp'
 import { McpServerConfig } from '../types/agent-chat'
+import { getImageGenerationModelsForRegion } from '../main/api/bedrock/models'
+import { BedrockSupportRegion } from '../types/llm'
 
 export type CallConverseAPIProps = {
   modelId: string
@@ -20,6 +22,9 @@ export const api = {
       const bedrock = new BedrockService({ store })
       const res = await bedrock.applyGuardrail(request)
       return res
+    },
+    getImageGenerationModelsForRegion: (region: BedrockSupportRegion) => {
+      return getImageGenerationModelsForRegion(region)
     }
   },
   contextMenu: {

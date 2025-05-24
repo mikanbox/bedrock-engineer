@@ -264,10 +264,6 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
     <div>
       {/* ツールの説明 */}
       <div className="prose dark:prose-invert max-w-none">
-        <p className="mb-4 text-gray-700 dark:text-gray-300 font-bold">
-          {t(`tool descriptions.invokeFlow`)}
-        </p>
-
         <p className="mb-4 text-gray-700 dark:text-gray-300">
           {t(
             'tool info.invokeFlow.description',

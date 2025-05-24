@@ -42,14 +42,12 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   // メイン状態管理
   const {
     agentTools,
-    selectedCategory,
     activeTab,
     toolInfoToShow,
     expandedTools,
     setActiveTab,
     setToolInfoToShow,
     handleToggleTool,
-    handleCategoryChange,
     toggleToolExpand,
     getEnabledTools,
     categorizedTools,
@@ -151,9 +149,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       {activeTab === 'available-tools' && (
         <AvailableToolsTab
           categorizedTools={categorizedTools()}
-          selectedCategory={selectedCategory}
           mcpServers={mcpServers}
-          onCategoryChange={handleCategoryChange}
           onToggleTool={handleToggleTool}
           onShowToolInfo={(toolName: string) => setToolInfoToShow(toolName)}
           isLoadingMcpTools={isLoadingMcpTools}

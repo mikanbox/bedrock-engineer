@@ -7,7 +7,7 @@ import { SettingInput } from '../SettingInput'
 import { SettingSelect } from '../SettingSelect'
 import { IAMPolicyModal } from '../IAMPolicyModal'
 import { ThinkingModeSettings } from '../ThinkingModeSettings'
-import { AWS_REGIONS } from '@renderer/constants/aws-regions'
+import { AWS_REGIONS } from '@/types/aws-regions'
 import { LLM } from '@/types/llm'
 
 interface AWSSectionProps {

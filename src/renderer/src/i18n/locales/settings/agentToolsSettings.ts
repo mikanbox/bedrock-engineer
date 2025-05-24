@@ -49,6 +49,15 @@ export const agentToolsSettings = {
       'When an image is processed, the AI will identify objects, text, scenes, and other visual elements, providing a detailed description based on the content.',
     'tool info.recognizeImage.description':
       'The recognizeImage tool uses AI vision capabilities to analyze and describe images. It helps the AI assistant understand image content and provide relevant responses based on what appears in the image.',
+    'tool info.generateImage.description':
+      'The generateImage tool uses AI image generation capabilities to create images from text descriptions. It helps the AI assistant generate visual content based on textual prompts and save them to specified locations.',
+    'Image Generation Model': 'Image Generation Model',
+    'Important Notes': 'Important Notes',
+    'Model availability may vary by AWS region': 'Model availability may vary by AWS region',
+    'Different models support different aspect ratios and features':
+      'Different models support different aspect ratios and features',
+    'Image generation costs vary by model and output resolution':
+      'Image generation costs vary by model and output resolution',
     'Configure knowledge bases for the retrieve tool':
       'Configure knowledge bases for the retrieve tool',
     'Configure allowed commands for the executeCommand tool':
@@ -211,6 +220,16 @@ export const agentToolsSettings = {
       '画像が処理されると、AIは物体、テキスト、シーン、その他の視覚要素を識別し、内容に基づいた詳細な説明を提供します。',
     'tool info.recognizeImage.description':
       'recognizeImageツールはAIのビジョン機能を使用して画像を分析・説明します。AIアシスタントが画像の内容を理解し、画像に表示されているものに基づいて関連する回答を提供するのに役立ちます。',
+    'tool info.generateImage.description':
+      'generateImageツールはAIの画像生成機能を使用してテキストの説明から画像を作成します。AIアシスタントがテキストプロンプトに基づいて視覚的なコンテンツを生成し、指定された場所に保存するのに役立ちます。',
+    'Image Generation Model': '画像生成モデル',
+    'Important Notes': '重要な注意事項',
+    'Model availability may vary by AWS region':
+      'モデルの利用可能性はAWSリージョンによって異なる場合があります',
+    'Different models support different aspect ratios and features':
+      '異なるモデルは異なるアスペクト比と機能をサポートしています',
+    'Image generation costs vary by model and output resolution':
+      '画像生成のコストはモデルと出力解像度によって異なります',
     'Configure knowledge bases for the retrieve tool': 'retrieve ツール用のナレッジベースを設定',
     'Configure allowed commands for the executeCommand tool':
       'executeCommand ツール用の許可コマンドを設定',

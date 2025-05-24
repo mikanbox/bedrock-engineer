@@ -86,58 +86,50 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
   // 編集内容保存
   const handleSaveEdit = () => {
-    try {
-      // JSONパース
-      const serverConfig = JSON.parse(jsonInput)
+    // 編集中のサーバーを除外したサーバーリストを作成（重複チェック用）
+    const serversExcludingEditTarget = mcpServers.filter((server) => server.name !== editMode)
 
-      // 必須フィールドの検証
-      if (
-        !serverConfig.name ||
-        !serverConfig.description ||
-        !serverConfig.command ||
-        !Array.isArray(serverConfig.args)
-      ) {
-        setJsonError(t('Required fields are missing or invalid. Check the JSON format.'))
-        return
-      }
+    // parseServerConfigJson を使用して入力されたJSONを解析
+    const result = parseServerConfigJson(jsonInput, serversExcludingEditTarget)
 
-      // envが指定されている場合はオブジェクト型であることを確認
-      if (serverConfig.env && typeof serverConfig.env !== 'object') {
-        setJsonError(t('The "env" field must be an object.'))
-        return
-      }
+    if (!result.success) {
+      setJsonError(t(result.error || 'Invalid JSON format.'))
+      return
+    }
 
-      // 名前が変更された場合の処理
-      const newName = serverConfig.name
-      if (newName !== editMode && mcpServers.some((server) => server.name === newName)) {
-        setJsonError(t('A server with this new name already exists.'))
-        return
-      }
+    if (!result.servers || result.servers.length === 0) {
+      setJsonError(t('No valid server configurations found'))
+      return
+    }
 
-      // 新しい設定オブジェクトを作成
-      const updatedServer: McpServerConfig = {
-        name: newName,
-        description: serverConfig.description || newName, // 説明がなければ名前を使用
-        command: serverConfig.command,
-        args: serverConfig.args,
-        env: serverConfig.env || {}
-      }
+    // 複数サーバーが含まれている場合の処理
+    if (result.servers.length > 1) {
+      // 編集対象サーバーを削除し、新しいサーバー設定を追加
+      const updatedServers = [...serversExcludingEditTarget, ...result.servers]
+      onChange(updatedServers)
 
-      // サーバー設定を更新
-      onChange(mcpServers.map((server) => (server.name === editMode ? updatedServer : server)))
-
-      // 編集モード終了
-      setEditMode(null)
-      setJsonInput('')
-      setJsonError(null)
+      // 成功メッセージ
+      toast.success(t('Multiple servers updated successfully'), {
+        duration: 3000
+      })
+    } else {
+      // 単一サーバーの場合は従来通りの更新
+      const updatedServer = result.servers[0]
+      const updatedServers = mcpServers.map((server) =>
+        server.name === editMode ? updatedServer : server
+      )
+      onChange(updatedServers)
 
       // 成功メッセージ
       toast.success(t('Server updated successfully'), {
         duration: 3000
       })
-    } catch (error) {
-      setJsonError(t('Invalid JSON format.'))
     }
+
+    // 編集モード終了
+    setEditMode(null)
+    setJsonInput('')
+    setJsonError(null)
   }
 
   // 編集キャンセル
