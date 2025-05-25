@@ -5,6 +5,7 @@
 import { ToolInput, ToolResult } from '../../../types/tools'
 import { BedrockService } from '../../../main/api/bedrock'
 import type ElectronStore from 'electron-store'
+import { LineRange } from '../../lib/line-range-utils'
 
 /**
  * Dependencies injected into tools
@@ -12,7 +13,6 @@ import type ElectronStore from 'electron-store'
 export interface ToolDependencies {
   logger: ToolLogger
   storeManager: StoreManager
-  chunkManager: ChunkManager
   bedrock?: BedrockService
 }
 
@@ -36,34 +36,6 @@ export interface StoreManager {
   has(key: string): boolean
   delete(key: string): void
   getStore(): ElectronStore
-}
-
-/**
- * Chunk manager interface
- */
-export interface ChunkManager {
-  getOrCreate(
-    type: 'file' | 'directory' | 'web',
-    key: string,
-    creator: () => Promise<ContentChunk[]>
-  ): Promise<ContentChunk[]>
-  getChunk(chunks: ContentChunk[], index: number): ContentChunk
-  createChunkSummary(chunks: ContentChunk[]): string
-}
-
-/**
- * Content chunk structure
- */
-export interface ContentChunk {
-  content: string
-  index: number
-  total: number
-  metadata?: {
-    timestamp?: number
-    filePath?: string
-    url?: string
-    [key: string]: any
-  }
 }
 
 /**
@@ -107,34 +79,29 @@ export interface ValidationResult {
 }
 
 /**
- * Chunk options for file/directory operations
+ * File read options with line range support
  */
-export interface ChunkOptions {
-  chunkIndex?: number
-  chunkSize?: number
-  maxDepth?: number
-}
-
-/**
- * File read options
- */
-export interface ReadFileOptions extends ChunkOptions {
+export interface ReadFileOptions {
   encoding?: BufferEncoding
+  lines?: LineRange
 }
 
 /**
- * Directory list options
+ * Directory list options with line range support
  */
-export interface ListDirectoryOptions extends ChunkOptions {
+export interface ListDirectoryOptions {
+  maxDepth?: number
   ignoreFiles?: string[]
+  lines?: LineRange
   recursive?: boolean
 }
 
 /**
- * Web fetch options
+ * Web fetch options with line range support
  */
-export interface FetchWebsiteOptions extends RequestInit, ChunkOptions {
+export interface FetchWebsiteOptions extends RequestInit {
   cleaning?: boolean
+  lines?: LineRange
 }
 
 /**
@@ -156,7 +123,6 @@ export enum ToolErrorType {
   EXECUTION = 'EXECUTION',
   NOT_FOUND = 'NOT_FOUND',
   PERMISSION_DENIED = 'PERMISSION_DENIED',
-  CHUNK_INDEX_OUT_OF_RANGE = 'CHUNK_INDEX_OUT_OF_RANGE',
   RATE_LIMIT = 'RATE_LIMIT',
   NETWORK = 'NETWORK',
   UNKNOWN = 'UNKNOWN'

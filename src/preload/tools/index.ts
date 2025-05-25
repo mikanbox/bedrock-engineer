@@ -5,7 +5,6 @@
 import { ToolInput, ToolResult } from '../../types/tools'
 import type { ToolDependencies, ITool, ToolCategory } from './base/types'
 import { createToolRegistry, ToolRegistry } from './registry'
-import { ChunkManager } from './common/ChunkManager'
 import { StoreManager } from './common/StoreManager'
 import { createToolLogger } from './common/Logger'
 
@@ -24,8 +23,7 @@ export async function initializeToolSystem(): Promise<void> {
   // Create dependencies
   const dependencies: ToolDependencies = {
     logger: createToolLogger('system'),
-    storeManager: new StoreManager(),
-    chunkManager: new ChunkManager()
+    storeManager: new StoreManager()
   }
 
   // Create registry
@@ -110,7 +108,6 @@ export {
   ExecutionError,
   ToolNotFoundError,
   PermissionDeniedError,
-  ChunkIndexOutOfRangeError,
   RateLimitError,
   NetworkError,
   wrapError,
@@ -121,12 +118,9 @@ export type {
   ToolDependencies,
   ToolLogger,
   StoreManager as IStoreManager,
-  ChunkManager as IChunkManager,
-  ContentChunk,
   ToolCategory,
   ToolRegistration,
   ValidationResult,
-  ChunkOptions,
   ReadFileOptions,
   ListDirectoryOptions,
   FetchWebsiteOptions,
@@ -134,7 +128,6 @@ export type {
   ToolErrorMetadata
 } from './base/types'
 export { ToolErrorType } from './base/types'
-export { ChunkManager, DEFAULT_MAX_CHUNK_SIZE } from './common/ChunkManager'
 export { StoreManager, storeManager } from './common/StoreManager'
 export { Logger, createToolLogger, toolSystemLogger } from './common/Logger'
 
@@ -154,8 +147,7 @@ export function registerTools(
 
   const dependencies: ToolDependencies = {
     logger: createToolLogger('system'),
-    storeManager: new StoreManager(),
-    chunkManager: new ChunkManager()
+    storeManager: new StoreManager()
   }
 
   registrations.forEach(({ ToolClass, category }) => {

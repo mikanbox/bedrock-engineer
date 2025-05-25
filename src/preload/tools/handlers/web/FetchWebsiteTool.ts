@@ -1,13 +1,16 @@
 /**
- * FetchWebsite tool implementation
+ * FetchWebsite tool implementation with line range support
  */
 
 import { ipcRenderer } from 'electron'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, FetchWebsiteOptions } from '../../base/types'
 import { ExecutionError, NetworkError } from '../../base/errors'
-import { ChunkManager } from '../../common/ChunkManager'
-import { ContentChunker } from '../../../lib/contentChunker'
+import {
+  filterByLineRange,
+  getLineRangeInfo,
+  validateLineRange
+} from '../../../lib/line-range-utils'
 
 /**
  * Input type for FetchWebsiteTool
@@ -19,11 +22,11 @@ interface FetchWebsiteInput {
 }
 
 /**
- * Tool for fetching website content
+ * Tool for fetching website content with line range support
  */
 export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
   readonly name = 'fetchWebsite'
-  readonly description = 'Fetch and parse website content with optional chunking'
+  readonly description = 'Fetch and parse website content with line range filtering'
 
   /**
    * Validate input
@@ -44,16 +47,10 @@ export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
     }
 
     if (input.options) {
-      if (input.options.chunkIndex !== undefined) {
-        if (typeof input.options.chunkIndex !== 'number' || input.options.chunkIndex < 1) {
-          errors.push('chunkIndex must be a positive number')
-        }
-      }
-
-      if (input.options.chunkSize !== undefined) {
-        if (typeof input.options.chunkSize !== 'number' || input.options.chunkSize < 1) {
-          errors.push('chunkSize must be a positive number')
-        }
+      // Line range validation
+      if (input.options.lines) {
+        const lineRangeErrors = validateLineRange(input.options.lines)
+        errors.push(...lineRangeErrors)
       }
 
       if (input.options.cleaning !== undefined && typeof input.options.cleaning !== 'boolean') {
@@ -72,26 +69,19 @@ export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
    */
   protected async executeInternal(input: FetchWebsiteInput): Promise<string> {
     const { url, options } = input
-    const { chunkIndex, cleaning, ...requestOptions } = options || {}
+    const { cleaning, lines, ...requestOptions } = options || {}
 
     this.logger.debug(`Fetching website: ${url}`, {
       options: JSON.stringify({
         method: requestOptions.method || 'GET',
-        chunkIndex,
-        cleaning
+        cleaning,
+        hasLineRange: !!lines
       })
     })
 
     try {
-      // Check if we have cached chunks
-      const cachedChunks = await this.getCachedChunks(url)
-
-      if (cachedChunks && chunkIndex !== undefined) {
-        return this.handleChunkRequest(cachedChunks, chunkIndex, url, cleaning)
-      }
-
-      // Fetch new content
-      this.logger.info(`Fetching new content from: ${url}`)
+      // Fetch content
+      this.logger.info(`Fetching content from: ${url}`)
 
       const response = await ipcRenderer.invoke('fetch-website', url, requestOptions)
 
@@ -104,43 +94,34 @@ export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
         contentType: response.headers['content-type']
       })
 
-      const rawContent =
+      let rawContent =
         typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2)
 
-      this.logger.verbose(`Splitting content into chunks`, {
-        cleaning: !!cleaning
-      })
-
-      // Create chunks
-      const chunks = ContentChunker.splitContent(rawContent, { url }, { cleaning: cleaning })
-
-      this.logger.debug(`Content split into ${chunks.length} chunks`)
-
-      // Cache the chunks
-      await this.chunkManager.getOrCreate('web', url, async () => chunks)
-
-      // Handle chunk request
-      if (chunkIndex !== undefined) {
-        return this.handleChunkRequest(chunks, chunkIndex, url, cleaning)
-      }
-
-      // Return full content or summary
-      if (chunks.length === 1) {
-        this.logger.info(`Returning complete website content`, {
-          url,
-          singleChunk: true,
-          contentLength: chunks[0].content.length
+      // Apply content cleaning if requested
+      if (cleaning) {
+        rawContent = this.extractMainContent(rawContent)
+        this.logger.debug(`Content cleaned`, {
+          originalLength: rawContent.length,
+          cleanedLength: rawContent.length
         })
-        return `Content successfully retrieved:\n\n${chunks[0].content}`
       }
 
-      // Return summary for multiple chunks
-      this.logger.info(`Returning website content summary with ${chunks.length} chunks`, {
+      // Apply line range filtering
+      const filteredContent = filterByLineRange(rawContent, lines)
+
+      // Generate line range info for header
+      const totalLines = rawContent.split('\n').length
+      const lineInfo = getLineRangeInfo(totalLines, lines)
+      const header = `Website Content: ${url}${lineInfo}\n${'='.repeat(url.length + lineInfo.length + 18)}\n`
+
+      this.logger.info(`Website content retrieved successfully`, {
         url,
-        chunkCount: chunks.length
+        totalLines,
+        hasLineRange: !!lines,
+        contentLength: filteredContent.length
       })
 
-      return this.chunkManager.createChunkSummary(chunks)
+      return header + filteredContent
     } catch (error) {
       this.logger.error(`Error fetching website: ${url}`, {
         error: error instanceof Error ? error.message : String(error),
@@ -161,39 +142,29 @@ export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
   }
 
   /**
-   * Get cached chunks if available
+   * Extract main content from HTML (basic implementation)
    */
-  private async getCachedChunks(url: string) {
-    try {
-      // Try to get from chunk manager's internal cache
-      const chunks = await this.chunkManager.getOrCreate('web', url, async () => [])
-      return chunks.length > 0 ? chunks : null
-    } catch {
-      return null
-    }
-  }
+  private extractMainContent(html: string): string {
+    // Remove script and style tags
+    let content = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    content = content.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
 
-  /**
-   * Handle chunk request
-   */
-  private handleChunkRequest(
-    chunks: any[],
-    chunkIndex: number,
-    url: string,
-    cleaning?: boolean
-  ): string {
-    const chunk = this.chunkManager.getChunk(chunks, chunkIndex)
+    // Remove HTML tags
+    content = content.replace(/<[^>]+>/g, ' ')
 
-    const content = cleaning ? ChunkManager.extractMainContent(chunk.content) : chunk.content
+    // Decode HTML entities
+    content = content
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
 
-    this.logger.info(`Returning website content chunk ${chunk.index}/${chunk.total}`, {
-      url,
-      chunkIndex: chunk.index,
-      contentLength: content.length,
-      cleaning: !!cleaning
-    })
+    // Clean up whitespace
+    content = content.replace(/\s+/g, ' ').trim()
 
-    return ChunkManager.formatChunkOutput(chunk, 'Chunk')
+    return content
   }
 
   /**

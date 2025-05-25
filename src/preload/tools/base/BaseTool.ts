@@ -3,14 +3,7 @@
  */
 
 import { ToolInput, ToolResult } from '../../../types/tools'
-import {
-  ITool,
-  ToolDependencies,
-  ToolLogger,
-  StoreManager,
-  ChunkManager,
-  ValidationResult
-} from './types'
+import { ITool, ToolDependencies, ToolLogger, StoreManager, ValidationResult } from './types'
 import { wrapError, ValidationError } from './errors'
 
 /**
@@ -34,12 +27,10 @@ export abstract class BaseTool<TInput extends ToolInput = ToolInput, TResult = T
    */
   protected readonly logger: ToolLogger
   protected readonly storeManager: StoreManager
-  protected readonly chunkManager: ChunkManager
 
   constructor(dependencies: ToolDependencies) {
     this.logger = dependencies.logger
     this.storeManager = dependencies.storeManager
-    this.chunkManager = dependencies.chunkManager
   }
 
   /**

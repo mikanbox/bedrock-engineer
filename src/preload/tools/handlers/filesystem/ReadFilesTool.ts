@@ -1,12 +1,16 @@
 /**
- * ReadFiles tool implementation
+ * ReadFiles tool implementation with line range support
  */
 
 import * as fs from 'fs/promises'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, ReadFileOptions } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
-import { ChunkManager } from '../../common/ChunkManager'
+import {
+  filterByLineRange,
+  getLineRangeInfo,
+  validateLineRange
+} from '../../../lib/line-range-utils'
 
 /**
  * Input type for ReadFilesTool
@@ -18,11 +22,11 @@ interface ReadFilesInput {
 }
 
 /**
- * Tool for reading file contents
+ * Tool for reading file contents with line range support
  */
 export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
   readonly name = 'readFiles'
-  readonly description = 'Read contents of specified files with optional chunking support'
+  readonly description = 'Read contents of specified files with line range filtering'
 
   /**
    * Validate input
@@ -30,6 +34,7 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
   protected validateInput(input: ReadFilesInput): ValidationResult {
     const errors: string[] = []
 
+    // Basic validation
     if (!input.paths) {
       errors.push('Paths array is required')
     }
@@ -46,18 +51,10 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
       })
     }
 
-    if (input.options) {
-      if (input.options.chunkIndex !== undefined) {
-        if (typeof input.options.chunkIndex !== 'number' || input.options.chunkIndex < 1) {
-          errors.push('chunkIndex must be a positive number')
-        }
-      }
-
-      if (input.options.chunkSize !== undefined) {
-        if (typeof input.options.chunkSize !== 'number' || input.options.chunkSize < 1) {
-          errors.push('chunkSize must be a positive number')
-        }
-      }
+    // Line range validation
+    if (input.options?.lines) {
+      const lineRangeErrors = validateLineRange(input.options.lines)
+      errors.push(...lineRangeErrors)
     }
 
     return {
@@ -71,12 +68,10 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
    */
   protected async executeInternal(input: ReadFilesInput): Promise<string> {
     const { paths, options } = input
-    const { chunkIndex, chunkSize } = options || {}
 
     this.logger.debug(`Reading files`, {
       fileCount: paths.length,
-      chunkIndex,
-      chunkSize
+      hasLineRange: !!options?.lines
     })
 
     // Single file handling
@@ -89,7 +84,7 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
   }
 
   /**
-   * Read a single file with optional chunking
+   * Read a single file with optional line range filtering
    */
   private async readSingleFile(filePath: string, options?: ReadFileOptions): Promise<string> {
     this.logger.debug(`Reading single file: ${filePath}`)
@@ -101,35 +96,7 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
         contentLength: content.length
       })
 
-      // Handle chunking if requested
-      if (options?.chunkIndex) {
-        const chunks = await this.chunkManager.getOrCreate('file', filePath, async () =>
-          ChunkManager.createFileChunks(content, filePath, options.chunkSize)
-        )
-
-        const chunk = this.chunkManager.getChunk(chunks, options.chunkIndex)
-
-        this.logger.info(`Returning file chunk ${chunk.index}/${chunk.total} for ${filePath}`)
-        return ChunkManager.formatChunkOutput(chunk, 'File Content')
-      }
-
-      // Check if chunking is needed
-      const chunks = ChunkManager.createFileChunks(content, filePath, options?.chunkSize)
-
-      if (chunks.length === 1) {
-        this.logger.info(`Returning complete file content for ${filePath}`)
-        return chunks[0].content
-      }
-
-      // Return summary for multiple chunks
-      const totalLines = content.split('\n').length
-      this.logger.info(`Returning file summary with ${chunks.length} chunks`, {
-        filePath,
-        totalLines,
-        totalChunks: chunks.length
-      })
-
-      return this.createChunkSummary(filePath, chunks.length, totalLines)
+      return this.formatFileContent(filePath, content, options)
     } catch (error) {
       this.logger.error(`Error reading file: ${filePath}`, {
         error: error instanceof Error ? error.message : String(error)
@@ -156,8 +123,8 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
       try {
         this.logger.verbose(`Reading file: ${filePath}`)
         const content = await fs.readFile(filePath, options?.encoding || 'utf-8')
-        const fileHeader = `## File: ${filePath}\n${'='.repeat(filePath.length + 6)}\n`
-        fileContents.push(fileHeader + content)
+        const formattedContent = this.formatFileContent(filePath, content, options)
+        fileContents.push(formattedContent)
 
         this.logger.verbose(`File read successfully: ${filePath}`, {
           contentLength: content.length
@@ -176,74 +143,24 @@ export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
 
     // Combine content
     const combinedContent = fileContents.join('\n\n')
-    this.logger.debug(`Combined ${paths.length} files`, {
-      totalLength: combinedContent.length
-    })
+    this.logger.info(`Read ${paths.length} files successfully`)
 
-    // Handle chunking if requested
-    if (options?.chunkIndex) {
-      const cacheKey = paths.join('||')
-      const chunks = await this.chunkManager.getOrCreate('file', cacheKey, async () =>
-        ChunkManager.createChunks(combinedContent, { files: paths }, options.chunkSize)
-      )
-
-      const chunk = this.chunkManager.getChunk(chunks, options.chunkIndex)
-
-      this.logger.info(`Returning multiple files chunk ${chunk.index}/${chunk.total}`, {
-        fileCount: paths.length
-      })
-
-      return ChunkManager.formatChunkOutput(chunk, 'Files Content')
-    }
-
-    // Check if chunking is needed
-    const chunks = ChunkManager.createChunks(combinedContent, { files: paths }, options?.chunkSize)
-
-    if (chunks.length === 1) {
-      this.logger.info(`Returning complete content for ${paths.length} files`)
-      return chunks[0].content
-    }
-
-    // Return summary for multiple chunks
-    this.logger.info(`Returning multiple files summary with ${chunks.length} chunks`, {
-      fileCount: paths.length,
-      totalChunks: chunks.length
-    })
-
-    return this.createMultipleFilesChunkSummary(paths, chunks.length)
+    return combinedContent
   }
 
   /**
-   * Create chunk summary for a single file
+   * Format file content with header and line range filtering
    */
-  private createChunkSummary(filePath: string, totalChunks: number, totalLines: number): string {
-    return [
-      'File content has been split into multiple chunks:',
-      `File: ${filePath}`,
-      `Total Chunks: ${totalChunks}`,
-      `Total Lines: ${totalLines}`,
-      '\nTo retrieve specific chunks, use the readFiles tool with chunkIndex option:',
-      'Example usage:',
-      '```',
-      `readFiles(["${filePath}"], { chunkIndex: 1 })`,
-      '```\n'
-    ].join('\n')
-  }
+  private formatFileContent(filePath: string, content: string, options?: ReadFileOptions): string {
+    // Apply line range filtering
+    const filteredContent = filterByLineRange(content, options?.lines)
 
-  /**
-   * Create chunk summary for multiple files
-   */
-  private createMultipleFilesChunkSummary(paths: string[], totalChunks: number): string {
-    return [
-      'Files content has been split into multiple chunks:',
-      `Files: ${paths.length} files`,
-      `Total Chunks: ${totalChunks}`,
-      '\nTo retrieve specific chunks, use the readFiles tool with chunkIndex option:',
-      'Example usage:',
-      '```',
-      `readFiles(${JSON.stringify(paths)}, { chunkIndex: 1 })`,
-      '```\n'
-    ].join('\n')
+    // Generate line range info for header
+    const lines = content.split('\n')
+    const lineInfo = getLineRangeInfo(lines.length, options?.lines)
+    const header = `File: ${filePath}${lineInfo}\n${'='.repeat(filePath.length + lineInfo.length + 6)}\n`
+
+    return header + filteredContent
   }
 
   /**

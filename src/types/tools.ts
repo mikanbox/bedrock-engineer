@@ -55,6 +55,12 @@ export interface ToolResult<T = any> {
   result: T
 }
 
+// Line range interface for tools
+export interface LineRange {
+  from?: number
+  to?: number
+}
+
 // ツールごとの入力型定義
 export type CreateFolderInput = {
   type: 'createFolder'
@@ -65,8 +71,8 @@ export type ReadFilesInput = {
   type: 'readFiles'
   paths: string[] // 複数のファイルパスを受け取るように変更
   options?: {
-    chunkIndex?: number
-    chunkSize?: number
+    encoding?: BufferEncoding
+    lines?: LineRange
   }
 }
 
@@ -80,10 +86,10 @@ export type ListFilesInput = {
   type: 'listFiles'
   path: string
   options?: {
-    ignoreFiles?: string[]
-    chunkIndex?: number
     maxDepth?: number
-    chunkSize?: number
+    ignoreFiles?: string[]
+    lines?: LineRange
+    recursive?: boolean
   }
 }
 
@@ -114,7 +120,8 @@ export type FetchWebsiteInput = {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
     headers?: Record<string, string>
     body?: string
-    chunkIndex?: number
+    cleaning?: boolean
+    lines?: LineRange
   }
 }
 
@@ -338,7 +345,7 @@ Example:
     toolSpec: {
       name: 'readFiles',
       description:
-        'Read the content of multiple files at the specified paths. Content is automatically split into chunks for better management. For Excel files, the content is converted to CSV format.',
+        'Read the content of multiple files at the specified paths with line range filtering support. For Excel files, the content is converted to CSV format.',
       inputSchema: {
         json: {
           type: 'object',
@@ -355,13 +362,23 @@ Example:
               type: 'object',
               description: 'Optional configurations for reading files',
               properties: {
-                chunkIndex: {
-                  type: 'number',
-                  description: 'The index of the specific chunk to retrieve (starting from 1)'
+                encoding: {
+                  type: 'string',
+                  description: 'File encoding (default: utf-8)'
                 },
-                chunkSize: {
-                  type: 'number',
-                  description: 'Maximum size of each chunk in characters (default: 4000)'
+                lines: {
+                  type: 'object',
+                  description: 'Line range to read from the file',
+                  properties: {
+                    from: {
+                      type: 'number',
+                      description: 'Starting line number (1-based, inclusive)'
+                    },
+                    to: {
+                      type: 'number',
+                      description: 'Ending line number (1-based, inclusive)'
+                    }
+                  }
                 }
               }
             }
@@ -375,7 +392,7 @@ Example:
     toolSpec: {
       name: 'listFiles',
       description:
-        'List the entire directory structure, including all subdirectories and files, in a hierarchical format. Content is automatically split into chunks for better management. Use maxDepth to limit directory depth and chunkIndex to retrieve specific chunks.',
+        'List the entire directory structure, including all subdirectories and files, in a hierarchical format with line range filtering support. Use maxDepth to limit directory depth and lines to filter output.',
       inputSchema: {
         json: {
           type: 'object',
@@ -395,17 +412,27 @@ Example:
                   },
                   description: 'Array of patterns to ignore when listing files (gitignore format)'
                 },
-                chunkIndex: {
-                  type: 'number',
-                  description: 'The index of the specific chunk to retrieve (starting from 1)'
-                },
                 maxDepth: {
                   type: 'number',
                   description: 'Maximum depth of directory traversal (-1 for unlimited)'
                 },
-                chunkSize: {
-                  type: 'number',
-                  description: 'Maximum size of each chunk in characters (default: 4000)'
+                recursive: {
+                  type: 'boolean',
+                  description: 'Whether to list files recursively'
+                },
+                lines: {
+                  type: 'object',
+                  description: 'Line range to display from the directory listing output',
+                  properties: {
+                    from: {
+                      type: 'number',
+                      description: 'Starting line number (1-based, inclusive)'
+                    },
+                    to: {
+                      type: 'number',
+                      description: 'Ending line number (1-based, inclusive)'
+                    }
+                  }
                 }
               }
             }
@@ -494,9 +521,7 @@ Example:
   {
     toolSpec: {
       name: 'fetchWebsite',
-      description: `Fetch content from a specified URL. For large content, it will be automatically split into manageable chunks.
-If the cleaning option is true, Extracts plain text content from HTML by removing markup and unnecessary elements. Default is false.
-First call without a chunkIndex(Must be 1 or greater) to get an overview and total number of chunks. Then, if needed, call again with a specific chunkIndex to retrieve that chunk.`,
+      description: `Fetch content from a specified URL with line range filtering support. If the cleaning option is true, extracts plain text content from HTML by removing markup and unnecessary elements. Default is false.`,
       inputSchema: {
         json: {
           type: 'object',
@@ -525,15 +550,24 @@ First call without a chunkIndex(Must be 1 or greater) to get an overview and tot
                   type: 'string',
                   description: 'Request body (for POST, PUT, etc.)'
                 },
-                chunkIndex: {
-                  type: 'number',
-                  description:
-                    'Optional. The index of the specific chunk to fetch (starting from 1, Must be 1 or greater). If not provided, returns a summary of all chunks.'
-                },
                 cleaning: {
                   type: 'boolean',
                   description:
-                    'Optional. If true, Extracts plain text content from HTML by removing markup and unnecessary elements. Default is false.'
+                    'Optional. If true, extracts plain text content from HTML by removing markup and unnecessary elements. Default is false.'
+                },
+                lines: {
+                  type: 'object',
+                  description: 'Line range to display from the fetched content',
+                  properties: {
+                    from: {
+                      type: 'number',
+                      description: 'Starting line number (1-based, inclusive)'
+                    },
+                    to: {
+                      type: 'number',
+                      description: 'Ending line number (1-based, inclusive)'
+                    }
+                  }
                 }
               }
             }

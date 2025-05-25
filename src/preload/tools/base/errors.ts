@@ -102,24 +102,6 @@ export class PermissionDeniedError extends ToolError {
 }
 
 /**
- * Error thrown when chunk index is out of range
- */
-export class ChunkIndexOutOfRangeError extends ToolError {
-  constructor(index: number, totalChunks: number, toolName: string) {
-    super(
-      `Invalid chunk index ${index}. Available chunks: 1 to ${totalChunks}`,
-      ToolErrorType.CHUNK_INDEX_OUT_OF_RANGE,
-      {
-        toolName,
-        requestedIndex: index,
-        totalChunks
-      }
-    )
-    this.name = 'ChunkIndexOutOfRangeError'
-  }
-}
-
-/**
  * Error thrown when rate limit is exceeded
  */
 export class RateLimitError extends ToolError {
@@ -196,10 +178,6 @@ export function isToolNotFoundError(error: unknown): error is ToolNotFoundError 
 
 export function isPermissionDeniedError(error: unknown): error is PermissionDeniedError {
   return error instanceof PermissionDeniedError
-}
-
-export function isChunkIndexOutOfRangeError(error: unknown): error is ChunkIndexOutOfRangeError {
-  return error instanceof ChunkIndexOutOfRangeError
 }
 
 export function isRateLimitError(error: unknown): error is RateLimitError {

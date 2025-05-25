@@ -1,5 +1,5 @@
 /**
- * ListFiles tool implementation
+ * ListFiles tool implementation with line range support
  */
 
 import * as fs from 'fs/promises'
@@ -7,7 +7,11 @@ import * as path from 'path'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, ListDirectoryOptions } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
-import { ChunkManager } from '../../common/ChunkManager'
+import {
+  filterByLineRange,
+  getLineRangeInfo,
+  validateLineRange
+} from '../../../lib/line-range-utils'
 import GitignoreLikeMatcher from '../../../lib/gitignore-like-matcher'
 
 /**
@@ -20,11 +24,11 @@ interface ListFilesInput {
 }
 
 /**
- * Tool for listing files and directories
+ * Tool for listing files and directories with line range support
  */
 export class ListFilesTool extends BaseTool<ListFilesInput, string> {
   readonly name = 'listFiles'
-  readonly description = 'List files and directories with optional filtering and chunking'
+  readonly description = 'List files and directories with optional filtering and line range support'
 
   /**
    * Validate input
@@ -32,6 +36,7 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
   protected validateInput(input: ListFilesInput): ValidationResult {
     const errors: string[] = []
 
+    // Basic validation
     if (!input.path) {
       errors.push('Path is required')
     }
@@ -40,25 +45,22 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
       errors.push('Path must be a string')
     }
 
+    // Options validation
     if (input.options) {
-      if (input.options.chunkIndex !== undefined) {
-        if (typeof input.options.chunkIndex !== 'number' || input.options.chunkIndex < 1) {
-          errors.push('chunkIndex must be a positive number')
-        }
+      // Line range validation
+      if (input.options.lines) {
+        const lineRangeErrors = validateLineRange(input.options.lines)
+        errors.push(...lineRangeErrors)
       }
 
-      if (input.options.chunkSize !== undefined) {
-        if (typeof input.options.chunkSize !== 'number' || input.options.chunkSize < 1) {
-          errors.push('chunkSize must be a positive number')
-        }
-      }
-
+      // maxDepth validation
       if (input.options.maxDepth !== undefined) {
         if (typeof input.options.maxDepth !== 'number' || input.options.maxDepth < -1) {
           errors.push('maxDepth must be -1 or a non-negative number')
         }
       }
 
+      // ignoreFiles validation
       if (input.options.ignoreFiles !== undefined && !Array.isArray(input.options.ignoreFiles)) {
         errors.push('ignoreFiles must be an array')
       }
@@ -82,68 +84,37 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
       | undefined
     const defaultIgnoreFiles = agentChatConfig?.ignoreFiles || []
 
-    const {
-      ignoreFiles = defaultIgnoreFiles,
-      chunkIndex,
-      maxDepth = -1,
-      chunkSize,
-      recursive
-    } = options || {}
+    const { ignoreFiles = defaultIgnoreFiles, maxDepth = -1 } = options || {}
 
     this.logger.debug(`Listing files in directory: ${dirPath}`, {
       options: JSON.stringify({
-        chunkIndex,
         maxDepth,
         ignoreFilesCount: ignoreFiles?.length || 0,
-        recursive
+        hasLineRange: !!options?.lines
       })
     })
 
     try {
       // Build the file tree
-      const fileTreeResult = await this.buildFileTree(dirPath, '', ignoreFiles, 0, maxDepth)
+      const fileTree = await this.buildFileTree(dirPath, '', ignoreFiles, 0, maxDepth)
 
-      // Handle chunking
-      if (chunkIndex !== undefined) {
-        const cacheKey = `${dirPath}-${maxDepth}`
-        const chunks = await this.chunkManager.getOrCreate('directory', cacheKey, async () =>
-          ChunkManager.createDirectoryChunks(fileTreeResult.content, dirPath, chunkSize)
-        )
+      // Apply line range filtering
+      const filteredContent = filterByLineRange(fileTree, options?.lines)
 
-        const chunk = this.chunkManager.getChunk(chunks, chunkIndex)
+      // Generate line range info (if specified)
+      const lines = fileTree.split('\n')
+      const lineInfo = getLineRangeInfo(lines.length, options?.lines)
 
-        this.logger.info(`Returning directory structure chunk ${chunk.index} of ${chunk.total}`, {
-          dirPath,
-          chunkIndex: chunk.index,
-          totalChunks: chunk.total
-        })
-
-        return ChunkManager.formatChunkOutput(chunk, 'Directory Structure')
-      }
-
-      // Check if chunking is needed
-      const chunks = ChunkManager.createDirectoryChunks(fileTreeResult.content, dirPath, chunkSize)
-
-      if (chunks.length === 1) {
-        this.logger.info(`Returning complete directory structure`, {
-          dirPath,
-          singleChunk: true
-        })
-        return `Directory Structure:\n\n${chunks[0].content}`
-      }
-
-      // Return summary for multiple chunks
-      this.logger.info(`Returning directory structure summary with ${chunks.length} chunks`, {
+      this.logger.info(`Directory structure listed successfully`, {
         dirPath,
-        chunkCount: chunks.length,
-        hasMore: fileTreeResult.hasMore
+        totalLines: lines.length,
+        hasLineRange: !!options?.lines
       })
 
-      return this.createChunkSummary(dirPath, chunks.length, maxDepth, fileTreeResult.hasMore)
+      return `Directory Structure${lineInfo}:\n\n${filteredContent}`
     } catch (error) {
       this.logger.error(`Error listing directory structure: ${dirPath}`, {
-        error: error instanceof Error ? error.message : String(error),
-        options: JSON.stringify(options)
+        error: error instanceof Error ? error.message : String(error)
       })
 
       throw new ExecutionError(
@@ -163,7 +134,7 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
     ignoreFiles?: string[],
     depth: number = 0,
     maxDepth: number = -1
-  ): Promise<{ content: string; hasMore: boolean }> {
+  ): Promise<string> {
     this.logger.debug(`Building file tree for directory: ${dirPath}`, {
       depth,
       maxDepth,
@@ -173,13 +144,12 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
     try {
       if (maxDepth !== -1 && depth > maxDepth) {
         this.logger.verbose(`Reached max depth (${maxDepth}) for directory: ${dirPath}`)
-        return { content: `${prefix}...\n`, hasMore: true }
+        return `${prefix}...\n`
       }
 
       const files = await fs.readdir(dirPath, { withFileTypes: true })
       const matcher = new GitignoreLikeMatcher(ignoreFiles ?? [])
       let result = ''
-      let hasMore = false
 
       this.logger.verbose(`Processing ${files.length} files/directories in ${dirPath}`)
 
@@ -205,8 +175,7 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
             depth + 1,
             maxDepth
           )
-          result += subTree.content
-          hasMore = hasMore || subTree.hasMore
+          result += subTree
         } else {
           result += `${currentPrefix}📄 ${file.name}\n`
         }
@@ -214,11 +183,10 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
 
       this.logger.debug(`Completed file tree for directory: ${dirPath}`, {
         depth,
-        hasMore,
         processedItems: files.length
       })
 
-      return { content: result, hasMore }
+      return result
     } catch (error) {
       this.logger.error(`Error building file tree for: ${dirPath}`, {
         error: error instanceof Error ? error.message : String(error),
@@ -230,30 +198,6 @@ export class ListFilesTool extends BaseTool<ListFilesInput, string> {
         `Error building file tree: ${error instanceof Error ? error.message : String(error)}`
       )
     }
-  }
-
-  /**
-   * Create chunk summary
-   */
-  private createChunkSummary(
-    dirPath: string,
-    totalChunks: number,
-    maxDepth: number,
-    hasMore: boolean
-  ): string {
-    const lines = [
-      'Directory structure has been split into multiple chunks:',
-      `Total Chunks: ${totalChunks}`,
-      `Max Depth: ${maxDepth === -1 ? 'unlimited' : maxDepth}`,
-      hasMore ? '\nNote: Some directories are truncated due to depth limit.' : '',
-      '\nTo retrieve specific chunks, use the listFiles tool with chunkIndex option:',
-      'Example usage:',
-      '```',
-      `listFiles("${dirPath}", { chunkIndex: 1, maxDepth: ${maxDepth} })`,
-      '```\n'
-    ]
-
-    return lines.filter((line) => line !== '').join('\n')
   }
 
   /**
