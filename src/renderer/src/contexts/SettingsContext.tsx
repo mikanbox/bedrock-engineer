@@ -937,7 +937,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const systemPrompt = useMemo(() => {
     if (!currentAgent?.system) return ''
 
-    return replacePlaceholders(currentAgent.system, {
+    const systemPromptContext = `
+**<context>**
+
+- working directory: {{projectPath}}
+- date: {{date}}
+- allowedCommands: {{allowedCommands}}
+- KnowledgeBases: {{knowledgeBases}}
+- bedrockAgents: {{bedrockAgents}}
+- BedrockFlows: {{flows}}
+
+**</context>**
+`
+
+    return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
       projectPath,
       allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
       knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
