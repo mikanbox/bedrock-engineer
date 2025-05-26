@@ -2,7 +2,7 @@
  * InvokeBedrockAgent tool implementation
  */
 
-import { ipcRenderer } from 'electron'
+import { ipc } from '../../../ipc-client'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { BaseTool } from '../../base/BaseTool'
@@ -181,7 +181,8 @@ export class InvokeBedrockAgentTool extends BaseTool<
         hasFileData: !!fileData
       })
 
-      const result = await ipcRenderer.invoke('bedrock:invokeAgent', command)
+      // Call the main process API using type-safe IPC
+      const result = await ipc('bedrock:invokeAgent', command)
 
       this.logger.info('Agent invocation successful', {
         agentId,

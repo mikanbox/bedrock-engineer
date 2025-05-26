@@ -2,7 +2,7 @@
  * RecognizeImage tool implementation
  */
 
-import { ipcRenderer } from 'electron'
+import { ipc } from '../../../ipc-client'
 import * as fs from 'fs/promises'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
@@ -109,20 +109,19 @@ export class RecognizeImageTool extends BaseTool<RecognizeImageInput, RecognizeI
               throw new Error(`Image file not found: ${imagePath}`)
             }
 
-            // 個別の画像認識処理 - call main process for each image
-            const description = await ipcRenderer.invoke('bedrock:recognizeImage', {
+            // 個別の画像認識処理 - call main process using type-safe IPC
+            const description = await ipc('bedrock:recognizeImage', {
               imagePaths: [imagePath], // Single image per call
               prompt
             })
 
             this.logger.debug(`Successfully recognized image: ${this.sanitizePath(imagePath)}`, {
-              path: imagePath,
-              descriptionLength: description.text?.length || 0
+              path: imagePath
             })
 
             return {
               path: imagePath,
-              description: description.text || description,
+              description: description || 'No description available',
               success: true
             }
           } catch (error) {

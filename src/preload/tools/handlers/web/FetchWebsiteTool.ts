@@ -2,7 +2,7 @@
  * FetchWebsite tool implementation with line range support
  */
 
-import { ipcRenderer } from 'electron'
+import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, FetchWebsiteOptions } from '../../base/types'
 import { ExecutionError, NetworkError } from '../../base/errors'
@@ -80,10 +80,10 @@ export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
     })
 
     try {
-      // Fetch content
+      // Fetch content using type-safe IPC
       this.logger.info(`Fetching content from: ${url}`)
 
-      const response = await ipcRenderer.invoke('fetch-website', url, requestOptions)
+      const response = await ipc('fetch-website', [url, requestOptions])
 
       this.logger.debug(`Website fetch successful: ${url}`, {
         statusCode: response.status,

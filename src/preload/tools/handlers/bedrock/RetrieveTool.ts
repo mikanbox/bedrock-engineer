@@ -2,7 +2,7 @@
  * Retrieve tool implementation
  */
 
-import { ipcRenderer } from 'electron'
+import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ToolResult } from '../../../../types/tools'
@@ -108,7 +108,8 @@ export class RetrieveTool extends BaseTool<RetrieveInput, RetrieveResult> {
         queryLength: query.length
       })
 
-      const result = await ipcRenderer.invoke('bedrock:retrieve', {
+      // Call the main process API using type-safe IPC
+      const result = await ipc('bedrock:retrieve', {
         query,
         knowledgeBaseId,
         retrievalConfiguration

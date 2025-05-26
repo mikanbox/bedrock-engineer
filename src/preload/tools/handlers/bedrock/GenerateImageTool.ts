@@ -2,7 +2,7 @@
  * GenerateImage tool implementation
  */
 
-import { ipcRenderer } from 'electron'
+import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -111,15 +111,21 @@ export class GenerateImageTool extends BaseTool<GenerateImageInput, GenerateImag
   protected async executeInternal(input: GenerateImageInput): Promise<GenerateImageResult> {
     const { prompt, outputPath, negativePrompt, aspect_ratio, seed, output_format = 'png' } = input
 
-    // Use default model if not provided
-    const modelId = input.modelId || DEFAULT_IMAGE_MODEL
+    // Determine model ID with priority: input > configured > default
+    let modelId: string = input.modelId || ''
+    if (!modelId) {
+      // Get configured model from store
+      const generateImageConfig = this.storeManager.get<{ modelId?: string }>('generateImageTool')
+      modelId = generateImageConfig?.modelId || DEFAULT_IMAGE_MODEL
+    }
 
     this.logger.debug('Generating image with Bedrock', {
       promptLength: prompt.length,
       modelId,
       outputPath,
       aspect_ratio,
-      usingDefaultModel: !input.modelId
+      usingDefaultModel: !input.modelId,
+      configuredModel: this.storeManager.get<{ modelId?: string }>('generateImageTool')?.modelId
     })
 
     try {
@@ -130,8 +136,8 @@ export class GenerateImageTool extends BaseTool<GenerateImageInput, GenerateImag
         usingDefaultModel: !input.modelId
       })
 
-      // Call the main process API (without outputPath - we handle file saving here)
-      const response = await ipcRenderer.invoke('bedrock:generateImage', {
+      // Call the main process API using type-safe IPC function
+      const response = await ipc('bedrock:generateImage', {
         prompt,
         modelId,
         negativePrompt,
@@ -226,13 +232,18 @@ export class GenerateImageTool extends BaseTool<GenerateImageInput, GenerateImag
    * Override to sanitize prompt for logging
    */
   protected sanitizeInputForLogging(input: GenerateImageInput): any {
+    const configuredModel = this.storeManager.get<{ modelId?: string }>(
+      'generateImageTool'
+    )?.modelId
+    const effectiveModelId = input.modelId || configuredModel || DEFAULT_IMAGE_MODEL
+
     return {
       ...input,
       prompt: this.truncateForLogging(input.prompt, 200),
       negativePrompt: input.negativePrompt
         ? this.truncateForLogging(input.negativePrompt, 100)
         : undefined,
-      modelId: input.modelId || DEFAULT_IMAGE_MODEL
+      modelId: effectiveModelId
     }
   }
 }

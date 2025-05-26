@@ -2,7 +2,7 @@
  * InvokeFlow tool implementation
  */
 
-import { ipcRenderer } from 'electron'
+import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ToolResult } from '../../../../types/tools'
@@ -202,8 +202,8 @@ export class InvokeFlowTool extends BaseTool<InvokeFlowInput, InvokeFlowResult> 
         nodeName: processedInput.nodeName
       })
 
-      // Call the main process API - convert to expected inputs array format
-      const response = await ipcRenderer.invoke('bedrock:invokeFlow', {
+      // Call the main process API using type-safe IPC - convert to expected inputs array format
+      const response = await ipc('bedrock:invokeFlow', {
         flowIdentifier,
         flowAliasIdentifier,
         inputs: [processedInput] // Convert single input to inputs array as expected by API

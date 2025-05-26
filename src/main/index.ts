@@ -1,14 +1,11 @@
-import { app, shell, BrowserWindow, ipcMain, Menu, MenuItem } from 'electron'
-import { join, resolve } from 'path'
+import { app, shell, BrowserWindow, Menu, MenuItem } from 'electron'
+import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.ico?asset'
 import api from './api'
 import Store from 'electron-store'
 import getRandomPort from '../preload/lib/random-port'
 import { store } from '../preload/store'
-import fs from 'fs'
-import { CustomAgent } from '../types/agent-chat'
-import yaml from 'js-yaml'
 import {
   initLoggerConfig,
   initLogger,
@@ -16,8 +13,12 @@ import {
   log,
   createCategoryLogger
 } from '../common/logger'
-import { handleFileOpen } from '../preload/file'
-import { bedrock } from './api'
+import { registerIpcHandlers, registerLogHandler } from './lib/ipc-handler'
+import { bedrockHandlers } from './handlers/bedrock-handlers'
+import { fileHandlers } from './handlers/file-handlers'
+import { windowHandlers } from './handlers/window-handlers'
+import { agentHandlers } from './handlers/agent-handlers'
+import { utilHandlers } from './handlers/util-handlers'
 // 動的インポートを使用してfix-pathパッケージを読み込む
 import('fix-path')
   .then((fixPathModule) => {
@@ -258,8 +259,18 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // IPCハンドラーの一括登録
+  registerIpcHandlers(bedrockHandlers, { loggerCategory: 'bedrock:ipc' })
+  registerIpcHandlers(fileHandlers, { loggerCategory: 'file:ipc' })
+  registerIpcHandlers(windowHandlers, { loggerCategory: 'window:ipc' })
+  registerIpcHandlers(agentHandlers, { loggerCategory: 'agents:ipc' })
+  registerIpcHandlers(utilHandlers, { loggerCategory: 'utils:ipc' })
+
+  // ログハンドラーの登録
+  registerLogHandler()
+
   // Initial load of shared agents (optional - for logging purposes only)
-  loadSharedAgents()
+  agentHandlers['read-shared-agents'](null as any)
     .then((result) => {
       agentsLogger.info(`Found shared agents at startup`, {
         count: result.agents.length,
@@ -271,446 +282,6 @@ app.whenReady().then(() => {
         error: err instanceof Error ? err.message : String(err)
       })
     })
-
-  // Handler to get app path
-  ipcMain.handle('get-app-path', () => {
-    return app.getAppPath()
-  })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
-  ipcMain.handle('open-file', () =>
-    handleFileOpen({
-      title: 'openFile...',
-      properties: ['openFile']
-    })
-  )
-  ipcMain.handle('open-directory', async () => {
-    const path = await handleFileOpen({
-      title: 'Select Directory',
-      properties: ['openDirectory', 'createDirectory'],
-      message: 'Select a directory for your project',
-      buttonLabel: 'Select Directory'
-    })
-
-    // If path was selected and it differs from the current project path,
-    // update the project path in store
-    if (path && path !== store.get('projectPath')) {
-      store.set('projectPath', path)
-      // Project path is stored in electron-store
-      // Preload agents in the background for initial data
-      log.info('Project path changed', { newPath: path })
-      loadSharedAgents().then((result) => {
-        agentsLogger.info(`Loaded shared agents for new project path`, {
-          count: result.agents.length,
-          path
-        })
-      })
-    }
-
-    return path
-  })
-
-  // Local image loading handler
-  ipcMain.handle('get-local-image', async (_, path: string) => {
-    try {
-      const data = await fs.promises.readFile(path)
-      const ext = path.split('.').pop()?.toLowerCase() || 'png'
-      const base64 = data.toString('base64')
-      return `data:image/${ext};base64,${base64}`
-    } catch (error) {
-      log.error('Failed to read image', {
-        path,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  // Window focus state handler
-  ipcMain.handle('window:isFocused', (event) => {
-    const window = BrowserWindow.fromWebContents(event.sender)
-    return window?.isFocused() ?? false
-  })
-
-  // Web fetch handler for Tool execution
-  ipcMain.handle('fetch-website', async (_event, url: string, options?: any) => {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          ...options?.headers,
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-      })
-
-      const contentType = response.headers.get('content-type')
-
-      if (contentType?.includes('application/json')) {
-        const json = await response.json()
-        return {
-          status: response.status,
-          headers: Object.fromEntries(response.headers),
-          data: json
-        }
-      } else {
-        const text = await response.text()
-        return {
-          status: response.status,
-          headers: Object.fromEntries(response.headers),
-          data: text
-        }
-      }
-    } catch (error) {
-      log.error('Error fetching website', {
-        url,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  // Logger IPC handler
-  ipcMain.on('logger:log', (_event, logData) => {
-    const { level, message, process: processType, category, ...meta } = logData
-
-    // If a category is specified, use a category logger
-    const logger = category ? createCategoryLogger(category) : log
-
-    // Include process type in metadata for filtering
-    const metaWithProcess = {
-      ...meta,
-      process: processType || 'unknown'
-    }
-
-    switch (level) {
-      case 'error':
-        logger.error(message, metaWithProcess)
-        break
-      case 'warn':
-        logger.warn(message, metaWithProcess)
-        break
-      case 'info':
-        logger.info(message, metaWithProcess)
-        break
-      case 'debug':
-        logger.debug(message, metaWithProcess)
-        break
-      case 'verbose':
-        logger.verbose(message, metaWithProcess)
-        break
-      default:
-        logger.info(message, metaWithProcess)
-    }
-  })
-
-  // Bedrock tool handlers
-  const bedrockLogger = createCategoryLogger('bedrock:ipc')
-
-  // Generate image handler
-  ipcMain.handle('bedrock:generateImage', async (_event, params) => {
-    try {
-      bedrockLogger.debug('Generating image', {
-        modelId: params.modelId,
-        promptLength: params.prompt?.length
-      })
-
-      // Bedrock API を呼び出し（ファイル保存はpreloadで処理するためここでは保存しない）
-      const result = await bedrock.generateImage(params)
-
-      bedrockLogger.info('Image generated successfully')
-      return result
-    } catch (error) {
-      bedrockLogger.error('Failed to generate image', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  // Recognize image handler
-  ipcMain.handle('bedrock:recognizeImage', async (_event, params) => {
-    try {
-      bedrockLogger.debug('Recognizing images', {
-        imagePaths: params.imagePaths,
-        imageCount: params.imagePaths?.length || 0,
-        hasPrompt: !!params.prompt
-      })
-
-      // ImageRecognitionServiceは単一のimagePathを期待するため、配列から最初の要素を取り出す
-      const result = await bedrock.recognizeImage({
-        imagePath: params.imagePaths[0], // 配列から単一の文字列を取り出す
-        prompt: params.prompt,
-        modelId: params.modelId
-      })
-
-      bedrockLogger.info('Images recognized successfully')
-      return result
-    } catch (error) {
-      bedrockLogger.error('Failed to recognize images', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  // Retrieve handler
-  ipcMain.handle('bedrock:retrieve', async (_event, params) => {
-    try {
-      bedrockLogger.debug('Retrieving from knowledge base', {
-        knowledgeBaseId: params.knowledgeBaseId,
-        queryLength: params.query?.length
-      })
-
-      // Transform parameters to match AWS Bedrock Knowledge Base API format
-      const retrieveCommand = {
-        knowledgeBaseId: params.knowledgeBaseId,
-        retrievalQuery: {
-          text: params.query
-        },
-        ...(params.retrievalConfiguration && {
-          retrievalConfiguration: params.retrievalConfiguration
-        })
-      }
-
-      const result = await bedrock.retrieve(retrieveCommand)
-      bedrockLogger.info('Retrieved successfully from knowledge base')
-      return result
-    } catch (error) {
-      bedrockLogger.error('Failed to retrieve from knowledge base', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  // Invoke agent handler
-  ipcMain.handle('bedrock:invokeAgent', async (_event, params) => {
-    try {
-      bedrockLogger.debug('Invoking Bedrock agent', {
-        agentId: params.agentId,
-        agentAliasId: params.agentAliasId,
-        hasSessionId: !!params.sessionId
-      })
-      const result = await bedrock.invokeAgent(params)
-      bedrockLogger.info('Agent invoked successfully')
-      return result
-    } catch (error) {
-      bedrockLogger.error('Failed to invoke agent', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  // Invoke flow handler
-  ipcMain.handle('bedrock:invokeFlow', async (_event, params) => {
-    try {
-      bedrockLogger.debug('Invoking Bedrock flow', {
-        flowIdentifier: params.flowIdentifier,
-        flowAliasIdentifier: params.flowAliasIdentifier
-      })
-
-      // Ensure params has the correct structure
-      const invokeFlowParams = {
-        flowIdentifier: params.flowIdentifier,
-        flowAliasIdentifier: params.flowAliasIdentifier,
-        // Handle both input (legacy) and inputs (correct format)
-        inputs: params.inputs || (params.input ? [params.input] : []),
-        enableTrace: params.enableTrace
-      }
-
-      const result = await bedrock.invokeFlow(invokeFlowParams)
-      bedrockLogger.info('Flow invoked successfully')
-      return result
-    } catch (error) {
-      bedrockLogger.error('Failed to invoke flow', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      throw error
-    }
-  })
-
-  /**
-   * Load shared agents from the project directory
-   * This function reads agent JSON and YAML files from the .bedrock-engineer/agents directory
-   * Always reads from disk to ensure latest data is returned
-   */
-  async function loadSharedAgents(): Promise<{ agents: CustomAgent[]; error: string | null }> {
-    try {
-      const projectPath = store.get('projectPath') as string
-      if (!projectPath) {
-        return { agents: [], error: null }
-      }
-
-      // Project path from store is used
-
-      agentsLogger.debug('Loading shared agents from disk', { projectPath })
-      const agentsDir = resolve(projectPath, '.bedrock-engineer/agents')
-
-      // Check if the directory exists
-      try {
-        await fs.promises.access(agentsDir)
-      } catch (error) {
-        // If directory doesn't exist, just return empty array
-        return { agents: [], error: null }
-      }
-
-      // Read JSON and YAML files in the agents directory
-      const files = (await fs.promises.readdir(agentsDir)).filter(
-        (file) => file.endsWith('.json') || file.endsWith('.yml') || file.endsWith('.yaml')
-      )
-      const agents: CustomAgent[] = []
-
-      // Process all files concurrently using Promise.all for better performance
-      const agentPromises = files.map(async (file) => {
-        try {
-          const filePath = resolve(agentsDir, file)
-          const content = await fs.promises.readFile(filePath, 'utf-8')
-
-          // Parse the file content based on its extension
-          let agent: CustomAgent
-          if (file.endsWith('.json')) {
-            agent = JSON.parse(content) as CustomAgent
-          } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
-            agent = yaml.load(content) as CustomAgent
-          } else {
-            throw new Error(`Unsupported file format: ${file}`)
-          }
-
-          // Make sure each loaded agent has a unique ID to prevent React key conflicts
-          // If the ID doesn't already start with 'shared-', prefix it
-          if (!agent.id || !agent.id.startsWith('shared-')) {
-            // Remove any file extension (.json, .yml, .yaml) for the safeName
-            const safeName = file.replace(/\.(json|ya?ml)$/, '').toLowerCase()
-            agent.id = `shared-${safeName}-${Math.random().toString(36).substring(2, 9)}`
-          }
-
-          // Add a flag to indicate this is a shared agent
-          agent.isShared = true
-
-          // mcpToolsは自動的に生成されるため、保存対象から除外（後でpreloadで復元される）
-          // ここではmcpToolsを削除することでファイルからの読み込み時にも整合性を保つ
-          delete agent.mcpTools
-
-          return agent
-        } catch (err) {
-          agentsLogger.error(`Error reading agent file`, {
-            file,
-            error: err instanceof Error ? err.message : String(err)
-          })
-          return null
-        }
-      })
-
-      // Wait for all promises to resolve and filter out any null results (from failed reads)
-      const loadedAgents = (await Promise.all(agentPromises)).filter(
-        (agent): agent is CustomAgent => agent !== null
-      )
-      agents.push(...loadedAgents)
-
-      return { agents, error: null }
-    } catch (error) {
-      console.error('Error reading shared agents:', error)
-      return { agents: [], error: error instanceof Error ? error.message : String(error) }
-    }
-  }
-
-  // Shared agents handler - uses cached data when possible
-  ipcMain.handle('read-shared-agents', async () => {
-    return await loadSharedAgents()
-  })
-
-  // Handler to save an agent as a shared agent
-  ipcMain.handle('save-shared-agent', async (_, agent, options?: { format?: 'json' | 'yaml' }) => {
-    try {
-      const projectPath = store.get('projectPath') as string
-      if (!projectPath) {
-        return { success: false, error: 'No project path selected' }
-      }
-
-      // Determine file format (default to YAML if not specified)
-      const format = options?.format || 'yaml'
-      const fileExtension = format === 'json' ? '.json' : '.yaml'
-
-      // Ensure directories exist
-      const bedrockEngineerDir = resolve(projectPath, '.bedrock-engineer')
-      const agentsDir = resolve(bedrockEngineerDir, 'agents')
-
-      // Create directories if they don't exist (recursive will create both parent and child dirs)
-      await fs.promises.mkdir(agentsDir, { recursive: true })
-
-      // Generate a safe filename from the agent name
-      const safeFileName =
-        agent.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '') || 'custom-agent'
-
-      // Check if the file already exists and add a suffix if needed
-      let fileName = `${safeFileName}${fileExtension}`
-      let count = 1
-
-      // Helper function to check if file exists, using async fs
-      const fileExists = async (path: string): Promise<boolean> => {
-        try {
-          await fs.promises.access(path)
-          return true
-        } catch {
-          return false
-        }
-      }
-
-      while (await fileExists(resolve(agentsDir, fileName))) {
-        fileName = `${safeFileName}-${count}${fileExtension}`
-        count++
-      }
-
-      // Generate new ID for shared agent to avoid key conflicts
-      const newId = `shared-${agent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`
-
-      // Make sure agent has isShared set to true and a unique ID
-      const sharedAgent = {
-        ...agent,
-        id: newId,
-        isShared: true
-      }
-
-      // mcpToolsは保存対象から除外（mcpServersのみを保存）
-      delete sharedAgent.mcpTools
-
-      // Write the agent to file based on the format
-      const filePath = resolve(agentsDir, fileName)
-      let fileContent: string
-
-      if (format === 'json') {
-        fileContent = JSON.stringify(sharedAgent, null, 2)
-      } else {
-        // For YAML format
-        fileContent = yaml.dump(sharedAgent, {
-          indent: 2,
-          lineWidth: 120,
-          noRefs: true, // Don't output YAML references
-          sortKeys: false // Preserve key order
-        })
-      }
-
-      await fs.promises.writeFile(filePath, fileContent, 'utf-8')
-
-      // We don't need to call loadSharedAgents here anymore since there's no cache
-      // Client will call read-shared-agents when needed to get the latest data
-
-      return { success: true, filePath, format }
-    } catch (error) {
-      console.error('Error saving shared agent:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error)
-      }
-    }
-  })
   createWindow()
 
   // Log where Electron Store saves config.json
