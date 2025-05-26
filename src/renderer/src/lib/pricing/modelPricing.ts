@@ -11,6 +11,10 @@ export const modelPricing = {
   // Claude 3 Opus
   '3-5-opus': { input: 0.015, output: 0.075, cacheRead: 0.0015, cacheWrite: 0.01875 },
 
+  // Claude 4 Models
+  'sonnet-4': { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+  'opus-4': { input: 0.015, output: 0.075, cacheRead: 0.0015, cacheWrite: 0.01875 },
+
   // Nova
   'nova-pro': { input: 0.0008, output: 0.0032, cacheRead: 0.0002, cacheWrite: 0 },
   'nova-lite': { input: 0.00006, output: 0.00024, cacheRead: 0.000015, cacheWrite: 0 },
