@@ -235,8 +235,8 @@ export type KnowledgeBase = {
 export type InputType = 'string' | 'number' | 'boolean' | 'object' | 'array'
 
 export type FlowConfig = {
-  flowId: string
-  flowAliasId: string
+  flowIdentifier: string
+  flowAliasIdentifier: string
   description: string
   inputType?: InputType // 新規: 入力の型
   schema?: object // 新規: JSON Schema 定義 (objectとarrayの場合に使用)

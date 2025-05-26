@@ -164,8 +164,8 @@ interface FlowSettingFormProps {
 
 export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlows }) => {
   const { t } = useTranslation()
-  const [flowId, setFlowId] = useState('')
-  const [flowAliasId, setFlowAliasId] = useState('')
+  const [flowIdentifier, setFlowIdentifier] = useState('')
+  const [flowAliasIdentifier, setFlowAliasIdentifier] = useState('')
   const [description, setDescription] = useState('')
   const [inputType, setInputType] = useState<InputType>('string')
   const [schema, setSchema] = useState<object>({})
@@ -189,8 +189,8 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
   // Flow の編集を開始する関数
   const startEditing = (index: number) => {
     const flow = flows[index]
-    setFlowId(flow.flowId)
-    setFlowAliasId(flow.flowAliasId)
+    setFlowIdentifier(flow.flowIdentifier)
+    setFlowAliasIdentifier(flow.flowAliasIdentifier)
     setDescription(flow.description || '')
     setInputType(flow.inputType || 'string')
     setSchema(flow.schema || {})
@@ -207,7 +207,7 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
 
   // Flow を追加または更新する関数
   const saveFlow = () => {
-    if (!flowId || !flowAliasId) return
+    if (!flowIdentifier || !flowAliasIdentifier) return
 
     // objectまたはarrayの場合はスキーマのバリデーションを行う
     if ((inputType === 'object' || inputType === 'array') && !validateSchema(schema)) {
@@ -215,8 +215,8 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
     }
 
     const flowData: FlowConfig = {
-      flowId,
-      flowAliasId,
+      flowIdentifier,
+      flowAliasIdentifier,
       description,
       inputType,
       // objectまたはarrayの場合のみschemaを追加
@@ -240,8 +240,8 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
 
   // フォームリセット
   const resetForm = () => {
-    setFlowId('')
-    setFlowAliasId('')
+    setFlowIdentifier('')
+    setFlowAliasIdentifier('')
     setDescription('')
     setInputType('string')
     setSchema({})
@@ -292,12 +292,12 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
 
         <div className="flex-grow">
           <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-            {t('Flow ID')}
+            {t('Flow Identifier')}
           </label>
           <input
             type="text"
-            value={flowId}
-            onChange={(e) => setFlowId(e.target.value)}
+            value={flowIdentifier}
+            onChange={(e) => setFlowIdentifier(e.target.value)}
             placeholder="e.g., FLOW123456"
             className="w-full p-2 text-sm border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
           />
@@ -305,12 +305,12 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
 
         <div className="flex-grow">
           <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-            {t('Flow Alias ID')}
+            {t('Flow Alias Identifier')}
           </label>
           <input
             type="text"
-            value={flowAliasId}
-            onChange={(e) => setFlowAliasId(e.target.value)}
+            value={flowAliasIdentifier}
+            onChange={(e) => setFlowAliasIdentifier(e.target.value)}
             placeholder="e.g., ALIAS123456"
             className="w-full p-2 text-sm border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
           />
@@ -484,7 +484,7 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
         <div className="flex gap-2">
           <button
             onClick={saveFlow}
-            disabled={!flowId || !flowAliasId}
+            disabled={!flowIdentifier || !flowAliasIdentifier}
             className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {editingIndex !== null ? t('Update Flow') : t('Add Flow')}
@@ -516,7 +516,7 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono">
-                  {t('Flow ID')}: {flow.flowId}
+                  {t('Flow Identifier')}: {flow.flowIdentifier}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -545,7 +545,8 @@ export const FlowSettingForm: React.FC<FlowSettingFormProps> = ({ flows, setFlow
                 <div className="w-[15rem]">
                   <div>
                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                      {t('Flow Alias ID')}: <span className="font-mono">{flow.flowAliasId}</span>
+                      {t('Flow Alias Identifier')}:{' '}
+                      <span className="font-mono">{flow.flowAliasIdentifier}</span>
                     </span>
                   </div>
 

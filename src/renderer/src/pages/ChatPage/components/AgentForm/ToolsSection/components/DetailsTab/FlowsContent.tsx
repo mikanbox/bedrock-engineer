@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { FlowConfig, InputType } from '@/types/agent-chat'
 import JSONEditor from '@renderer/components/JSONViewer/JSONEditor'
 import JSONViewer from '@renderer/components/JSONViewer'
+import { EditIcon, RemoveIcon } from '@renderer/components/icons/ToolIcons'
 
 // オブジェクト型のサンプルスキーマ
 const OBJECT_SAMPLES = {
@@ -156,21 +157,15 @@ const ARRAY_SAMPLES = {
   }
 }
 
-/**
- * FlowsContent コンポーネントのプロパティ
- */
 export interface FlowsContentProps {
   flows: FlowConfig[]
   onChange: (flows: FlowConfig[]) => void
 }
 
-/**
- * Bedrock Flow 設定コンポーネント
- */
 export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) => {
   const { t } = useTranslation()
-  const [flowId, setFlowId] = useState('')
-  const [flowAliasId, setFlowAliasId] = useState('')
+  const [flowIdentifier, setFlowIdentifier] = useState('')
+  const [flowAliasIdentifier, setFlowAliasIdentifier] = useState('')
   const [description, setDescription] = useState('')
   const [inputType, setInputType] = useState<InputType>('string')
   const [schema, setSchema] = useState<object>({})
@@ -194,33 +189,25 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
   // Flow の編集を開始する関数
   const startEditing = (index: number) => {
     const flow = flows[index]
-    setFlowId(flow.flowId)
-    setFlowAliasId(flow.flowAliasId)
+    setFlowIdentifier(flow.flowIdentifier)
+    setFlowAliasIdentifier(flow.flowAliasIdentifier)
     setDescription(flow.description || '')
     setInputType(flow.inputType || 'string')
     setSchema(flow.schema || {})
     setEditingIndex(index)
+    // フォームまでスクロール
+    document.querySelector('.flex-col.gap-2.p-4.border')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // 編集をキャンセルする関数
   const cancelEditing = () => {
     resetForm()
-  }
-
-  // フォームリセット
-  const resetForm = () => {
-    setFlowId('')
-    setFlowAliasId('')
-    setDescription('')
-    setInputType('string')
-    setSchema({})
-    setSchemaError('')
     setEditingIndex(null)
   }
 
   // Flow を追加または更新する関数
   const saveFlow = () => {
-    if (!flowId || !flowAliasId) return
+    if (!flowIdentifier || !flowAliasIdentifier) return
 
     // objectまたはarrayの場合はスキーマのバリデーションを行う
     if ((inputType === 'object' || inputType === 'array') && !validateSchema(schema)) {
@@ -228,8 +215,8 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
     }
 
     const flowData: FlowConfig = {
-      flowId,
-      flowAliasId,
+      flowIdentifier,
+      flowAliasIdentifier,
       description,
       inputType,
       // objectまたはarrayの場合のみschemaを追加
@@ -251,6 +238,17 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
     resetForm()
   }
 
+  // フォームリセット
+  const resetForm = () => {
+    setFlowIdentifier('')
+    setFlowAliasIdentifier('')
+    setDescription('')
+    setInputType('string')
+    setSchema({})
+    setSchemaError('')
+    setEditingIndex(null)
+  }
+
   // Flow を削除する関数
   const removeFlow = (index: number) => {
     // 編集中の Flow を削除した場合は編集モードを終了
@@ -263,10 +261,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        {t('Configure which Bedrock Flows this agent can access.')}
-      </p>
+    <div>
       {/* 新しい Flow を登録するフォーム */}
       <div className="flex flex-col gap-2 p-4 border border-gray-200 dark:border-gray-700 rounded-md">
         <h4 className="font-medium text-sm mb-2 dark:text-gray-200">
@@ -275,12 +270,12 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
 
         <div className="flex-grow">
           <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-            {t('Flow ID')}
+            {t('Flow Identifier')}
           </label>
           <input
             type="text"
-            value={flowId}
-            onChange={(e) => setFlowId(e.target.value)}
+            value={flowIdentifier}
+            onChange={(e) => setFlowIdentifier(e.target.value)}
             placeholder="e.g., FLOW123456"
             className="w-full p-2 text-sm border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
           />
@@ -288,12 +283,12 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
 
         <div className="flex-grow">
           <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-            {t('Flow Alias ID')}
+            {t('Flow Alias Identifier')}
           </label>
           <input
             type="text"
-            value={flowAliasId}
-            onChange={(e) => setFlowAliasId(e.target.value)}
+            value={flowAliasIdentifier}
+            onChange={(e) => setFlowAliasIdentifier(e.target.value)}
             placeholder="e.g., ALIAS123456"
             className="w-full p-2 text-sm border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
           />
@@ -346,10 +341,10 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                 </p>
               </div>
 
-              {/* サンプルリンク部分 */}
+              {/* サンプルリンク部分を改善 */}
               <div className="mb-3">
                 <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('サンプルテンプレート')}:
+                  {t('flow.sample.title', 'サンプルテンプレート')}:
                 </p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {inputType === 'object' ? (
@@ -357,23 +352,32 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                       <button
                         className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
                         onClick={() => setSchema(OBJECT_SAMPLES.simple)}
-                        title={t('シンプルなオブジェクト（名前、年齢、状態）')}
+                        title={t(
+                          'flow.sample.object.simple.tooltip',
+                          'シンプルなオブジェクト（名前、年齢、状態）'
+                        )}
                       >
-                        {t('シンプル')}
+                        {t('flow.sample.object.simple', 'シンプル')}
                       </button>
                       <button
                         className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
                         onClick={() => setSchema(OBJECT_SAMPLES.nested)}
-                        title={t('ネストしたオブジェクト（ユーザー情報と設定）')}
+                        title={t(
+                          'flow.sample.object.nested.tooltip',
+                          'ネストしたオブジェクト（ユーザー情報と設定）'
+                        )}
                       >
-                        {t('ネスト')}
+                        {t('flow.sample.object.nested', 'ネスト')}
                       </button>
                       <button
                         className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
                         onClick={() => setSchema(OBJECT_SAMPLES.complex)}
-                        title={t('複雑なオブジェクト（プロフィール、設定、タグなど）')}
+                        title={t(
+                          'flow.sample.object.complex.tooltip',
+                          '複雑なオブジェクト（プロフィール、設定、タグなど）'
+                        )}
                       >
-                        {t('複雑')}
+                        {t('flow.sample.object.complex', '複雑')}
                       </button>
                     </>
                   ) : (
@@ -381,23 +385,29 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                       <button
                         className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
                         onClick={() => setSchema(ARRAY_SAMPLES.simple)}
-                        title={t('文字列の配列')}
+                        title={t('flow.sample.array.simple.tooltip', '文字列の配列')}
                       >
-                        {t('シンプル')}
+                        {t('flow.sample.array.simple', 'シンプル')}
                       </button>
                       <button
                         className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
                         onClick={() => setSchema(ARRAY_SAMPLES.objects)}
-                        title={t('オブジェクトの配列（ID、名前、タグ）')}
+                        title={t(
+                          'flow.sample.array.objects.tooltip',
+                          'オブジェクトの配列（ID、名前、タグ）'
+                        )}
                       >
-                        {t('オブジェクト')}
+                        {t('flow.sample.array.objects', 'オブジェクト')}
                       </button>
                       <button
                         className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
                         onClick={() => setSchema(ARRAY_SAMPLES.complex)}
-                        title={t('複雑なオブジェクトの配列（タスクデータなど）')}
+                        title={t(
+                          'flow.sample.array.complex.tooltip',
+                          '複雑なオブジェクトの配列（タスクデータなど）'
+                        )}
                       >
-                        {t('複雑')}
+                        {t('flow.sample.array.complex', '複雑')}
                       </button>
                     </>
                   )}
@@ -406,7 +416,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
 
               <div className="mb-1">
                 <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('スキーマエディタ')}:
+                  {t('flow.editor.title', 'スキーマエディタ')}:
                 </p>
               </div>
 
@@ -435,9 +445,12 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
               {schemaError && <p className="text-xs text-red-500 mt-1">{schemaError}</p>}
 
               <div className="mt-3 bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs text-gray-600 dark:text-gray-300">
-                <p className="font-medium text-blue-700 dark:text-blue-300 mb-1">{t('ヒント')}:</p>
+                <p className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                  {t('flow.hint.title', 'ヒント')}:
+                </p>
                 <p>
                   {t(
+                    'flow.hint.description',
                     'JSON Schemaを使用して、Flowに送信するデータの構造を定義します。これにより、AIがFlowに正しい形式のデータを送信できるようになります。'
                   )}
                 </p>
@@ -449,7 +462,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
         <div className="flex gap-2">
           <button
             onClick={saveFlow}
-            disabled={!flowId || !flowAliasId}
+            disabled={!flowIdentifier || !flowAliasIdentifier}
             className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {editingIndex !== null ? t('Update Flow') : t('Add Flow')}
@@ -481,7 +494,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono">
-                  {t('Flow ID')}: {flow.flowId}
+                  {t('Flow Identifier')}: {flow.flowIdentifier}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -490,7 +503,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                     title="Edit"
                     aria-label="Edit flow"
                   >
-                    {t('Edit')}
+                    <EditIcon />
                   </button>
                   <button
                     onClick={() => removeFlow(index)}
@@ -498,7 +511,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                     title="Remove"
                     aria-label="Remove flow"
                   >
-                    {t('Remove')}
+                    <RemoveIcon />
                   </button>
                 </div>
               </div>
@@ -510,7 +523,8 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                 <div className="w-[15rem]">
                   <div>
                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                      {t('Flow Alias ID')}: <span className="font-mono">{flow.flowAliasId}</span>
+                      {t('Flow Alias Identifier')}:{' '}
+                      <span className="font-mono">{flow.flowAliasIdentifier}</span>
                     </span>
                   </div>
 
@@ -528,7 +542,7 @@ export const FlowsContent: React.FC<FlowsContentProps> = ({ flows, onChange }) =
                     <JSONViewer
                       data={flow.schema}
                       title={t('Schema')}
-                      maxHeight="200px"
+                      maxHeight="400px"
                       showCopyButton={true}
                     />
                   </div>

@@ -6,6 +6,7 @@ import { file } from './file'
 import { chatHistory } from './chat-history'
 import { appWindow } from './appWindow'
 import { rendererLogger, createRendererCategoryLogger } from './logger'
+import { ipcClient } from './ipc-client'
 
 // Initialize preload logger with category
 const log = createRendererCategoryLogger('preload')
@@ -22,6 +23,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('file', file)
     contextBridge.exposeInMainWorld('chatHistory', chatHistory)
     contextBridge.exposeInMainWorld('appWindow', appWindow)
+    contextBridge.exposeInMainWorld('ipc', ipcClient)
     contextBridge.exposeInMainWorld('logger', {
       log: rendererLogger,
       createCategoryLogger: createRendererCategoryLogger
@@ -47,6 +49,8 @@ if (process.contextIsolated) {
     window.chatHistory = chatHistory
     // @ts-ignore (define in dts)
     window.appWindow = appWindow
+    // @ts-ignore (define in dts)
+    window.ipc = ipcClient
     // @ts-ignore (define in dts)
     window.logger = {
       log: rendererLogger,
