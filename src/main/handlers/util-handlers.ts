@@ -1,4 +1,5 @@
 import { IpcMainInvokeEvent, app } from 'electron'
+import { log } from '../../common/logger'
 
 export const utilHandlers = {
   'get-app-path': async (_event: IpcMainInvokeEvent) => {
@@ -34,7 +35,6 @@ export const utilHandlers = {
         }
       }
     } catch (error) {
-      const { log } = await import('../../common/logger')
       log.error('Error fetching website', {
         url,
         error: error instanceof Error ? error.message : String(error)

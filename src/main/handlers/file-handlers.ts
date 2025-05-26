@@ -2,6 +2,7 @@ import { IpcMainInvokeEvent } from 'electron'
 import { handleFileOpen } from '../../preload/file'
 import fs from 'fs'
 import { log } from '../../common/logger'
+import { store } from '../../preload/store'
 
 export const fileHandlers = {
   'open-file': async (_event: IpcMainInvokeEvent) => {
@@ -22,7 +23,6 @@ export const fileHandlers = {
     // If path was selected and it differs from the current project path,
     // update the project path in store
     if (path) {
-      const { store } = await import('../../preload/store')
       if (path !== store.get('projectPath')) {
         store.set('projectPath', path)
         log.info('Project path changed', { newPath: path })

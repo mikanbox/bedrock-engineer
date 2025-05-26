@@ -4,6 +4,7 @@ import fs from 'fs'
 import yaml from 'js-yaml'
 import { CustomAgent } from '../../types/agent-chat'
 import { createCategoryLogger } from '../../common/logger'
+import { store } from '../../preload/store'
 
 const agentsLogger = createCategoryLogger('agents:ipc')
 
@@ -14,7 +15,6 @@ const agentsLogger = createCategoryLogger('agents:ipc')
  */
 async function loadSharedAgents(): Promise<{ agents: CustomAgent[]; error: string | null }> {
   try {
-    const { store } = await import('../../preload/store')
     const projectPath = store.get('projectPath') as string
     if (!projectPath) {
       return { agents: [], error: null }
@@ -102,7 +102,6 @@ export const agentHandlers = {
     options?: { format?: 'json' | 'yaml' }
   ) => {
     try {
-      const { store } = await import('../../preload/store')
       const projectPath = store.get('projectPath') as string
       if (!projectPath) {
         return { success: false, error: 'No project path selected' }

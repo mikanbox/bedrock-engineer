@@ -2,6 +2,8 @@
  * GenerateImage tool implementation
  */
 
+import { promises as fs } from 'fs'
+import * as path from 'path'
 import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
@@ -160,8 +162,6 @@ export class GenerateImageTool extends BaseTool<GenerateImageInput, GenerateImag
       const binaryData = Buffer.from(imageData, 'base64')
 
       // Ensure directory exists
-      const fs = await import('fs/promises')
-      const path = await import('path')
       const dir = path.dirname(outputPath)
       await fs.mkdir(dir, { recursive: true })
 

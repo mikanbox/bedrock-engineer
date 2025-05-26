@@ -7,6 +7,12 @@ import type { ToolDependencies, ITool, ToolCategory } from './base/types'
 import { createToolRegistry, ToolRegistry } from './registry'
 import { StoreManager } from './common/StoreManager'
 import { createToolLogger } from './common/Logger'
+import { createFilesystemTools } from './handlers/filesystem'
+import { createWebTools } from './handlers/web'
+import { createThinkingTools } from './handlers/thinking'
+import { createCommandTools } from './handlers/command'
+import { createMcpTools } from './handlers/mcp'
+import { createBedrockTools } from './handlers/bedrock'
 
 // Global instances
 let toolRegistry: ToolRegistry | null = null
@@ -15,7 +21,7 @@ let isInitialized = false
 /**
  * Initialize the tool system
  */
-export async function initializeToolSystem(): Promise<void> {
+export function initializeToolSystem(): void {
   if (isInitialized) {
     return
   }
@@ -29,45 +35,17 @@ export async function initializeToolSystem(): Promise<void> {
   // Create registry
   toolRegistry = createToolRegistry(dependencies)
 
-  // Register filesystem tools
-  const { createFilesystemTools } = await import('./handlers/filesystem')
-  const filesystemTools = createFilesystemTools(dependencies)
-  filesystemTools.forEach(({ tool, category }) => {
-    toolRegistry!.register(tool, category)
-  })
+  // Register all tools synchronously
+  const allTools = [
+    ...createFilesystemTools(dependencies),
+    ...createWebTools(dependencies),
+    ...createThinkingTools(dependencies),
+    ...createCommandTools(dependencies),
+    ...createMcpTools(dependencies),
+    ...createBedrockTools(dependencies)
+  ]
 
-  // Register web tools
-  const { createWebTools } = await import('./handlers/web')
-  const webTools = createWebTools(dependencies)
-  webTools.forEach(({ tool, category }) => {
-    toolRegistry!.register(tool, category)
-  })
-
-  // Register thinking tools
-  const { createThinkingTools } = await import('./handlers/thinking')
-  const thinkingTools = createThinkingTools(dependencies)
-  thinkingTools.forEach(({ tool, category }) => {
-    toolRegistry!.register(tool, category)
-  })
-
-  // Register command tools
-  const { createCommandTools } = await import('./handlers/command')
-  const commandTools = createCommandTools(dependencies)
-  commandTools.forEach(({ tool, category }) => {
-    toolRegistry!.register(tool, category)
-  })
-
-  // Register MCP tools
-  const { createMcpTools } = await import('./handlers/mcp')
-  const mcpTools = createMcpTools(dependencies)
-  mcpTools.forEach(({ tool, category }) => {
-    toolRegistry!.register(tool, category)
-  })
-
-  // Register Bedrock tools
-  const { createBedrockTools } = await import('./handlers/bedrock')
-  const bedrockTools = createBedrockTools(dependencies)
-  bedrockTools.forEach(({ tool, category }) => {
+  allTools.forEach(({ tool, category }) => {
     toolRegistry!.register(tool, category)
   })
 
@@ -162,7 +140,7 @@ export function registerTools(
 export async function executeTool(input: ToolInput): Promise<string | ToolResult> {
   // Initialize the system if not already done
   if (!isInitialized) {
-    await initializeToolSystem()
+    initializeToolSystem()
   }
 
   return executeToolNew(input)
