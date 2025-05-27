@@ -79,12 +79,6 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({ files }) => {
     }
   }, [files, imageDataUrls])
 
-
-
-
-
-
-
   if (!files || files.length === 0) {
     return (
       <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -103,10 +97,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({ files }) => {
         if (isImageFile(filePath) && previewingImages[filePath] && imageDataUrls[filePath]) {
           return (
             <div key={`preview-${index}`} className="mt-4">
-              <ImagePreview
-                filename={filename}
-                imagePath={imageDataUrls[filePath]}
-              />
+              <ImagePreview filename={filename} imagePath={imageDataUrls[filePath]} />
             </div>
           )
         }

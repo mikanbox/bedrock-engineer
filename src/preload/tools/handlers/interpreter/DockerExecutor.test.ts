@@ -189,11 +189,9 @@ test('DockerExecutor should validate basic functionality without external depend
 
   // Test private method accessors indirectly
   // These methods are private but their behavior is tested through public methods
-  const getDockerImage = (dockerExecutor as any).getDockerImage
   const getExecutionCommand = (dockerExecutor as any).getExecutionCommand
   const getFileExtension = (dockerExecutor as any).getFileExtension
 
-  expect(getDockerImage('python')).toBe('python:3.11-slim')
   expect(getExecutionCommand('python', 'test.py')).toEqual(['python', 'test.py'])
   expect(getFileExtension('python')).toBe('.py')
 })

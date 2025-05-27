@@ -48,6 +48,9 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ filename, imagePath 
         document.removeEventListener('keydown', handleKeyDown)
       }
     }
+
+    // isFullscreenがfalseの場合はクリーンアップ関数を返さない
+    return undefined
   }, [isFullscreen])
 
   if (imageError) {
