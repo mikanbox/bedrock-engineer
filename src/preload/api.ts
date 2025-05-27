@@ -7,6 +7,7 @@ import { getMcpToolSpecs, testMcpServerConnection, testAllMcpServerConnections }
 import { McpServerConfig } from '../types/agent-chat'
 import { getImageGenerationModelsForRegion } from '../main/api/bedrock/models'
 import { BedrockSupportRegion } from '../types/llm'
+import { CodeInterpreterTool } from './tools/handlers/interpreter/CodeInterpreterTool'
 
 export type CallConverseAPIProps = {
   modelId: string
@@ -47,6 +48,11 @@ export const api = {
     },
     testAllConnections: async (mcpServers: McpServerConfig[]) => {
       return testAllMcpServerConnections(mcpServers)
+    }
+  },
+  codeInterpreter: {
+    getCurrentWorkspacePath: () => {
+      return CodeInterpreterTool.getCurrentWorkspacePath()
     }
   }
 }

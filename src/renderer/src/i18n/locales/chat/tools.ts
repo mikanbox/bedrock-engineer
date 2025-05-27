@@ -47,6 +47,39 @@ export const tools = {
     'Knowledge Base ID': 'Knowledge Base ID',
     'Registered Knowledge Bases': 'Registered Knowledge Bases',
     'No knowledge bases registered yet': 'No knowledge bases registered yet',
+    // Code Interpreter Settings
+    'Code Interpreter': 'Code Interpreter',
+    'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.':
+      'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.',
+    'Code Interpreter Status': 'Code Interpreter Status',
+    'Enable or disable the code interpreter functionality':
+      'Enable or disable the code interpreter functionality',
+    'Features & Capabilities': 'Features & Capabilities',
+    'Execute Python code in a secure Docker container':
+      'Execute Python code in a secure Docker container',
+    'No internet access for enhanced security': 'No internet access for enhanced security',
+    'Automatic file generation and detection': 'Automatic file generation and detection',
+    'Support for data analysis and visualization': 'Support for data analysis and visualization',
+    'Mathematical calculations and scientific computing':
+      'Mathematical calculations and scientific computing',
+    'Security & Limitations': 'Security & Limitations',
+    'Code runs in an isolated Docker environment': 'Code runs in an isolated Docker environment',
+    'No network access to external resources': 'No network access to external resources',
+    'Generated files are temporary and may be cleared':
+      'Generated files are temporary and may be cleared',
+    'Execution time limits may apply': 'Execution time limits may apply',
+    'Usage Examples': 'Usage Examples',
+    'Data Analysis:': 'Data Analysis:',
+    'Process CSV files, perform statistical analysis':
+      'Process CSV files, perform statistical analysis',
+    'Visualization:': 'Visualization:',
+    'Create charts and graphs using matplotlib or plotly':
+      'Create charts and graphs using matplotlib or plotly',
+    'Math & Science:': 'Math & Science:',
+    'Solve complex equations, numerical simulations':
+      'Solve complex equations, numerical simulations',
+    'File Processing:': 'File Processing:',
+    'Generate reports, process text files': 'Generate reports, process text files',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'File System',
@@ -76,7 +109,8 @@ export const tools = {
       executeCommand: 'Execute allowed commands with support for wildcards',
       applyDiffEdit: 'Apply partial updates to existing files with granular control',
       think: 'Enable AI to perform complex step-by-step reasoning',
-      invokeFlow: 'Invoke Amazon Bedrock Flow'
+      invokeFlow: 'Invoke Amazon Bedrock Flow',
+      codeInterpreter: 'Execute Python code in a secure Docker environment'
     },
     'tool info': {
       retrieve: {
@@ -185,11 +219,61 @@ export const tools = {
           'Connects the AI with specialized Bedrock Agents to perform complex tasks like data analysis, code interpretation, or domain-specific operations beyond normal chat capabilities. Requires agents to be pre-configured in Amazon Bedrock.',
         tip: 'Use this when you need specialized capabilities like code execution, data analysis, or domain-specific knowledge that requires a dedicated agent with specific tools.'
       },
+      codeInterpreter: {
+        description:
+          'Allows the AI to execute Python code in a secure Docker environment with no internet access. Perfect for data analysis, mathematical calculations, visualizations, and scientific computing tasks.',
+        tip: 'Enable this when you need the AI to perform calculations, analyze data, create visualizations, or execute Python code for problem-solving. All code runs in an isolated container for security.'
+      },
       executeCommand: {
         description:
           'Lets the AI run system commands to automate development tasks. Perfect for build operations, testing, deployment tasks, or any workflow that would typically require command line usage.',
         tip: 'Enable this when you want the AI to help with DevOps tasks, run tests, build projects, or automate repetitive command-line operations. Only pre-approved command patterns are permitted.'
       }
+    },
+    // CodeInterpreter Result Display
+    'code interpreter display': {
+      'Executed Code': 'Executed Code',
+      Output: 'Output',
+      'Generated Files': 'Generated Files',
+      Errors: 'Errors',
+      Success: 'Success',
+      Failed: 'Failed',
+      'Console Output': 'Console Output',
+      'No output produced': 'No output produced',
+      'Copy code': 'Copy code',
+      'Copy output': 'Copy output',
+      'Copy error': 'Copy error',
+      'Code copied to clipboard': 'Code copied to clipboard',
+      'Output copied to clipboard': 'Output copied to clipboard',
+      'Error copied to clipboard': 'Error copied to clipboard',
+      'Failed to copy code': 'Failed to copy code',
+      'Failed to copy output': 'Failed to copy output',
+      'Failed to copy error': 'Failed to copy error',
+      Copied: 'Copied',
+      Copy: 'Copy',
+      Image: 'Image',
+      'CSV Data': 'CSV Data',
+      'Text File': 'Text File',
+      File: 'File',
+      Preview: 'Preview',
+      Download: 'Download',
+      'Download file': 'Download file',
+      'No files generated': 'No files generated',
+      'Total files generated': 'Total files generated',
+      'Execution Error': 'Execution Error',
+      'Exit Code': 'Exit Code',
+      Hint: 'Hint',
+      'Check your code for syntax errors, undefined variables, or incorrect function calls.':
+        'Check your code for syntax errors, undefined variables, or incorrect function calls.',
+      'Execution time': 'Execution time',
+      'Exit code': 'Exit code',
+      'Generated files': 'Generated files',
+      Hide: 'Hide',
+      'Failed to load image': 'Failed to load image',
+      Minimize: 'Minimize',
+      Maximize: 'Maximize',
+      'Download image': 'Download image',
+      Close: 'Close'
     }
   },
   ja: {
@@ -250,6 +334,35 @@ export const tools = {
     'Knowledge Base ID': 'ナレッジベースID',
     'Registered Knowledge Bases': '登録済みナレッジベース',
     'No knowledge bases registered yet': 'ナレッジベースが登録されていません',
+    // Code Interpreter Settings
+    'Code Interpreter': 'コードインタープリタ',
+    'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.':
+      'データ分析、計算、コード実行のために、AIが安全なDocker環境でPythonコードを実行できるようにします。',
+    'Code Interpreter Status': 'コードインタープリタ状態',
+    'Enable or disable the code interpreter functionality':
+      'コードインタープリタ機能を有効または無効にします',
+    'Features & Capabilities': '機能・性能',
+    'Execute Python code in a secure Docker container': '安全なDockerコンテナでPythonコードを実行',
+    'No internet access for enhanced security': 'セキュリティ強化のためインターネットアクセスなし',
+    'Automatic file generation and detection': '自動ファイル生成・検出',
+    'Support for data analysis and visualization': 'データ分析・視覚化サポート',
+    'Mathematical calculations and scientific computing': '数学的計算・科学計算',
+    'Security & Limitations': 'セキュリティ・制限事項',
+    'Code runs in an isolated Docker environment': 'コードは分離されたDocker環境で実行',
+    'No network access to external resources': '外部リソースへのネットワークアクセスなし',
+    'Generated files are temporary and may be cleared':
+      '生成されたファイルは一時的で削除される可能性があります',
+    'Execution time limits may apply': '実行時間制限が適用される場合があります',
+    'Usage Examples': '使用例',
+    'Data Analysis:': 'データ分析：',
+    'Process CSV files, perform statistical analysis': 'CSVファイル処理、統計分析の実行',
+    'Visualization:': '視覚化：',
+    'Create charts and graphs using matplotlib or plotly':
+      'matplotlibやplotlyを使用したチャート・グラフの作成',
+    'Math & Science:': '数学・科学：',
+    'Solve complex equations, numerical simulations': '複雑な方程式の解決、数値シミュレーション',
+    'File Processing:': 'ファイル処理：',
+    'Generate reports, process text files': 'レポート生成、テキストファイル処理',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'ファイルシステム',
@@ -280,7 +393,8 @@ export const tools = {
       executeCommand: 'ワイルドカードをサポートする許可されたコマンドを実行',
       applyDiffEdit: 'ファイルに対して部分的な更新を適用',
       think: 'AIが複雑なステップバイステップの思考を実行',
-      invokeFlow: 'Amazon Bedrock Flow を実行'
+      invokeFlow: 'Amazon Bedrock Flow を実行',
+      codeInterpreter: '安全なDocker環境でPythonコードを実行'
     },
     'tool info': {
       retrieve: {
@@ -389,11 +503,61 @@ export const tools = {
           'AIを専門のBedrock Agentsと接続し、データ分析、コード解釈、通常のチャット機能を超えるドメイン固有の操作など、複雑なタスクを実行できるようにします。Amazon Bedrockで事前にエージェントを設定しておく必要があります。',
         tip: 'コード実行、データ分析、特定のツールを持つ専用エージェントが必要なドメイン固有の知識など、特殊な機能が必要な場合に使用してください。'
       },
+      codeInterpreter: {
+        description:
+          'AIが安全なDocker環境でPythonコードを実行できるようにします（インターネットアクセスなし）。データ分析、数学的計算、視覚化、科学計算タスクに最適です。',
+        tip: 'AIに計算の実行、データの分析、視覚化の作成、または問題解決のためのPythonコード実行を行わせたい場合に有効にしてください。すべてのコードはセキュリティのため分離されたコンテナで実行されます。'
+      },
       executeCommand: {
         description:
           'AIにシステムコマンドを実行させて開発タスクを自動化できるようにします。ビルド操作、テスト、デプロイタスク、またはコマンドラインを使用する一般的なワークフローに最適です。',
         tip: 'AIにDevOpsタスク、テスト実行、プロジェクトのビルド、または繰り返しのコマンドライン操作の自動化を支援させたい場合に有効にしてください。セキュリティのため、事前に承認されたコマンドパターンのみが許可されています。'
       }
+    },
+    // CodeInterpreter Result Display (Japanese)
+    'code interpreter display': {
+      'Executed Code': '実行されたコード',
+      Output: '出力',
+      'Generated Files': '生成されたファイル',
+      Errors: 'エラー',
+      Success: '成功',
+      Failed: '失敗',
+      'Console Output': 'コンソール出力',
+      'No output produced': '出力がありません',
+      'Copy code': 'コードをコピー',
+      'Copy output': '出力をコピー',
+      'Copy error': 'エラーをコピー',
+      'Code copied to clipboard': 'コードをクリップボードにコピーしました',
+      'Output copied to clipboard': '出力をクリップボードにコピーしました',
+      'Error copied to clipboard': 'エラーをクリップボードにコピーしました',
+      'Failed to copy code': 'コードのコピーに失敗しました',
+      'Failed to copy output': '出力のコピーに失敗しました',
+      'Failed to copy error': 'エラーのコピーに失敗しました',
+      Copied: 'コピー済み',
+      Copy: 'コピー',
+      Image: '画像',
+      'CSV Data': 'CSVデータ',
+      'Text File': 'テキストファイル',
+      File: 'ファイル',
+      Preview: 'プレビュー',
+      Download: 'ダウンロード',
+      'Download file': 'ファイルをダウンロード',
+      'No files generated': 'ファイルが生成されていません',
+      'Total files generated': 'ファイル生成数合計',
+      'Execution Error': '実行エラー',
+      'Exit Code': '終了コード',
+      Hint: 'ヒント',
+      'Check your code for syntax errors, undefined variables, or incorrect function calls.':
+        'コードの構文エラー、未定義変数、または不正な関数呼び出しを確認してください。',
+      'Execution time': '実行時間',
+      'Exit code': '終了コード',
+      'Generated files': '生成ファイル',
+      Hide: '非表示',
+      'Failed to load image': '画像の読み込みに失敗しました',
+      Minimize: '最小化',
+      Maximize: '最大化',
+      'Download image': '画像をダウンロード',
+      Close: '閉じる'
     }
   }
 }

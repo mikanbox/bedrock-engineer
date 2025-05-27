@@ -58,7 +58,14 @@ export interface ToolRegistration {
 /**
  * Tool categories for organization
  */
-export type ToolCategory = 'filesystem' | 'bedrock' | 'web' | 'command' | 'thinking' | 'mcp'
+export type ToolCategory =
+  | 'filesystem'
+  | 'bedrock'
+  | 'web'
+  | 'command'
+  | 'thinking'
+  | 'mcp'
+  | 'interpreter'
 
 /**
  * Tool execution context

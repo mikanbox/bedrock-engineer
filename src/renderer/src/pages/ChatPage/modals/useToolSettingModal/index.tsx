@@ -11,6 +11,7 @@ import { ThinkToolSettingForm } from './ThinkToolSettingForm'
 import { RecognizeImageSettingForm } from './RecognizeImageSettingForm'
 import { GenerateImageSettingForm } from './GenerateImageSettingForm'
 import { FlowSettingForm } from './FlowSettingForm'
+import { CodeInterpreterSettingForm } from './CodeInterpreterSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -40,7 +41,8 @@ const TOOLS_WITH_SETTINGS = [
   'tavilySearch',
   'recognizeImage',
   'generateImage',
-  'invokeFlow'
+  'invokeFlow',
+  'codeInterpreter'
 ]
 
 interface ToolSettingModalProps {
@@ -403,6 +405,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                         setFlows={(flows) => updateAgentFlows(selectedAgentId, flows)}
                       />
                     )}
+                    {selectedTool === 'codeInterpreter' && <CodeInterpreterSettingForm />}
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">

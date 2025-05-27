@@ -65,6 +65,12 @@ type StoreScheme = {
     modelId: string
   }
 
+  /** コードインタープリタツールの設定 */
+  codeInterpreterTool?: {
+    /** ツールを有効にするかどうか */
+    enabled: boolean
+  }
+
   /** アプリケーションの表示言語設定（日本語または英語） */
   language: 'ja' | 'en'
 
@@ -253,6 +259,12 @@ const init = () => {
   const planMode = electronStore.get('planMode')
   if (planMode === undefined) {
     electronStore.set('planMode', false)
+  }
+
+  // Initialize codeInterpreterTool if not present
+  const codeInterpreterTool = electronStore.get('codeInterpreterTool')
+  if (!codeInterpreterTool) {
+    electronStore.set('codeInterpreterTool', { enabled: true })
   }
 }
 

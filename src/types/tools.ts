@@ -18,6 +18,7 @@ export type ToolName =
   | 'think'
   | 'recognizeImage'
   | 'invokeFlow'
+  | 'codeInterpreter'
   | string // MCPツール名を許容するために文字列型も追加
 
 /**
@@ -192,6 +193,13 @@ export type RecognizeImageInput = {
   prompt?: string
 }
 
+// codeInterpreter ツールの入力型（シンプル化版）
+export type CodeInterpreterInput = {
+  type: 'codeInterpreter'
+  code: string // Python コードのみ - 最大限シンプル！
+  inputFiles?: Array<{ path: string }> // Optional: files to mount in container
+}
+
 // invokeFlow ツールの入力型
 export type InvokeFlowInput = {
   type: 'invokeFlow'
@@ -205,6 +213,8 @@ export type InvokeFlowInput = {
     nodeOutputName: string
   }
 }
+
+// Old complex CodeInterpreter definition removed - using simplified version above
 
 // MCPツールの入力型
 export type McpToolInput = {
@@ -230,6 +240,7 @@ export type ToolInput =
   | ApplyDiffEditInput
   | ThinkInput
   | InvokeFlowInput
+  | CodeInterpreterInput
   | McpToolInput // MCPツール入力を追加
 
 // ツール名から入力型を取得するユーティリティ型
@@ -250,6 +261,7 @@ export type ToolInputTypeMap = {
   applyDiffEdit: ApplyDiffEditInput
   think: ThinkInput
   invokeFlow: InvokeFlowInput
+  codeInterpreter: CodeInterpreterInput
   [key: string]: any // MCPツールに対応するためのインデックスシグネチャ
 }
 
@@ -833,6 +845,48 @@ Example:
             }
           },
           required: ['flowIdentifier', 'flowAliasIdentifier', 'input']
+        }
+      }
+    }
+  },
+  {
+    toolSpec: {
+      name: 'codeInterpreter',
+      description:
+        'Execute Python code in a secure Docker environment with pre-installed data science libraries (numpy, pandas, matplotlib, scikit-learn, etc.). Input files can be mounted for analysis. No internet access for security.',
+      inputSchema: {
+        json: {
+          type: 'object',
+          properties: {
+            code: {
+              type: 'string',
+              description:
+                'Python code to execute. The code will run in a secure Docker container with no internet access. Pre-installed libraries include: numpy, pandas, matplotlib, seaborn, scikit-learn, scipy, requests, beautifulsoup4, pillow, and more. Generated files will be automatically detected and reported. Input files are mounted at /data/ directory (read-only).'
+            },
+            environment: {
+              type: 'string',
+              description:
+                'Optional. Python environment type: "basic" (numpy, pandas, matplotlib, requests) or "datascience" (full data science stack including ML libraries). Default: "datascience"',
+              enum: ['basic', 'datascience']
+            },
+            inputFiles: {
+              type: 'array',
+              description:
+                'Optional. Array of input files to mount in the container. Files will be mounted at /data/{filename} as read-only. Useful for analyzing CSV files, images, or other data files.',
+              items: {
+                type: 'object',
+                properties: {
+                  path: {
+                    type: 'string',
+                    description:
+                      'Absolute path to the input file on the host system. The file will be mounted at /data/{basename} in the container (read-only).'
+                  }
+                },
+                required: ['path']
+              }
+            }
+          },
+          required: ['code']
         }
       }
     }

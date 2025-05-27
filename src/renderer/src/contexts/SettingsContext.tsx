@@ -58,6 +58,10 @@ export interface SettingsContextType {
   generateImageModel: string
   setGenerateImageModel: (modelId: string) => void
 
+  // codeInterpreter Tool Settings
+  codeInterpreterEnabled: boolean
+  setCodeInterpreterEnabled: (enabled: boolean) => void
+
   // LLM Settings
   currentLLM: LLM
   updateLLM: (selectedModel: LLM) => void
@@ -227,6 +231,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     'amazon.titan-image-generator-v2:0'
   )
 
+  // codeInterpreter Tool Settings
+  const [codeInterpreterEnabled, setStateCodeInterpreterEnabled] = useState<boolean>(true)
+
   // LLM Settings
   const [llmError, setLLMError] = useState<any>()
   const defaultModel = {
@@ -342,6 +349,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const generateImageSetting = window.store.get('generateImageTool')
     if (generateImageSetting?.modelId) {
       setStateGenerateImageModel(generateImageSetting.modelId)
+    }
+
+    // Load codeInterpreter Tool Settings
+    const codeInterpreterSetting = window.store.get('codeInterpreterTool')
+    if (
+      codeInterpreterSetting &&
+      typeof codeInterpreterSetting === 'object' &&
+      'enabled' in codeInterpreterSetting
+    ) {
+      setStateCodeInterpreterEnabled(codeInterpreterSetting.enabled)
     }
 
     // Load LLM Settings
@@ -1080,6 +1097,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('generateImageTool', { modelId })
   }, [])
 
+  const setCodeInterpreterEnabled = useCallback((enabled: boolean) => {
+    setStateCodeInterpreterEnabled(enabled)
+    window.store.set('codeInterpreterTool', { enabled })
+  }, [])
+
   // エージェント固有のツール設定を取得する関数
   const getAgentTools = useCallback(
     (agentId: string): ToolState[] => {
@@ -1362,6 +1384,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // generateImage Tool Settings
     generateImageModel,
     setGenerateImageModel,
+
+    // codeInterpreter Tool Settings
+    codeInterpreterEnabled,
+    setCodeInterpreterEnabled,
 
     // LLM Settings
     currentLLM,

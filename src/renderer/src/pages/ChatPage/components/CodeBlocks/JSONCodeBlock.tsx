@@ -6,6 +6,7 @@ import { ExecuteCommandResult } from './ExecuteCommand/ExecuteCommandResult'
 import { GenerateImageResult } from './GenerateImage/GenerateImageResult'
 import { BedrockAgentResult } from './BedrockAgent/BedrockAgentResult'
 import { RecognizeImageResult } from './RecognizeImage/RecognizeImageResult'
+import { CodeInterpreterResult } from './CodeInterpreter/CodeInterpreterResult'
 
 interface RetrieveResponse {
   success: boolean
@@ -74,6 +75,14 @@ export const JSONCodeBlock: React.FC<{ json: any }> = ({ json }) => {
 
   if (json.name === 'recognizeImage') {
     return <RecognizeImageResult response={json} />
+  }
+
+  if (json.name === 'codeInterpreter') {
+    return (
+      <div className="max-h-[60vh] overflow-y-auto">
+        <CodeInterpreterResult response={json} />
+      </div>
+    )
   }
 
   const jsonStr = JSON.stringify(json, null, 2)
