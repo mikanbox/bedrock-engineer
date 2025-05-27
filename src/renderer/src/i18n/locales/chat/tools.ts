@@ -68,6 +68,26 @@ export const tools = {
     'Generated files are temporary and may be cleared':
       'Generated files are temporary and may be cleared',
     'Execution time limits may apply': 'Execution time limits may apply',
+
+    // Container configuration
+    コンテナ設定: 'Container Configuration',
+    メモリ制限: 'Memory Limit',
+    CPU制限: 'CPU Limit',
+    タイムアウト: 'Timeout',
+    'Docker ステータス': 'Docker Status',
+    'チェック中...': 'Checking...',
+    利用可能: 'Available',
+    利用不可: 'Unavailable',
+    再チェック: 'Recheck',
+    最終チェック: 'Last checked',
+    設定のガイダンス: 'Configuration Guidance',
+    データサイエンス作業には256MB以上のメモリを推奨:
+      'Recommend 256MB+ memory for data science work',
+    '重い計算処理には1.0 CPU以上を推奨': 'Recommend 1.0+ CPU for heavy computations',
+    複雑な処理には120秒以上のタイムアウトを設定: 'Set 120+ seconds timeout for complex processes',
+    設定されたリソース制限内で実行: 'Execution within configured resource limits',
+    '安全なDocker環境でPythonコードを実行し、データ分析、計算、コード実行のためのコンテナ設定を行います。':
+      'Execute Python code in a secure Docker environment and configure containers for data analysis, calculations, and code execution.',
     'Usage Examples': 'Usage Examples',
     'Data Analysis:': 'Data Analysis:',
     'Process CSV files, perform statistical analysis':
@@ -353,6 +373,26 @@ export const tools = {
     'Generated files are temporary and may be cleared':
       '生成されたファイルは一時的で削除される可能性があります',
     'Execution time limits may apply': '実行時間制限が適用される場合があります',
+
+    // Container configuration
+    コンテナ設定: 'コンテナ設定',
+    メモリ制限: 'メモリ制限',
+    CPU制限: 'CPU制限',
+    タイムアウト: 'タイムアウト',
+    'Docker ステータス': 'Docker ステータス',
+    'チェック中...': 'チェック中...',
+    利用可能: '利用可能',
+    利用不可: '利用不可',
+    再チェック: '再チェック',
+    最終チェック: '最終チェック',
+    設定のガイダンス: '設定のガイダンス',
+    データサイエンス作業には256MB以上のメモリを推奨:
+      'データサイエンス作業には256MB以上のメモリを推奨',
+    '重い計算処理には1.0 CPU以上を推奨': '重い計算処理には1.0 CPU以上を推奨',
+    複雑な処理には120秒以上のタイムアウトを設定: '複雑な処理には120秒以上のタイムアウトを設定',
+    設定されたリソース制限内で実行: '設定されたリソース制限内で実行',
+    '安全なDocker環境でPythonコードを実行し、データ分析、計算、コード実行のためのコンテナ設定を行います。':
+      '安全なDocker環境でPythonコードを実行し、データ分析、計算、コード実行のためのコンテナ設定を行います。',
     'Usage Examples': '使用例',
     'Data Analysis:': 'データ分析：',
     'Process CSV files, perform statistical analysis': 'CSVファイル処理、統計分析の実行',

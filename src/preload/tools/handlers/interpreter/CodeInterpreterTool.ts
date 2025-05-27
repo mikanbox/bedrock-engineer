@@ -35,17 +35,36 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
   private workspaceConfig: WorkspaceConfig
 
   /**
-   * Get execution configuration based on environment
+   * Get execution configuration based on user settings and environment
    */
   private getExecutionConfig(environment?: string): ExecutionConfig {
     const pythonEnvironment = this.validateEnvironment(environment)
 
-    return {
-      timeout: 30, // 30 seconds fixed
-      memoryLimit: pythonEnvironment === 'datascience' ? '256m' : '128m', // More memory for data science
-      cpuLimit: 0.5, // 50% CPU fixed
+    // Get user configuration from store
+    const userConfig = this.storeManager.get('codeInterpreterTool')
+
+    // Use user configuration or fall back to defaults
+    const config = {
+      timeout: 30,
+      memoryLimit: pythonEnvironment === 'datascience' ? '256m' : '128m',
+      cpuLimit: 0.5,
       environment: pythonEnvironment
     }
+
+    // Apply user configuration if available
+    if (userConfig && typeof userConfig === 'object') {
+      if ('timeout' in userConfig && typeof userConfig.timeout === 'number') {
+        config.timeout = userConfig.timeout
+      }
+      if ('memoryLimit' in userConfig && typeof userConfig.memoryLimit === 'string') {
+        config.memoryLimit = userConfig.memoryLimit
+      }
+      if ('cpuLimit' in userConfig && typeof userConfig.cpuLimit === 'number') {
+        config.cpuLimit = userConfig.cpuLimit
+      }
+    }
+
+    return config
   }
 
   /**

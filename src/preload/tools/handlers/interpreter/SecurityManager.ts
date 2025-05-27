@@ -7,16 +7,14 @@ import { ExecutionConfig } from './types'
 import { ToolLogger } from '../../base/types'
 
 /**
- * Fixed security constraints - no configuration needed
+ * Base security constraints - memory and CPU are configurable
  */
-const FIXED_DOCKER_SECURITY_ARGS = [
+const BASE_DOCKER_SECURITY_ARGS = [
   '--rm', // Auto-remove container
   '--network=none', // No network access
-  '--memory=256m', // Increased memory limit for matplotlib
-  '--cpus=0.5', // Fixed CPU limit
   '--tmpfs=/tmp:rw,size=100m', // Writable temporary filesystem
   '--tmpfs=/var/tmp:rw,size=50m' // Additional temp space
-  // Removed --read-only and --user=nobody to allow matplotlib to work
+  // Memory and CPU limits are added dynamically based on user configuration
 ]
 
 /**
@@ -30,7 +28,7 @@ export class SecurityManager {
   }
 
   /**
-   * Validate execution config (simplified - just check basic sanity)
+   * Validate execution config and apply security constraints
    */
   validateExecutionConfig(config?: Partial<ExecutionConfig>): {
     isValid: boolean
@@ -39,23 +37,60 @@ export class SecurityManager {
   } {
     const errors: string[] = []
 
-    // Use fixed configuration - ignore user input for security
+    // Default configuration
     const sanitizedConfig: ExecutionConfig = {
-      timeout: 60, // Fixed: 60 seconds (increased for matplotlib initialization)
-      memoryLimit: '256m', // Fixed: 256MB (increased for matplotlib)
-      cpuLimit: 0.5 // Fixed: 50% CPU
+      timeout: 30, // Default: 30 seconds
+      memoryLimit: '256m', // Default: 256MB
+      cpuLimit: 0.5 // Default: 50% CPU
     }
 
-    // Log if user tried to override (for security audit)
-    if (config && Object.keys(config).length > 0) {
-      this.logger.info('User config ignored for security - using fixed values', {
-        attemptedConfig: config,
-        appliedConfig: sanitizedConfig
-      })
+    // Apply user configuration if provided
+    if (config) {
+      // Validate and apply timeout
+      if (config.timeout !== undefined) {
+        if (typeof config.timeout === 'number' && config.timeout > 0 && config.timeout <= 600) {
+          sanitizedConfig.timeout = config.timeout
+        } else {
+          errors.push('Timeout must be between 1 and 600 seconds')
+        }
+      }
+
+      // Validate and apply memory limit
+      if (config.memoryLimit !== undefined) {
+        const validMemoryLimits = ['128m', '256m', '512m', '1g', '2g']
+        if (
+          typeof config.memoryLimit === 'string' &&
+          validMemoryLimits.includes(config.memoryLimit)
+        ) {
+          sanitizedConfig.memoryLimit = config.memoryLimit
+        } else {
+          errors.push(`Memory limit must be one of: ${validMemoryLimits.join(', ')}`)
+        }
+      }
+
+      // Validate and apply CPU limit
+      if (config.cpuLimit !== undefined) {
+        if (typeof config.cpuLimit === 'number' && config.cpuLimit > 0 && config.cpuLimit <= 4.0) {
+          sanitizedConfig.cpuLimit = config.cpuLimit
+        } else {
+          errors.push('CPU limit must be between 0.1 and 4.0')
+        }
+      }
+
+      // Copy environment if provided
+      if (config.environment) {
+        sanitizedConfig.environment = config.environment
+      }
     }
+
+    this.logger.debug('Execution config validated', {
+      providedConfig: config,
+      sanitizedConfig,
+      hasErrors: errors.length > 0
+    })
 
     return {
-      isValid: true, // Always valid since we use fixed config
+      isValid: errors.length === 0,
       errors,
       sanitizedConfig
     }
@@ -94,10 +129,23 @@ export class SecurityManager {
   }
 
   /**
-   * Generate Docker security arguments (fixed set)
+   * Generate Docker security arguments with user configuration
    */
-  generateDockerSecurityArgs(_config?: ExecutionConfig): string[] {
-    // Return fixed security arguments
-    return [...FIXED_DOCKER_SECURITY_ARGS]
+  generateDockerSecurityArgs(config?: ExecutionConfig): string[] {
+    const args = [...BASE_DOCKER_SECURITY_ARGS]
+
+    if (config) {
+      // Add memory limit
+      args.push(`--memory=${config.memoryLimit}`)
+
+      // Add CPU limit
+      args.push(`--cpus=${config.cpuLimit}`)
+    } else {
+      // Default values
+      args.push('--memory=256m')
+      args.push('--cpus=0.5')
+    }
+
+    return args
   }
 }

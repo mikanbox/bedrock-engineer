@@ -53,6 +53,9 @@ export const api = {
   codeInterpreter: {
     getCurrentWorkspacePath: () => {
       return CodeInterpreterTool.getCurrentWorkspacePath()
+    },
+    checkDockerAvailability: async () => {
+      return ipcRenderer.invoke('check-docker-availability')
     }
   }
 }

@@ -4,6 +4,7 @@ import { AgentChatConfig, KnowledgeBase, SendMsgKey, ToolState } from '../types/
 import { CustomAgent } from '../types/agent-chat'
 import { BedrockAgent } from '../types/agent'
 import { AWSCredentials } from '../main/api/bedrock/types'
+import { CodeInterpreterContainerConfig } from './tools/handlers/interpreter/types'
 
 const DEFAULT_SHELL = '/bin/bash'
 const DEFAULT_INFERENCE_PARAMS: InferenceParameters = {
@@ -66,10 +67,7 @@ type StoreScheme = {
   }
 
   /** コードインタープリタツールの設定 */
-  codeInterpreterTool?: {
-    /** ツールを有効にするかどうか */
-    enabled: boolean
-  }
+  codeInterpreterTool?: CodeInterpreterContainerConfig
 
   /** アプリケーションの表示言語設定（日本語または英語） */
   language: 'ja' | 'en'
@@ -264,7 +262,18 @@ const init = () => {
   // Initialize codeInterpreterTool if not present
   const codeInterpreterTool = electronStore.get('codeInterpreterTool')
   if (!codeInterpreterTool) {
-    electronStore.set('codeInterpreterTool', { enabled: true })
+    electronStore.set('codeInterpreterTool', {
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
+  } else if ('enabled' in codeInterpreterTool && typeof codeInterpreterTool.enabled === 'boolean') {
+    // Migrate from old format
+    electronStore.set('codeInterpreterTool', {
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
   }
 }
 

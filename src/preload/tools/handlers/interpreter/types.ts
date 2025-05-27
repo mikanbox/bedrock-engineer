@@ -82,13 +82,32 @@ export interface CodeInterpreterResult extends ToolResult {
 }
 
 /**
- * Fixed execution configuration (no longer user-configurable)
+ * User-configurable execution configuration
  */
 export interface ExecutionConfig {
-  timeout: number // Fixed: 30 seconds
-  memoryLimit: string // Fixed: '128m'
-  cpuLimit: number // Fixed: 0.5
+  timeout: number // User configurable: 30, 60, 120 seconds
+  memoryLimit: string // User configurable: '128m', '256m', '512m', '1g'
+  cpuLimit: number // User configurable: 0.5, 1.0, 2.0
   environment?: PythonEnvironment // Environment type
+}
+
+/**
+ * CodeInterpreter container configuration for UI settings
+ */
+export interface CodeInterpreterContainerConfig {
+  memoryLimit: string // Memory limit for containers
+  cpuLimit: number // CPU limit for containers
+  timeout: number // Execution timeout in seconds
+}
+
+/**
+ * Docker availability status
+ */
+export interface DockerAvailabilityStatus {
+  available: boolean
+  version?: string
+  error?: string
+  lastChecked?: Date
 }
 
 /**

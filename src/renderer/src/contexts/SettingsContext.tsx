@@ -19,6 +19,7 @@ import { getToolsForCategory } from '../constants/defaultToolSets'
 import { tools } from '@/types/tools'
 import isEqual from 'lodash/isEqual'
 import { Tool } from '@aws-sdk/client-bedrock-runtime'
+import { CodeInterpreterContainerConfig } from 'src/preload/tools/handlers/interpreter/types'
 
 const DEFAULT_INFERENCE_PARAMS: InferenceParameters = {
   maxTokens: 4096,
@@ -59,8 +60,8 @@ export interface SettingsContextType {
   setGenerateImageModel: (modelId: string) => void
 
   // codeInterpreter Tool Settings
-  codeInterpreterEnabled: boolean
-  setCodeInterpreterEnabled: (enabled: boolean) => void
+  codeInterpreterConfig: CodeInterpreterContainerConfig
+  setCodeInterpreterConfig: (config: CodeInterpreterContainerConfig) => void
 
   // LLM Settings
   currentLLM: LLM
@@ -232,7 +233,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   )
 
   // codeInterpreter Tool Settings
-  const [codeInterpreterEnabled, setStateCodeInterpreterEnabled] = useState<boolean>(true)
+  const [codeInterpreterConfig, setStateCodeInterpreterConfig] =
+    useState<CodeInterpreterContainerConfig>({
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
 
   // LLM Settings
   const [llmError, setLLMError] = useState<any>()
@@ -353,12 +359,32 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Load codeInterpreter Tool Settings
     const codeInterpreterSetting = window.store.get('codeInterpreterTool')
-    if (
-      codeInterpreterSetting &&
-      typeof codeInterpreterSetting === 'object' &&
-      'enabled' in codeInterpreterSetting
-    ) {
-      setStateCodeInterpreterEnabled(codeInterpreterSetting.enabled)
+    if (codeInterpreterSetting && typeof codeInterpreterSetting === 'object') {
+      // Check if it's the old format (enabled boolean) and migrate
+      if (
+        'enabled' in codeInterpreterSetting &&
+        typeof codeInterpreterSetting.enabled === 'boolean'
+      ) {
+        // Migrate from old format - use default container settings
+        const defaultConfig: CodeInterpreterContainerConfig = {
+          memoryLimit: '256m',
+          cpuLimit: 0.5,
+          timeout: 30
+        }
+        setStateCodeInterpreterConfig(defaultConfig)
+        window.store.set('codeInterpreterTool', defaultConfig)
+      } else if (
+        'memoryLimit' in codeInterpreterSetting &&
+        'cpuLimit' in codeInterpreterSetting &&
+        'timeout' in codeInterpreterSetting
+      ) {
+        // New format - load container configuration
+        setStateCodeInterpreterConfig({
+          memoryLimit: codeInterpreterSetting.memoryLimit as string,
+          cpuLimit: codeInterpreterSetting.cpuLimit as number,
+          timeout: codeInterpreterSetting.timeout as number
+        })
+      }
     }
 
     // Load LLM Settings
@@ -1097,9 +1123,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('generateImageTool', { modelId })
   }, [])
 
-  const setCodeInterpreterEnabled = useCallback((enabled: boolean) => {
-    setStateCodeInterpreterEnabled(enabled)
-    window.store.set('codeInterpreterTool', { enabled })
+  const setCodeInterpreterConfig = useCallback((config: CodeInterpreterContainerConfig) => {
+    setStateCodeInterpreterConfig(config)
+    window.store.set('codeInterpreterTool', config)
   }, [])
 
   // エージェント固有のツール設定を取得する関数
@@ -1386,8 +1412,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setGenerateImageModel,
 
     // codeInterpreter Tool Settings
-    codeInterpreterEnabled,
-    setCodeInterpreterEnabled,
+    codeInterpreterConfig,
+    setCodeInterpreterConfig,
 
     // LLM Settings
     currentLLM,

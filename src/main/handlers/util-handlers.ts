@@ -1,4 +1,5 @@
 import { IpcMainInvokeEvent, app } from 'electron'
+import { spawn } from 'child_process'
 import { log } from '../../common/logger'
 
 export const utilHandlers = {
@@ -41,5 +42,60 @@ export const utilHandlers = {
       })
       throw error
     }
+  },
+
+  'check-docker-availability': async (_event: IpcMainInvokeEvent) => {
+    return new Promise((resolve) => {
+      const dockerProcess = spawn('docker', ['--version'], { stdio: 'pipe' })
+
+      let output = ''
+      let errorOutput = ''
+
+      dockerProcess.stdout?.on('data', (data) => {
+        output += data.toString()
+      })
+
+      dockerProcess.stderr?.on('data', (data) => {
+        errorOutput += data.toString()
+      })
+
+      dockerProcess.on('close', (code) => {
+        if (code === 0 && output.includes('Docker version')) {
+          // Extract version information
+          const versionMatch = output.match(/Docker version (\d+\.\d+\.\d+)/)
+          const version = versionMatch ? versionMatch[1] : 'Unknown'
+
+          resolve({
+            available: true,
+            version,
+            lastChecked: new Date()
+          })
+        } else {
+          resolve({
+            available: false,
+            error: errorOutput || 'Docker not found or not running',
+            lastChecked: new Date()
+          })
+        }
+      })
+
+      dockerProcess.on('error', (error) => {
+        resolve({
+          available: false,
+          error: error.message,
+          lastChecked: new Date()
+        })
+      })
+
+      // Timeout after 5 seconds
+      setTimeout(() => {
+        dockerProcess.kill()
+        resolve({
+          available: false,
+          error: 'Docker check timed out',
+          lastChecked: new Date()
+        })
+      }, 5000)
+    })
   }
 } as const
