@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ModelSelector } from '../ModelSelector'
 import { ThinkingModeSelector } from '../ThinkingModeSelector'
+import { InterleaveThinkingToggle } from '../InterleaveThinkingToggle'
 import { PlanActToggle } from './PlanActToggle'
 import { useSettings } from '@renderer/contexts/SettingsContext'
 
@@ -35,7 +36,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   onHeightChange
 }) => {
   const { t } = useTranslation()
-  const { currentLLM, planMode, setPlanMode } = useSettings()
+  const { planMode, setPlanMode } = useSettings()
   const [dragActive, setDragActive] = useState(false)
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
   const [isManuallyResized, setIsManuallyResized] = useState(false)
@@ -423,11 +424,10 @@ export const TextArea: React.FC<TextAreaProps> = ({
             <div>
               <ModelSelector openable={true} />
             </div>
-            {currentLLM.supportsThinking && (
-              <div>
-                <ThinkingModeSelector />
-              </div>
-            )}
+            <div>
+              <ThinkingModeSelector />
+            </div>
+            <InterleaveThinkingToggle />
           </div>
 
           <div className="flex items-center gap-2">

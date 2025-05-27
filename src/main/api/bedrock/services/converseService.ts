@@ -105,6 +105,7 @@ export class ConverseService {
     const inferenceConfig = props?.inferenceConfig ?? this.context.store.get('inferenceParams')
 
     const thinkingMode = this.context.store.get('thinkingMode')
+    const interleaveThinking = this.context.store.get('interleaveThinking')
 
     // models.tsでsupportsThinking=trueと定義されたモデルでThinking Modeが有効な場合、additionalModelRequestFieldsを追加
     let additionalModelRequestFields: Record<string, any> | undefined = undefined
@@ -122,6 +123,11 @@ export class ConverseService {
           type: thinkingMode.type,
           budget_tokens: thinkingMode.budget_tokens
         }
+      }
+
+      // インターリーブ思考が有効な場合のみanthropic_betaを追加
+      if (interleaveThinking) {
+        additionalModelRequestFields.anthropic_beta = ['interleaved-thinking-2025-05-14']
       }
       inferenceConfig.topP = undefined // reasoning は topP は不要
       inferenceConfig.temperature = 1 // reasoning は temperature を 1 必須

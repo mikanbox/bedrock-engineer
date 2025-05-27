@@ -50,6 +50,9 @@ type StoreScheme = {
   /** 思考モードの設定（Claude 3.7 Sonnet用） */
   thinkingMode?: ThinkingMode
 
+  /** インターリーブ思考の設定（思考モードの拡張機能） */
+  interleaveThinking?: boolean
+
   /** 画像認識ツールの設定 */
   recognizeImageTool?: {
     /** 使用するモデルID */
@@ -195,6 +198,12 @@ const init = () => {
   const thinkingMode = electronStore.get('thinkingMode')
   if (!thinkingMode) {
     electronStore.set('thinkingMode', DEFAULT_THINKING_MODE)
+  }
+
+  // Initialize interleaveThinking if not present
+  const interleaveThinking = electronStore.get('interleaveThinking')
+  if (interleaveThinking === undefined) {
+    electronStore.set('interleaveThinking', false)
   }
 
   // Initialize custom agents if not present
