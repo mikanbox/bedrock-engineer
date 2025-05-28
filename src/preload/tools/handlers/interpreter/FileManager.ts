@@ -33,6 +33,7 @@ export class FileManager {
   private logger: ToolLogger
   private config: WorkspaceConfig
   private workspacePath?: string
+  private executionPath?: string
 
   constructor(logger: ToolLogger, _securityManager: SecurityManager, config: WorkspaceConfig) {
     this.logger = logger
@@ -78,6 +79,87 @@ export class FileManager {
       throw new Error('Workspace not initialized')
     }
     return this.workspacePath
+  }
+
+  /**
+   * Create execution-specific subdirectory and return its path
+   */
+  async createExecutionDirectory(): Promise<string> {
+    if (!this.workspacePath) {
+      throw new Error('Workspace not initialized')
+    }
+
+    try {
+      // Generate unique execution ID
+      const executionId = `exec_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+      const executionDir = path.join(this.workspacePath, executionId)
+
+      await fs.mkdir(executionDir, { recursive: true })
+      this.executionPath = executionDir
+
+      this.logger.debug('Execution directory created', {
+        executionPath: this.executionPath,
+        executionId
+      })
+
+      return this.executionPath
+    } catch (error) {
+      this.logger.error('Failed to create execution directory', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw new Error(`Failed to create execution directory: ${error}`)
+    }
+  }
+
+  /**
+   * Get current execution path
+   */
+  getExecutionPath(): string {
+    if (!this.executionPath) {
+      throw new Error('Execution directory not created')
+    }
+    return this.executionPath
+  }
+
+  /**
+   * List files in current execution directory
+   */
+  async listExecutionFiles(): Promise<FileListResult> {
+    try {
+      const executionPath = this.getExecutionPath()
+      const entries = await fs.readdir(executionPath, { withFileTypes: true })
+
+      const listedFiles: FileInfo[] = []
+
+      for (const entry of entries) {
+        try {
+          const stats = await fs.stat(path.join(executionPath, entry.name))
+          listedFiles.push({
+            name: entry.name,
+            type: entry.isDirectory() ? 'directory' : 'file',
+            size: entry.isFile() ? stats.size : undefined,
+            modified: stats.mtime
+          })
+        } catch (error) {
+          this.logger.warn('Failed to get file stats in execution directory', {
+            filename: entry.name,
+            error: error instanceof Error ? error.message : String(error)
+          })
+        }
+      }
+
+      this.logger.debug('Execution files listed', {
+        executionPath,
+        fileCount: listedFiles.length
+      })
+
+      return { listedFiles }
+    } catch (error) {
+      this.logger.error('Failed to list execution files', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      return { listedFiles: [] }
+    }
   }
 
   /**

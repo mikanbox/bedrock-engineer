@@ -37,7 +37,7 @@ export class DockerExecutor {
   async executeCode(
     code: string,
     language: SupportedLanguage,
-    workspacePath: string,
+    executionPath: string,
     config?: ExecutionConfig,
     inputFiles?: InputFile[]
   ): Promise<CodeExecutionResult> {
@@ -46,7 +46,7 @@ export class DockerExecutor {
     this.logger.info('Starting code execution', {
       language,
       codeLength: code.length,
-      workspacePath,
+      executionPath,
       inputFileCount: inputFiles?.length || 0
     })
 
@@ -69,13 +69,13 @@ export class DockerExecutor {
       }
 
       // Create temporary code file
-      const codeFilename = await this.createCodeFile(sanitizedCode, language, workspacePath)
+      const codeFilename = await this.createCodeFile(sanitizedCode, language, executionPath)
 
       // Execute in Docker
       const result = await this.runInDocker(
         codeFilename,
         language,
-        workspacePath,
+        executionPath,
         validation.sanitizedConfig,
         validatedInputFiles
       )
@@ -113,12 +113,12 @@ export class DockerExecutor {
   private async createCodeFile(
     code: string,
     language: SupportedLanguage,
-    workspacePath: string
+    executionPath: string
   ): Promise<string> {
     const fs = await import('fs/promises')
     const extension = this.getFileExtension(language)
     const filename = `temp_${Date.now()}${extension}`
-    const filePath = path.join(workspacePath, filename)
+    const filePath = path.join(executionPath, filename)
 
     await fs.writeFile(filePath, code, 'utf8')
 
@@ -132,14 +132,14 @@ export class DockerExecutor {
   private async runInDocker(
     filename: string,
     language: SupportedLanguage,
-    workspacePath: string,
+    executionPath: string,
     config: ExecutionConfig,
     inputFiles?: InputFile[]
   ): Promise<Omit<CodeExecutionResult, 'executionTime'>> {
     // Generate Docker arguments
     const dockerArgs = await this.buildDockerArgs(
       language,
-      workspacePath,
+      executionPath,
       filename,
       config,
       inputFiles
@@ -231,7 +231,7 @@ export class DockerExecutor {
    */
   private async buildDockerArgs(
     language: SupportedLanguage,
-    workspacePath: string,
+    executionPath: string,
     filename: string,
     config: ExecutionConfig,
     inputFiles?: InputFile[]
@@ -242,8 +242,8 @@ export class DockerExecutor {
     const securityArgs = this.securityManager.generateDockerSecurityArgs(config)
     args.push(...securityArgs)
 
-    // Mount workspace
-    args.push('-v', `${workspacePath}:/workspace`)
+    // Mount execution directory
+    args.push('-v', `${executionPath}:/workspace`)
     args.push('-w', '/workspace')
 
     // Mount input files if provided

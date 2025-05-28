@@ -195,3 +195,169 @@ test('DockerExecutor should validate basic functionality without external depend
   expect(getExecutionCommand('python', 'test.py')).toEqual(['python', 'test.py'])
   expect(getFileExtension('python')).toBe('.py')
 })
+
+test('DockerExecutor should generate correct volume mount commands for single file', () => {
+  const mockLogger: ToolLogger = {
+    debug: jest.fn() as any,
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    verbose: () => {}
+  }
+
+  const mockSecurityManager = {} as SecurityManager
+  const dockerExecutor = new DockerExecutor(mockLogger, mockSecurityManager)
+
+  // Test single file mount
+  const inputFiles = [{ path: '/home/user/data.csv' }]
+  const generateFileVolumeMounts = (dockerExecutor as any).generateFileVolumeMounts.bind(
+    dockerExecutor
+  )
+  const volumeArgs = generateFileVolumeMounts(inputFiles)
+
+  expect(volumeArgs).toEqual(['-v', '/home/user/data.csv:/data/data.csv:ro'])
+
+  // Verify debug logging was called
+  expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
+    hostPath: '/home/user/data.csv',
+    containerPath: '/data/data.csv',
+    index: 0
+  })
+
+  expect(mockLogger.debug).toHaveBeenCalledWith('Input files will be mounted to /data directory', {
+    fileCount: 1
+  })
+})
+
+test('DockerExecutor should generate correct volume mount commands for multiple files', () => {
+  const mockLogger: ToolLogger = {
+    debug: jest.fn() as any,
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    verbose: () => {}
+  }
+
+  const mockSecurityManager = {} as SecurityManager
+  const dockerExecutor = new DockerExecutor(mockLogger, mockSecurityManager)
+
+  // Test multiple files mount
+  const inputFiles = [
+    { path: '/home/user/data1.csv' },
+    { path: '/home/user/data2.json' },
+    { path: '/home/user/script.py' }
+  ]
+  const generateFileVolumeMounts = (dockerExecutor as any).generateFileVolumeMounts.bind(
+    dockerExecutor
+  )
+  const volumeArgs = generateFileVolumeMounts(inputFiles)
+
+  expect(volumeArgs).toEqual([
+    '-v',
+    '/home/user/data1.csv:/data/data1.csv:ro',
+    '-v',
+    '/home/user/data2.json:/data/data2.json:ro',
+    '-v',
+    '/home/user/script.py:/data/script.py:ro'
+  ])
+
+  // Verify debug logging was called for each file
+  expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
+    hostPath: '/home/user/data1.csv',
+    containerPath: '/data/data1.csv',
+    index: 0
+  })
+
+  expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
+    hostPath: '/home/user/data2.json',
+    containerPath: '/data/data2.json',
+    index: 1
+  })
+
+  expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
+    hostPath: '/home/user/script.py',
+    containerPath: '/data/script.py',
+    index: 2
+  })
+
+  expect(mockLogger.debug).toHaveBeenCalledWith('Input files will be mounted to /data directory', {
+    fileCount: 3
+  })
+})
+
+test('DockerExecutor should handle empty input files array', () => {
+  const mockLogger: ToolLogger = {
+    debug: jest.fn() as any,
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    verbose: () => {}
+  }
+
+  const mockSecurityManager = {} as SecurityManager
+  const dockerExecutor = new DockerExecutor(mockLogger, mockSecurityManager)
+
+  // Test empty files array
+  const inputFiles: any[] = []
+  const generateFileVolumeMounts = (dockerExecutor as any).generateFileVolumeMounts.bind(
+    dockerExecutor
+  )
+  const volumeArgs = generateFileVolumeMounts(inputFiles)
+
+  expect(volumeArgs).toEqual([])
+
+  // Verify no debug logging for file mounts
+  expect(mockLogger.debug).not.toHaveBeenCalledWith(
+    expect.stringContaining('Added file volume mount'),
+    expect.any(Object)
+  )
+
+  expect(mockLogger.debug).not.toHaveBeenCalledWith(
+    expect.stringContaining('Input files will be mounted to /data directory'),
+    expect.any(Object)
+  )
+})
+
+test('DockerExecutor should handle files with same basename correctly', () => {
+  const mockLogger: ToolLogger = {
+    debug: jest.fn() as any,
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    verbose: () => {}
+  }
+
+  const mockSecurityManager = {} as SecurityManager
+  const dockerExecutor = new DockerExecutor(mockLogger, mockSecurityManager)
+
+  // Test files with same basename from different directories
+  const inputFiles = [
+    { path: '/home/user/folder1/data.csv' },
+    { path: '/home/user/folder2/data.csv' }
+  ]
+  const generateFileVolumeMounts = (dockerExecutor as any).generateFileVolumeMounts.bind(
+    dockerExecutor
+  )
+  const volumeArgs = generateFileVolumeMounts(inputFiles)
+
+  // Both files should be mounted to /data with same filename
+  // (Note: This might cause conflicts in real usage, but this tests the current implementation)
+  expect(volumeArgs).toEqual([
+    '-v',
+    '/home/user/folder1/data.csv:/data/data.csv:ro',
+    '-v',
+    '/home/user/folder2/data.csv:/data/data.csv:ro'
+  ])
+
+  expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
+    hostPath: '/home/user/folder1/data.csv',
+    containerPath: '/data/data.csv',
+    index: 0
+  })
+
+  expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
+    hostPath: '/home/user/folder2/data.csv',
+    containerPath: '/data/data.csv',
+    index: 1
+  })
+})
