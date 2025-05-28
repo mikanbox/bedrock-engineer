@@ -4,6 +4,7 @@
  */
 
 import * as path from 'path'
+import * as os from 'os'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -89,7 +90,7 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
 
     // Initialize simplified workspace configuration
     this.workspaceConfig = {
-      basePath: process.cwd(),
+      basePath: this.storeManager.get('projectPath') ?? os.homedir(),
       sessionId: this.generateSessionId(),
       maxFiles: 20,
       maxFileSize: 1024 * 1024, // 1MB
