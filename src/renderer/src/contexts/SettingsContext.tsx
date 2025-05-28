@@ -1015,6 +1015,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 - BedrockFlows: {{flows}}
 
 **</context>**
+
+**<visual expression rule>**
+- Create Mermaid.js diagrams for visual explanations (maximum 2 per response unless specified)
+- Ask user permission before generating images with Stable Diffusion
+- Display images using Markdown syntax: \`![image-name](url)\`
+  - (example) \`![img]({{projectPath}}/generated_image.png)\`
+  - Do not start with file://. Start with /.
+- Use KaTeX format for mathematical formulas
+- For web applications, source images from Pexels or user-specified sources
+
+**</visual expression rule>**
 `
 
     return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
