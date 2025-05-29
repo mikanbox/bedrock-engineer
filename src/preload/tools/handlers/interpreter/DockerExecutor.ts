@@ -4,6 +4,8 @@
  */
 
 import { spawn, ChildProcess } from 'child_process'
+import { promises as fs } from 'fs'
+import { tmpdir } from 'os'
 import * as path from 'path'
 import {
   CodeExecutionResult,
@@ -115,7 +117,6 @@ export class DockerExecutor {
     language: SupportedLanguage,
     executionPath: string
   ): Promise<string> {
-    const fs = await import('fs/promises')
     const extension = this.getFileExtension(language)
     const filename = `temp_${Date.now()}${extension}`
     const filePath = path.join(executionPath, filename)
@@ -246,6 +247,10 @@ export class DockerExecutor {
     args.push('-v', `${executionPath}:/workspace`)
     args.push('-w', '/workspace')
 
+    // Create and mount data directory for output files
+    const dataPath = await this.ensureDataDirectory(executionPath)
+    args.push('-v', `${dataPath}:/data`)
+
     // Mount input files if provided
     if (inputFiles && inputFiles.length > 0) {
       const volumeMounts = this.generateFileVolumeMounts(inputFiles)
@@ -263,6 +268,33 @@ export class DockerExecutor {
     args.push(...command)
 
     return args
+  }
+
+  /**
+   * Ensure data directory exists for output files
+   */
+  private async ensureDataDirectory(executionPath: string): Promise<string> {
+    const dataPath = path.join(executionPath, 'data')
+
+    try {
+      // Create data directory if it doesn't exist
+      await fs.mkdir(dataPath, { recursive: true })
+
+      this.logger.debug('Data directory ensured', {
+        dataPath,
+        executionPath
+      })
+
+      return dataPath
+    } catch (error) {
+      this.logger.error('Failed to create data directory', {
+        dataPath,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw new Error(
+        `Failed to create data directory: ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
   }
 
   /**
@@ -526,9 +558,7 @@ CMD ["python"]
     })
 
     try {
-      const fs = await import('fs/promises')
-      const tempDir = await import('os').then((os) => os.tmpdir())
-      const buildDir = path.join(tempDir, `docker-build-${Date.now()}`)
+      const buildDir = path.join(tmpdir(), `docker-build-${Date.now()}`)
 
       // Create temporary build directory
       await fs.mkdir(buildDir, { recursive: true })
@@ -681,7 +711,6 @@ CMD ["python"]
    * Validate and prepare input files for Docker execution
    */
   private async validateAndPrepareInputFiles(inputFiles: InputFile[]): Promise<InputFile[]> {
-    const fs = await import('fs/promises')
     const validatedFiles: InputFile[] = []
 
     for (const inputFile of inputFiles) {

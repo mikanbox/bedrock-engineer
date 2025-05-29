@@ -215,7 +215,7 @@ test('DockerExecutor should generate correct volume mount commands for single fi
   )
   const volumeArgs = generateFileVolumeMounts(inputFiles)
 
-  expect(volumeArgs).toEqual(['-v', '/home/user/data.csv:/data/data.csv:ro'])
+  expect(volumeArgs).toEqual(['-v', '/home/user/data.csv:/data/data.csv'])
 
   // Verify debug logging was called
   expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {
@@ -254,11 +254,11 @@ test('DockerExecutor should generate correct volume mount commands for multiple 
 
   expect(volumeArgs).toEqual([
     '-v',
-    '/home/user/data1.csv:/data/data1.csv:ro',
+    '/home/user/data1.csv:/data/data1.csv',
     '-v',
-    '/home/user/data2.json:/data/data2.json:ro',
+    '/home/user/data2.json:/data/data2.json',
     '-v',
-    '/home/user/script.py:/data/script.py:ro'
+    '/home/user/script.py:/data/script.py'
   ])
 
   // Verify debug logging was called for each file
@@ -344,9 +344,9 @@ test('DockerExecutor should handle files with same basename correctly', () => {
   // (Note: This might cause conflicts in real usage, but this tests the current implementation)
   expect(volumeArgs).toEqual([
     '-v',
-    '/home/user/folder1/data.csv:/data/data.csv:ro',
+    '/home/user/folder1/data.csv:/data/data.csv',
     '-v',
-    '/home/user/folder2/data.csv:/data/data.csv:ro'
+    '/home/user/folder2/data.csv:/data/data.csv'
   ])
 
   expect(mockLogger.debug).toHaveBeenCalledWith('Added file volume mount', {

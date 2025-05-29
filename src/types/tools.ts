@@ -853,33 +853,86 @@ Example:
     toolSpec: {
       name: 'codeInterpreter',
       description:
-        'Execute Python code in a secure Docker environment with pre-installed data science libraries (numpy, pandas, matplotlib, scikit-learn, etc.). Input files can be mounted for analysis. No internet access for security.',
+        'Execute Python code in a secure Docker environment with pre-installed data science libraries. Input files can be mounted for analysis. No internet access for security.',
       inputSchema: {
         json: {
           type: 'object',
           properties: {
             code: {
               type: 'string',
-              description:
-                'Python code to execute. The code will run in a secure Docker container with no internet access. Pre-installed libraries include: numpy, pandas, matplotlib, seaborn, scikit-learn, scipy, requests, beautifulsoup4, pillow, and more. Generated files will be automatically detected and reported. Input files are mounted at /data/ directory (read-only).'
+              description: `Python code to execute in a secure Docker container with no internet access.
+
+CRITICAL FILE HANDLING RULES:
+- Input files: Mounted at /data/ directory (READ-ONLY). Access via inputFiles parameter.
+- Output files: MUST be created in current working directory (/workspace) to persist on host.
+- NEVER attempt to write to /data/ - it will fail with permission error.
+- Only files in /workspace are automatically detected and made available on host system.
+
+ENVIRONMENT-SPECIFIC LIBRARIES:
+Basic Environment:
+- Core: numpy==1.26.2, pandas==2.1.4
+- Visualization: matplotlib==3.8.2
+- Web: requests==2.31.0
+- System: gcc, libffi-dev
+
+Data Science Environment (recommended for analysis):
+- Scientific: numpy==1.26.2, pandas==2.1.4, scipy==1.11.4
+- Visualization: matplotlib==3.8.2, seaborn==0.13.0, plotly==5.17.0
+- ML/Stats: scikit-learn==1.3.2, statsmodels==0.14.0
+- Data Processing: openpyxl==3.1.2, beautifulsoup4==4.12.2, lxml==4.9.3
+- Image: pillow==10.1.0
+- Utils: ipython==8.18.1, requests==2.31.0
+- System: gcc, g++, image processing libraries
+
+ENVIRONMENT VARIABLES SET:
+- MPLBACKEND='Agg' (for headless plotting)
+- PYTHONUNBUFFERED='1' (immediate output)
+
+BEST PRACTICES:
+- Use specific library versions as listed above
+- Save outputs with descriptive names: 'analysis_results.csv', 'visualization.png'
+- Include error handling for file operations
+- Create summary reports when performing complex analysis
+- Use matplotlib with Agg backend for plot generation
+
+RECOMMENDED OUTPUT PATTERNS:
+# Data analysis results
+df_results.to_csv('analysis_summary.csv', index=False)
+
+# Visualizations
+plt.figure(figsize=(10, 6))
+# ... plotting code ...
+plt.savefig('chart_analysis.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# Statistical reports
+with open('statistical_report.txt', 'w') as f:
+    f.write(f"Analysis Summary:\\n{summary_text}")
+
+# Processed datasets
+cleaned_data.to_excel('processed_data.xlsx', index=False)`
             },
             environment: {
               type: 'string',
-              description:
-                'Optional. Python environment type: "basic" (numpy, pandas, matplotlib, requests) or "datascience" (full data science stack including ML libraries). Default: "datascience"',
+              description: `Python environment selection:
+- "basic": Lightweight environment with core libraries (numpy, pandas, matplotlib, requests)
+- "datascience": Full data science stack with ML, statistics, and advanced visualization libraries
+Default: "datascience" (recommended for most analytical tasks)`,
               enum: ['basic', 'datascience']
             },
             inputFiles: {
               type: 'array',
-              description:
-                'Optional. Array of input files to mount in the container. Files will be mounted at /data/{filename} as read-only. Useful for analyzing CSV files, images, or other data files.',
+              description: `Input files to mount in the container at /data/ directory (READ-ONLY access).
+Perfect for analyzing existing datasets without risk of modification.
+Supported formats: CSV, Excel (.xlsx, .xls), JSON, images, text files, etc.`,
               items: {
                 type: 'object',
                 properties: {
                   path: {
                     type: 'string',
-                    description:
-                      'Absolute path to the input file on the host system. The file will be mounted at /data/{basename} in the container (read-only).'
+                    description: `Absolute path to input file on host system.
+Example: "/Users/user/data/sales.csv" becomes "/data/sales.csv" in container.
+File will be READ-ONLY - use pandas.read_csv('/data/sales.csv') to access.`
                   }
                 },
                 required: ['path']
