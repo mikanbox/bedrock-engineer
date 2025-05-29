@@ -34,6 +34,22 @@ export class DockerExecutor {
   }
 
   /**
+   * Generate compact datetime string for folder names
+   * Format: YYYYMMDD_HHMMSS
+   */
+  private generateDateTimeString(): string {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`
+  }
+
+  /**
    * Execute code in Docker container
    */
   async executeCode(
@@ -118,7 +134,7 @@ export class DockerExecutor {
     executionPath: string
   ): Promise<string> {
     const extension = this.getFileExtension(language)
-    const filename = `temp_${Date.now()}${extension}`
+    const filename = `temp_${this.generateDateTimeString()}${extension}`
     const filePath = path.join(executionPath, filename)
 
     await fs.writeFile(filePath, code, 'utf8')

@@ -225,11 +225,11 @@ export class CodeInterpreterTool extends BaseTool<
       // Initialize workspace
       await this.fileManager.initializeWorkspace()
 
-      // Create execution-specific directory
-      const executionPath = await this.fileManager.createExecutionDirectory()
+      // Get workspace path for execution
+      const workspacePath = this.fileManager.getWorkspacePath()
 
-      // Store execution path for UI access
-      CodeInterpreterTool.currentWorkspacePath = executionPath
+      // Store workspace path for UI access
+      CodeInterpreterTool.currentWorkspacePath = workspacePath
 
       // Clean up old workspaces (older than 24 hours) in background
       this.fileManager.cleanupOldWorkspaces(24).catch((error) => {
@@ -243,17 +243,17 @@ export class CodeInterpreterTool extends BaseTool<
       const execution = await this.dockerExecutor.executeCode(
         input.code,
         'python',
-        executionPath,
+        workspacePath,
         config,
         input.inputFiles
       )
 
-      // Get list of generated files from execution directory only
-      const filesList = await this.fileManager.listExecutionFiles()
+      // Get list of generated files from workspace
+      const filesList = await this.fileManager.listFiles()
       const generatedFiles =
         filesList.listedFiles
           ?.filter((f) => f.type === 'file' && !f.name.startsWith('temp_'))
-          .map((f) => path.join(executionPath, f.name)) || []
+          .map((f) => path.join(workspacePath, f.name)) || []
 
       // Create combined output with file information
       let combinedOutput = execution.stdout
