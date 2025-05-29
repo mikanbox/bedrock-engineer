@@ -193,11 +193,42 @@ export type RecognizeImageInput = {
   prompt?: string
 }
 
-// codeInterpreter ツールの入力型（シンプル化版）
-export type CodeInterpreterInput = {
+// codeInterpreter ツールの入力型（操作別にディスクリミネーテッドユニオン化）
+export type CodeInterpreterInput =
+  | CodeInterpreterExecuteInput
+  | CodeInterpreterStatusInput
+  | CodeInterpreterCancelInput
+  | CodeInterpreterListInput
+
+// コード実行操作
+export type CodeInterpreterExecuteInput = {
   type: 'codeInterpreter'
+  operation?: 'execute'
   code: string // Python コードのみ - 最大限シンプル！
   inputFiles?: Array<{ path: string }> // Optional: files to mount in container
+  environment?: 'basic' | 'datascience' // Python environment selection
+  async?: boolean // 非同期実行モード（デフォルト: false）
+}
+
+// タスクステータス確認操作
+export type CodeInterpreterStatusInput = {
+  type: 'codeInterpreter'
+  operation: 'status'
+  taskId: string // 状態確認用のタスクID
+}
+
+// タスクキャンセル操作
+export type CodeInterpreterCancelInput = {
+  type: 'codeInterpreter'
+  operation: 'cancel'
+  taskId: string // キャンセル用のタスクID
+}
+
+// タスク一覧表示操作
+export type CodeInterpreterListInput = {
+  type: 'codeInterpreter'
+  operation: 'list'
+  statusFilter?: string // タスクステータスフィルター（optional）
 }
 
 // invokeFlow ツールの入力型
@@ -853,7 +884,7 @@ Example:
     toolSpec: {
       name: 'codeInterpreter',
       description:
-        'Execute Python code in a secure Docker environment with pre-installed data science libraries. Input files can be mounted for analysis. No internet access for security.',
+        'Execute Python code in a secure Docker environment or manage async tasks. Supports multiple operations: execute (run code), status (check task), cancel (stop task), list (show tasks). No internet access for security.',
       inputSchema: {
         json: {
           type: 'object',
@@ -861,6 +892,9 @@ Example:
             code: {
               type: 'string',
               description: `Python code to execute in a secure Docker container with no internet access.
+
+REQUIRED ONLY for operation="execute" (or when operation is omitted).
+NOT needed for operations: "status", "cancel", "list".
 
 CRITICAL FILE HANDLING RULES:
 - Input files: Mounted at /data/ directory (READ-ONLY). Access via inputFiles parameter.
@@ -937,9 +971,35 @@ File will be READ-ONLY - use pandas.read_csv('/data/sales.csv') to access.`
                 },
                 required: ['path']
               }
+            },
+            async: {
+              type: 'boolean',
+              description: `Enable asynchronous execution mode. When true, the tool returns immediately with a taskId for monitoring.
+- false (default): Synchronous execution - waits for completion
+- true: Asynchronous execution - returns taskId immediately for long-running tasks`
+            },
+            operation: {
+              type: 'string',
+              description: `Operation type for task management:
+- "execute" (default): Execute code (sync or async based on async parameter)
+- "status": Check status of an async task (requires taskId)
+- "cancel": Cancel a running async task (requires taskId)
+- "list": List all tasks with optional status filtering`,
+              enum: ['execute', 'status', 'cancel', 'list']
+            },
+            taskId: {
+              type: 'string',
+              description: `Task identifier for async operations. Required when operation is "status" or "cancel".
+Obtained from the response when starting an async execution.`
+            },
+            statusFilter: {
+              type: 'string',
+              description: `Filter tasks by status (for "list" operation only).
+Optional parameter to show only tasks with specific status.`,
+              enum: ['pending', 'running', 'completed', 'failed', 'cancelled']
             }
           },
-          required: ['code']
+          required: []
         }
       }
     }

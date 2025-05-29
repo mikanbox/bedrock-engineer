@@ -44,13 +44,18 @@ export interface InputFile {
 }
 
 /**
- * Simplified CodeInterpreter input type - only code is required!
+ * CodeInterpreter input type with async execution support
  */
 export interface CodeInterpreterInput {
   type: 'codeInterpreter'
-  code: string // The only required field - maximum simplicity!
+  code: string // Python code to execute
   environment?: PythonEnvironment // Optional: 'basic' | 'datascience' (default: 'datascience')
   inputFiles?: InputFile[] // Optional: files to mount in container
+  // 非同期実行機能
+  async?: boolean // 非同期実行モード（デフォルト: false）
+  taskId?: string // 状態確認・キャンセル用のタスクID
+  operation?: 'execute' | 'status' | 'cancel' | 'list' // 操作種別（デフォルト: 'execute'）
+  statusFilter?: TaskStatus // リスト操作時のステータスフィルター
 }
 
 /**
@@ -120,4 +125,73 @@ export interface WorkspaceConfig {
   maxFileSize: number
   allowedExtensions: string[]
   cleanupOnExit: boolean
+}
+
+/**
+ * Task status for async execution
+ */
+export type TaskStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+
+/**
+ * Task information for async execution
+ */
+export interface TaskInfo {
+  taskId: string
+  status: TaskStatus
+  createdAt: Date
+  startedAt?: Date
+  completedAt?: Date
+  code: string
+  environment: PythonEnvironment
+  inputFiles?: InputFile[]
+  result?: CodeInterpreterResult
+  error?: string
+  progress?: number // 0-100 for progress indication
+}
+
+/**
+ * Async execution result - returned immediately when starting async task
+ */
+export interface AsyncTaskResult extends ToolResult {
+  name: 'codeInterpreter'
+  taskId: string
+  status: TaskStatus
+  message: string
+  progress?: number
+  result: {
+    taskId: string
+    status: TaskStatus
+    createdAt: string
+    startedAt?: string
+    completedAt?: string
+    executionResult?: CodeInterpreterResult
+  }
+}
+
+/**
+ * Task list result - returned when requesting task list
+ */
+export interface TaskListResult extends ToolResult {
+  name: 'codeInterpreter'
+  operation: 'list'
+  tasks: TaskInfo[]
+  summary: {
+    total: number
+    pending: number
+    running: number
+    completed: number
+    failed: number
+    cancelled: number
+  }
+  message: string
+}
+
+/**
+ * Task manager configuration
+ */
+export interface TaskManagerConfig {
+  maxConcurrentTasks: number // Maximum number of concurrent tasks
+  taskTimeout: number // Task timeout in milliseconds
+  maxTaskHistory: number // Maximum number of completed tasks to keep in history
+  cleanupInterval: number // Cleanup interval in milliseconds
 }

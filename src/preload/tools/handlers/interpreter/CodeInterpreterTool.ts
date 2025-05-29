@@ -1,6 +1,6 @@
 /**
- * Simplified CodeInterpreter tool implementation
- * Execute Python code in secure Docker environment - maximum simplicity!
+ * CodeInterpreter tool implementation with async execution support
+ * Execute Python code in secure Docker environment with both sync and async modes
  */
 
 import * as path from 'path'
@@ -11,24 +11,33 @@ import { ExecutionError } from '../../base/errors'
 import {
   CodeInterpreterInput,
   CodeInterpreterResult,
+  AsyncTaskResult,
+  TaskListResult,
+  TaskStatus,
   WorkspaceConfig,
   ExecutionConfig,
-  PythonEnvironment
+  PythonEnvironment,
+  TaskManagerConfig
 } from './types'
 import { DockerExecutor } from './DockerExecutor'
 import { FileManager } from './FileManager'
 import { SecurityManager } from './SecurityManager'
+import { TaskManager } from './TaskManager'
 
 /**
- * Simplified CodeInterpreter tool - just provide Python code and get results!
+ * CodeInterpreter tool with async execution support
  */
-export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInterpreterResult> {
+export class CodeInterpreterTool extends BaseTool<
+  CodeInterpreterInput,
+  CodeInterpreterResult | AsyncTaskResult | TaskListResult
+> {
   readonly name = 'codeInterpreter'
   readonly description =
     'Execute Python code in a secure Docker environment with no internet access'
 
   private dockerExecutor: DockerExecutor
   private fileManager: FileManager
+  private taskManager: TaskManager
 
   // Static property to store current workspace path for UI access
   private static currentWorkspacePath: string | null = null
@@ -102,6 +111,11 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
     this.securityManager = new SecurityManager(this.logger)
     this.fileManager = new FileManager(this.logger, this.securityManager, this.workspaceConfig)
     this.dockerExecutor = new DockerExecutor(this.logger, this.securityManager)
+
+    // Initialize task manager with configuration from store
+    const taskManagerConfig: Partial<TaskManagerConfig> =
+      this.storeManager.get('taskManagerConfig') || {}
+    this.taskManager = new TaskManager(this.logger, taskManagerConfig)
   }
 
   /**
@@ -112,26 +126,36 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
   }
 
   /**
-   * Simplified input validation - only check if code exists
+   * Enhanced input validation with async operation support
    */
   protected validateInput(input: CodeInterpreterInput): ValidationResult {
     const errors: string[] = []
 
-    // Check if code exists first
-    if (!input.code) {
-      errors.push('Code is required')
-      return { isValid: false, errors } // Early return to avoid cascading errors
+    // Validate operation type for async tasks
+    if (input.operation && !['execute', 'status', 'cancel', 'list'].includes(input.operation)) {
+      errors.push('Invalid operation. Must be "execute", "status", "cancel", or "list"')
     }
 
-    // Check if code is string
-    if (typeof input.code !== 'string') {
-      errors.push('Code must be a string')
-      return { isValid: false, errors } // Early return for type error
+    // For status and cancel operations, taskId is required
+    if ((input.operation === 'status' || input.operation === 'cancel') && !input.taskId) {
+      errors.push('taskId is required for status and cancel operations')
     }
 
-    // Check if code is not empty
-    if (input.code.trim().length === 0) {
-      errors.push('Code cannot be empty')
+    // For execute operations, code is required
+    if (!input.operation || input.operation === 'execute') {
+      if (!input.code) {
+        errors.push('Code is required for execute operations')
+        return { isValid: false, errors }
+      }
+
+      if (typeof input.code !== 'string') {
+        errors.push('Code must be a string')
+        return { isValid: false, errors }
+      }
+
+      if (input.code.trim().length === 0) {
+        errors.push('Code cannot be empty')
+      }
     }
 
     // Validate input files if provided
@@ -154,10 +178,39 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
   }
 
   /**
-   * Simplified execution - just run the code and return results
+   * Main execution method with async operation support
    */
-  protected async executeInternal(input: CodeInterpreterInput): Promise<CodeInterpreterResult> {
-    this.logger.info('Executing Python code', {
+  protected async executeInternal(
+    input: CodeInterpreterInput
+  ): Promise<CodeInterpreterResult | AsyncTaskResult | TaskListResult> {
+    const operation = input.operation || 'execute'
+
+    this.logger.info('CodeInterpreter operation requested', {
+      operation,
+      async: input.async,
+      taskId: input.taskId,
+      codeLength: input.code?.length || 0
+    })
+
+    switch (operation) {
+      case 'execute':
+        return input.async ? await this.executeAsync(input) : await this.executeSync(input)
+      case 'status':
+        return this.getTaskStatus(input.taskId!)
+      case 'cancel':
+        return this.cancelTask(input.taskId!)
+      case 'list':
+        return this.listTasks(input.statusFilter)
+      default:
+        throw new ExecutionError(`Unknown operation: ${operation}`, this.name)
+    }
+  }
+
+  /**
+   * Synchronous execution (original behavior)
+   */
+  private async executeSync(input: CodeInterpreterInput): Promise<CodeInterpreterResult> {
+    this.logger.info('Executing Python code synchronously', {
       codeLength: input.code.length,
       sessionId: this.workspaceConfig.sessionId
     })
@@ -274,6 +327,209 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
   }
 
   /**
+   * Asynchronous execution - creates task and returns immediately
+   */
+  private async executeAsync(input: CodeInterpreterInput): Promise<AsyncTaskResult> {
+    // Check if we can start a new task
+    if (!this.taskManager.canStartNewTask()) {
+      return {
+        success: false,
+        name: 'codeInterpreter',
+        taskId: '',
+        status: 'failed',
+        message: 'Cannot start new task - concurrent limit reached',
+        result: {
+          taskId: '',
+          status: 'failed',
+          createdAt: new Date().toISOString()
+        }
+      }
+    }
+
+    // Create task
+    const task = this.taskManager.createTask(
+      input.code,
+      this.validateEnvironment(input.environment),
+      input.inputFiles
+    )
+
+    // Start execution in background
+    this.executeTaskInBackground(task.taskId).catch((error) => {
+      this.logger.error('Background task execution failed', {
+        taskId: task.taskId,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      this.taskManager.setTaskError(
+        task.taskId,
+        error instanceof Error ? error.message : String(error)
+      )
+    })
+
+    return {
+      success: true,
+      name: 'codeInterpreter',
+      taskId: task.taskId,
+      status: task.status,
+      message: 'Task created and started',
+      result: {
+        taskId: task.taskId,
+        status: task.status,
+        createdAt: task.createdAt.toISOString()
+      }
+    }
+  }
+
+  /**
+   * Execute task in background
+   */
+  private async executeTaskInBackground(taskId: string): Promise<void> {
+    const task = this.taskManager.getTask(taskId)
+    if (!task) {
+      throw new Error(`Task not found: ${taskId}`)
+    }
+
+    try {
+      // Update status to running
+      this.taskManager.updateTaskStatus(taskId, 'running', 10)
+
+      // Execute the code synchronously in background
+      const syncInput: CodeInterpreterInput = {
+        type: 'codeInterpreter',
+        code: task.code,
+        environment: task.environment,
+        inputFiles: task.inputFiles
+      }
+
+      const result = await this.executeSync(syncInput)
+
+      // Set task result
+      this.taskManager.setTaskResult(taskId, result)
+    } catch (error) {
+      this.taskManager.setTaskError(taskId, error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  /**
+   * Get task status
+   */
+  private getTaskStatus(taskId: string): AsyncTaskResult {
+    const task = this.taskManager.getTask(taskId)
+    if (!task) {
+      return {
+        success: false,
+        name: 'codeInterpreter',
+        taskId,
+        status: 'failed',
+        message: 'Task not found',
+        result: {
+          taskId,
+          status: 'failed',
+          createdAt: new Date().toISOString()
+        }
+      }
+    }
+
+    return {
+      success: true,
+      name: 'codeInterpreter',
+      taskId: task.taskId,
+      status: task.status,
+      message: `Task status: ${task.status}`,
+      progress: task.progress,
+      result: {
+        taskId: task.taskId,
+        status: task.status,
+        createdAt: task.createdAt.toISOString(),
+        startedAt: task.startedAt?.toISOString(),
+        completedAt: task.completedAt?.toISOString(),
+        executionResult: task.result
+      }
+    }
+  }
+
+  /**
+   * Cancel task
+   */
+  private cancelTask(taskId: string): AsyncTaskResult {
+    const cancelled = this.taskManager.cancelTask(taskId)
+    const task = this.taskManager.getTask(taskId)
+
+    return {
+      success: cancelled,
+      name: 'codeInterpreter',
+      taskId,
+      status: task?.status || 'failed',
+      message: cancelled ? 'Task cancelled' : 'Failed to cancel task',
+      result: {
+        taskId,
+        status: task?.status || 'failed',
+        createdAt: task?.createdAt.toISOString() || new Date().toISOString()
+      }
+    }
+  }
+
+  /**
+   * List tasks with optional status filter
+   */
+  private listTasks(statusFilter?: TaskStatus): TaskListResult {
+    this.logger.info('Listing tasks', { statusFilter })
+
+    try {
+      // Get tasks from task manager
+      const tasks = this.taskManager.getAllTasks(statusFilter)
+      const summary = this.taskManager.getTaskStats()
+
+      return {
+        success: true,
+        name: 'codeInterpreter',
+        operation: 'list',
+        tasks,
+        summary,
+        message: statusFilter
+          ? `Found ${tasks.length} tasks with status '${statusFilter}'`
+          : `Found ${tasks.length} total tasks`,
+        result: {
+          tasks,
+          summary,
+          statusFilter
+        }
+      }
+    } catch (error) {
+      this.logger.error('Failed to list tasks', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+
+      return {
+        success: false,
+        name: 'codeInterpreter',
+        operation: 'list',
+        tasks: [],
+        summary: {
+          total: 0,
+          pending: 0,
+          running: 0,
+          completed: 0,
+          failed: 0,
+          cancelled: 0
+        },
+        message: `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`,
+        result: {
+          tasks: [],
+          summary: {
+            total: 0,
+            pending: 0,
+            running: 0,
+            completed: 0,
+            failed: 0,
+            cancelled: 0
+          },
+          statusFilter
+        }
+      }
+    }
+  }
+
+  /**
    * Generate unique session ID
    */
   private generateSessionId(): string {
@@ -287,6 +543,7 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
    */
   async dispose(): Promise<void> {
     try {
+      this.taskManager?.dispose()
       await this.dockerExecutor.stopAllContainers()
       await this.fileManager.cleanup()
     } catch (error) {
@@ -302,6 +559,9 @@ export class CodeInterpreterTool extends BaseTool<CodeInterpreterInput, CodeInte
   protected sanitizeInputForLogging(input: CodeInterpreterInput): any {
     return {
       type: input.type,
+      operation: input.operation || 'execute',
+      async: input.async,
+      taskId: input.taskId,
       code: input.code ? this.truncateForLogging(input.code, 200) : '<no code>'
     }
   }
