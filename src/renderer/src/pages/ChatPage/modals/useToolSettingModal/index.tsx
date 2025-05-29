@@ -17,9 +17,10 @@ import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 // ローカルで型定義
 import { ToolState } from '@/types/agent-chat'
-// JSONViewerコンポーネントのインポート
-import JSONViewer from '@renderer/components/JSONViewer'
 import { TOOL_CATEGORIES } from '../../components/AgentForm/ToolsSection/utils/toolCategories'
+import ToolSpecJsonModal from './ToolSpecJsonModal'
+import { tools } from '@/types/tools'
+import { CodeBracketIcon } from '@heroicons/react/24/outline'
 
 export interface CommandConfig {
   pattern: string
@@ -175,6 +176,9 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
   const [selectedTool, setSelectedTool] = useState<string | null>(null)
   const [selectedToolBody, setSelectedToolBody] = useState<ToolState>()
 
+  // JSONモーダルの表示状態
+  const [showJsonModal, setShowJsonModal] = useState(false)
+
   // エージェントのツール設定
   const [agentTools, setAgentTools] = useState<ToolState[]>([])
 
@@ -257,6 +261,20 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
 
   const categorizedTools = getToolsByCategory()
 
+  // ToolSpecを取得する関数
+  const getToolSpec = () => {
+    if (!selectedTool) return undefined
+
+    // MCPツールの場合は selectedToolBody から取得
+    if (isMcpTool(selectedTool)) {
+      return selectedToolBody?.toolSpec
+    }
+
+    // 標準ツールの場合は tools 配列から取得
+    const standardTool = tools.find((tool) => tool.toolSpec?.name === selectedTool)
+    return standardTool?.toolSpec
+  }
+
   return (
     <Modal
       dismissible
@@ -329,7 +347,16 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
             {selectedTool ? (
               <div className="p-4">
                 <div className="sticky top-0 pt-1 pb-3 bg-white dark:bg-gray-800 z-20 mb-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-medium dark:text-white pb-3">{selectedTool}</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium dark:text-white pb-3">{selectedTool}</h3>
+                    <button
+                      onClick={() => setShowJsonModal(true)}
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      title={t('View JSON Spec')}
+                    >
+                      <CodeBracketIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    </button>
+                  </div>
                 </div>
 
                 {isMcpTool(selectedTool) ? (
@@ -348,13 +375,14 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                       {selectedToolBody?.toolSpec?.description ?? ''}
                     </p>
 
-                    {/* JSONViewerコンポーネントを使用 */}
-                    <JSONViewer
-                      data={selectedToolBody?.toolSpec}
-                      title="Tool Specification (JSON)"
-                      maxHeight="400px"
-                      showCopyButton={true}
-                    />
+                    <div className="bg-cyan-50 dark:bg-gray-800/80 dark:border dark:border-cyan-700 p-4 rounded-md mt-4">
+                      <h5 className="font-medium mb-2 dark:text-cyan-300">{t('MCP Tool Info')}</h5>
+                      <p className="text-sm text-gray-700 dark:text-gray-200">
+                        {t(
+                          'MCP tools are provided by Model Context Protocol servers. Click the JSON button above to view the full tool specification.'
+                        )}
+                      </p>
+                    </div>
                   </div>
                 ) : TOOLS_WITH_SETTINGS.includes(selectedTool) ? (
                   <div className="w-full">
@@ -455,6 +483,16 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
           {t('Close')}
         </Button>
       </Modal.Footer>
+
+      {/* JSON Spec モーダル */}
+      {selectedTool && (
+        <ToolSpecJsonModal
+          isOpen={showJsonModal}
+          onClose={() => setShowJsonModal(false)}
+          toolName={selectedTool}
+          toolSpec={getToolSpec()}
+        />
+      )}
     </Modal>
   )
 })

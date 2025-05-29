@@ -152,6 +152,12 @@ export const agentToolsSettings = {
     'tool info.invokeFlow.about title': 'About AWS Bedrock Flow',
     'tool info.invokeFlow.about description':
       'AWS Bedrock Flow allows you to create and execute workflows that can process data, make decisions, and take actions based on AI model outputs. By configuring flows for your agent, you can enable it to perform complex operations that may involve multiple steps or services.',
+    'View JSON Spec': 'View JSON Spec',
+    'Tool Specification (JSON)': 'Tool Specification (JSON)',
+    'No tool specification available': 'No tool specification available',
+    'MCP Tool Info': 'MCP Tool Info',
+    'MCP tools are provided by Model Context Protocol servers. Click the JSON button above to view the full tool specification.':
+      'MCP tools are provided by Model Context Protocol servers. Click the JSON button above to view the full tool specification.',
     descriptions: {
       createFolder: 'Create a new folder at the specified path',
       writeToFile: 'Write content to an existing file',
@@ -322,6 +328,12 @@ export const agentToolsSettings = {
     'tool info.invokeFlow.about title': 'AWS Bedrock Flowについて',
     'tool info.invokeFlow.about description':
       'AWS Bedrock Flowを使用すると、データを処理し、決定を下し、AIモデルの出力に基づいてアクションを実行するワークフローを作成および実行できます。エージェントにフローを設定することで、複数のステップやサービスを含む複雑な操作を実行できるようになります。',
+    'View JSON Spec': 'JSON仕様を表示',
+    'Tool Specification (JSON)': 'ツール仕様 (JSON)',
+    'No tool specification available': 'ツール仕様は利用できません',
+    'MCP Tool Info': 'MCPツール情報',
+    'MCP tools are provided by Model Context Protocol servers. Click the JSON button above to view the full tool specification.':
+      'MCPツールはModel Context Protocolサーバーによって提供されます。完全なツール仕様を表示するには、上記のJSONボタンをクリックしてください。',
     descriptions: {
       createFolder: '指定したパスに新しいフォルダを作成',
       writeToFile: '既存のファイルにコンテンツを書き込み',
