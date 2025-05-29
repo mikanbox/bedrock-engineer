@@ -41,6 +41,35 @@ export class FileManager {
   }
 
   /**
+   * Generate compact datetime string for folder names
+   * Format: YYYYMMDD_HHMMSS
+   */
+  private generateDateTimeString(): string {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`
+  }
+
+  /**
+   * Generate date string for workspace folder names
+   * Format: YYYYMMDD
+   */
+  private generateDateString(): string {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+
+    return `${year}${month}${day}`
+  }
+
+  /**
    * Initialize workspace directory under .bedrock-engineer/workspaces/
    */
   async initializeWorkspace(): Promise<void> {
@@ -51,8 +80,12 @@ export class FileManager {
 
       await fs.mkdir(workspacesDir, { recursive: true })
 
-      // Create session-specific workspace directory
-      const sessionWorkspaceDir = path.join(workspacesDir, `workspace-${this.config.sessionId}`)
+      // Create session-specific workspace directory with date and session ID
+      const dateString = this.generateDateString()
+      const sessionWorkspaceDir = path.join(
+        workspacesDir,
+        `workspace-${dateString}-${this.config.sessionId}`
+      )
       await fs.mkdir(sessionWorkspaceDir, { recursive: true })
 
       this.workspacePath = sessionWorkspaceDir
@@ -90,8 +123,9 @@ export class FileManager {
     }
 
     try {
-      // Generate unique execution ID
-      const executionId = `exec_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+      // Generate unique execution ID with datetime
+      const dateTimeString = this.generateDateTimeString()
+      const executionId = `exec-${dateTimeString}`
       const executionDir = path.join(this.workspacePath, executionId)
 
       await fs.mkdir(executionDir, { recursive: true })
