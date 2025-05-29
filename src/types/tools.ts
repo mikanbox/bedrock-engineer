@@ -18,6 +18,7 @@ export type ToolName =
   | 'think'
   | 'recognizeImage'
   | 'invokeFlow'
+  | 'codeInterpreter'
   | string // MCPツール名を許容するために文字列型も追加
 
 /**
@@ -192,6 +193,44 @@ export type RecognizeImageInput = {
   prompt?: string
 }
 
+// codeInterpreter ツールの入力型（操作別にディスクリミネーテッドユニオン化）
+export type CodeInterpreterInput =
+  | CodeInterpreterExecuteInput
+  | CodeInterpreterStatusInput
+  | CodeInterpreterCancelInput
+  | CodeInterpreterListInput
+
+// コード実行操作
+export type CodeInterpreterExecuteInput = {
+  type: 'codeInterpreter'
+  operation?: 'execute'
+  code: string // Python コードのみ - 最大限シンプル！
+  inputFiles?: Array<{ path: string }> // Optional: files to mount in container
+  environment?: 'basic' | 'datascience' // Python environment selection
+  async?: boolean // 非同期実行モード（デフォルト: false）
+}
+
+// タスクステータス確認操作
+export type CodeInterpreterStatusInput = {
+  type: 'codeInterpreter'
+  operation: 'status'
+  taskId: string // 状態確認用のタスクID
+}
+
+// タスクキャンセル操作
+export type CodeInterpreterCancelInput = {
+  type: 'codeInterpreter'
+  operation: 'cancel'
+  taskId: string // キャンセル用のタスクID
+}
+
+// タスク一覧表示操作
+export type CodeInterpreterListInput = {
+  type: 'codeInterpreter'
+  operation: 'list'
+  statusFilter?: string // タスクステータスフィルター（optional）
+}
+
 // invokeFlow ツールの入力型
 export type InvokeFlowInput = {
   type: 'invokeFlow'
@@ -205,6 +244,8 @@ export type InvokeFlowInput = {
     nodeOutputName: string
   }
 }
+
+// Old complex CodeInterpreter definition removed - using simplified version above
 
 // MCPツールの入力型
 export type McpToolInput = {
@@ -230,6 +271,7 @@ export type ToolInput =
   | ApplyDiffEditInput
   | ThinkInput
   | InvokeFlowInput
+  | CodeInterpreterInput
   | McpToolInput // MCPツール入力を追加
 
 // ツール名から入力型を取得するユーティリティ型
@@ -250,6 +292,7 @@ export type ToolInputTypeMap = {
   applyDiffEdit: ApplyDiffEditInput
   think: ThinkInput
   invokeFlow: InvokeFlowInput
+  codeInterpreter: CodeInterpreterInput
   [key: string]: any // MCPツールに対応するためのインデックスシグネチャ
 }
 
@@ -833,6 +876,130 @@ Example:
             }
           },
           required: ['flowIdentifier', 'flowAliasIdentifier', 'input']
+        }
+      }
+    }
+  },
+  {
+    toolSpec: {
+      name: 'codeInterpreter',
+      description:
+        'Execute Python code in a secure Docker environment or manage async tasks. Supports multiple operations: execute (run code), status (check task), cancel (stop task), list (show tasks). No internet access for security.',
+      inputSchema: {
+        json: {
+          type: 'object',
+          properties: {
+            code: {
+              type: 'string',
+              description: `Python code to execute in a secure Docker container with no internet access.
+
+REQUIRED ONLY for operation="execute" (or when operation is omitted).
+NOT needed for operations: "status", "cancel", "list".
+
+CRITICAL FILE HANDLING RULES:
+- Input files: Mounted at /data/ directory (READ-ONLY). Access via inputFiles parameter.
+- Output files: MUST be created in current working directory (/workspace) to persist on host.
+- NEVER attempt to write to /data/ - it will fail with permission error.
+- Only files in /workspace are automatically detected and made available on host system.
+
+ENVIRONMENT-SPECIFIC LIBRARIES:
+Basic Environment:
+- Core: numpy==1.26.2, pandas==2.1.4
+- Visualization: matplotlib==3.8.2
+- Web: requests==2.31.0
+- System: gcc, libffi-dev
+
+Data Science Environment (recommended for analysis):
+- Scientific: numpy==1.26.2, pandas==2.1.4, scipy==1.11.4
+- Visualization: matplotlib==3.8.2, seaborn==0.13.0, plotly==5.17.0
+- ML/Stats: scikit-learn==1.3.2, statsmodels==0.14.0
+- Data Processing: openpyxl==3.1.2, beautifulsoup4==4.12.2, lxml==4.9.3
+- Image: pillow==10.1.0
+- Utils: ipython==8.18.1, requests==2.31.0
+- System: gcc, g++, image processing libraries
+
+ENVIRONMENT VARIABLES SET:
+- MPLBACKEND='Agg' (for headless plotting)
+- PYTHONUNBUFFERED='1' (immediate output)
+
+BEST PRACTICES:
+- Use specific library versions as listed above
+- Save outputs with descriptive names: 'analysis_results.csv', 'visualization.png'
+- Include error handling for file operations
+- Create summary reports when performing complex analysis
+- Use matplotlib with Agg backend for plot generation
+
+RECOMMENDED OUTPUT PATTERNS:
+# Data analysis results
+df_results.to_csv('analysis_summary.csv', index=False)
+
+# Visualizations
+plt.figure(figsize=(10, 6))
+# ... plotting code ...
+plt.savefig('chart_analysis.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# Statistical reports
+with open('statistical_report.txt', 'w') as f:
+    f.write(f"Analysis Summary:\\n{summary_text}")
+
+# Processed datasets
+cleaned_data.to_excel('processed_data.xlsx', index=False)`
+            },
+            environment: {
+              type: 'string',
+              description: `Python environment selection:
+- "basic": Lightweight environment with core libraries (numpy, pandas, matplotlib, requests)
+- "datascience": Full data science stack with ML, statistics, and advanced visualization libraries
+Default: "datascience" (recommended for most analytical tasks)`,
+              enum: ['basic', 'datascience']
+            },
+            inputFiles: {
+              type: 'array',
+              description: `Input files to mount in the container at /data/ directory (READ-ONLY access).
+Perfect for analyzing existing datasets without risk of modification.
+Supported formats: CSV, Excel (.xlsx, .xls), JSON, images, text files, etc.`,
+              items: {
+                type: 'object',
+                properties: {
+                  path: {
+                    type: 'string',
+                    description: `Absolute path to input file on host system.
+Example: "/Users/user/data/sales.csv" becomes "/data/sales.csv" in container.
+File will be READ-ONLY - use pandas.read_csv('/data/sales.csv') to access.`
+                  }
+                },
+                required: ['path']
+              }
+            },
+            async: {
+              type: 'boolean',
+              description: `Enable asynchronous execution mode. When true, the tool returns immediately with a taskId for monitoring.
+- false (default): Synchronous execution - waits for completion
+- true: Asynchronous execution - returns taskId immediately for long-running tasks`
+            },
+            operation: {
+              type: 'string',
+              description: `Operation type for task management:
+- "execute" (default): Execute code (sync or async based on async parameter)
+- "status": Check status of an async task (requires taskId)
+- "cancel": Cancel a running async task (requires taskId)
+- "list": List all tasks with optional status filtering`,
+              enum: ['execute', 'status', 'cancel', 'list']
+            },
+            taskId: {
+              type: 'string',
+              description: `Task identifier for async operations. Required when operation is "status" or "cancel".
+Obtained from the response when starting an async execution.`
+            },
+            statusFilter: {
+              type: 'string',
+              description: `Filter tasks by status (for "list" operation only).
+Optional parameter to show only tasks with specific status.`,
+              enum: ['pending', 'running', 'completed', 'failed', 'cancelled']
+            }
+          },
+          required: []
         }
       }
     }

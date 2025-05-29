@@ -34,7 +34,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     id: 'system',
     name: 'System',
     description: 'Tools for system interaction',
-    tools: ['executeCommand']
+    tools: ['executeCommand', 'codeInterpreter']
   },
   {
     id: 'thinking',

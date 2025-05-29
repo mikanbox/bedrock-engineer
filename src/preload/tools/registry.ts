@@ -30,7 +30,8 @@ export class ToolRegistry {
       'web',
       'command',
       'thinking',
-      'mcp'
+      'mcp',
+      'interpreter'
     ]
     categories.forEach((category) => {
       this.categories.set(category, new Set())

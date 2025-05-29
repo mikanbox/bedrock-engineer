@@ -19,6 +19,7 @@ import { getToolsForCategory } from '../constants/defaultToolSets'
 import { tools } from '@/types/tools'
 import isEqual from 'lodash/isEqual'
 import { Tool } from '@aws-sdk/client-bedrock-runtime'
+import { CodeInterpreterContainerConfig } from 'src/preload/tools/handlers/interpreter/types'
 
 const DEFAULT_INFERENCE_PARAMS: InferenceParameters = {
   maxTokens: 4096,
@@ -57,6 +58,10 @@ export interface SettingsContextType {
   // generateImage Tool Settings
   generateImageModel: string
   setGenerateImageModel: (modelId: string) => void
+
+  // codeInterpreter Tool Settings
+  codeInterpreterConfig: CodeInterpreterContainerConfig
+  setCodeInterpreterConfig: (config: CodeInterpreterContainerConfig) => void
 
   // LLM Settings
   currentLLM: LLM
@@ -227,6 +232,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     'amazon.titan-image-generator-v2:0'
   )
 
+  // codeInterpreter Tool Settings
+  const [codeInterpreterConfig, setStateCodeInterpreterConfig] =
+    useState<CodeInterpreterContainerConfig>({
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
+
   // LLM Settings
   const [llmError, setLLMError] = useState<any>()
   const defaultModel = {
@@ -342,6 +355,36 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const generateImageSetting = window.store.get('generateImageTool')
     if (generateImageSetting?.modelId) {
       setStateGenerateImageModel(generateImageSetting.modelId)
+    }
+
+    // Load codeInterpreter Tool Settings
+    const codeInterpreterSetting = window.store.get('codeInterpreterTool')
+    if (codeInterpreterSetting && typeof codeInterpreterSetting === 'object') {
+      // Check if it's the old format (enabled boolean) and migrate
+      if (
+        'enabled' in codeInterpreterSetting &&
+        typeof codeInterpreterSetting.enabled === 'boolean'
+      ) {
+        // Migrate from old format - use default container settings
+        const defaultConfig: CodeInterpreterContainerConfig = {
+          memoryLimit: '256m',
+          cpuLimit: 0.5,
+          timeout: 30
+        }
+        setStateCodeInterpreterConfig(defaultConfig)
+        window.store.set('codeInterpreterTool', defaultConfig)
+      } else if (
+        'memoryLimit' in codeInterpreterSetting &&
+        'cpuLimit' in codeInterpreterSetting &&
+        'timeout' in codeInterpreterSetting
+      ) {
+        // New format - load container configuration
+        setStateCodeInterpreterConfig({
+          memoryLimit: codeInterpreterSetting.memoryLimit as string,
+          cpuLimit: codeInterpreterSetting.cpuLimit as number,
+          timeout: codeInterpreterSetting.timeout as number
+        })
+      }
     }
 
     // Load LLM Settings
@@ -972,6 +1015,18 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 - BedrockFlows: {{flows}}
 
 **</context>**
+
+**<visual expression rule>**
+- Create Mermaid.js diagrams for visual explanations (maximum 2 per response unless specified)
+- Ask user permission before generating images with Stable Diffusion
+- Display images using Markdown syntax: \`![image-name](url)\`
+  - (example) \`![img]({{projectPath}}/generated_image.png)\`
+  - (example) \`![img]({{projectPath}}/workspaces/workspace-20250529-session_1748509562336_4xe58p/generated_image.png)\`
+  - Do not start with file://. Start with /.
+- Use KaTeX format for mathematical formulas
+- For web applications, source images from Pexels or user-specified sources
+
+**</visual expression rule>**
 `
 
     return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
@@ -1078,6 +1133,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setGenerateImageModel = useCallback((modelId: string) => {
     setStateGenerateImageModel(modelId)
     window.store.set('generateImageTool', { modelId })
+  }, [])
+
+  const setCodeInterpreterConfig = useCallback((config: CodeInterpreterContainerConfig) => {
+    setStateCodeInterpreterConfig(config)
+    window.store.set('codeInterpreterTool', config)
   }, [])
 
   // エージェント固有のツール設定を取得する関数
@@ -1362,6 +1422,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // generateImage Tool Settings
     generateImageModel,
     setGenerateImageModel,
+
+    // codeInterpreter Tool Settings
+    codeInterpreterConfig,
+    setCodeInterpreterConfig,
 
     // LLM Settings
     currentLLM,

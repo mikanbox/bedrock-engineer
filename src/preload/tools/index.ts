@@ -13,6 +13,7 @@ import { createThinkingTools } from './handlers/thinking'
 import { createCommandTools } from './handlers/command'
 import { createMcpTools } from './handlers/mcp'
 import { createBedrockTools } from './handlers/bedrock'
+import { createCodeInterpreterTools } from './handlers/interpreter'
 
 // Global instances
 let toolRegistry: ToolRegistry | null = null
@@ -42,7 +43,8 @@ export function initializeToolSystem(): void {
     ...createThinkingTools(dependencies),
     ...createCommandTools(dependencies),
     ...createMcpTools(dependencies),
-    ...createBedrockTools(dependencies)
+    ...createBedrockTools(dependencies),
+    ...createCodeInterpreterTools(dependencies)
   ]
 
   allTools.forEach(({ tool, category }) => {
