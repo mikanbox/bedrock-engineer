@@ -146,7 +146,7 @@ export class DockerExecutor {
     )
 
     return new Promise((resolve, reject) => {
-      this.logger.debug('Starting Docker container', {
+      this.logger.info('Starting Docker container', {
         args: dockerArgs.join(' '),
         timeout: config.timeout
       })
@@ -757,8 +757,8 @@ CMD ["python"]
       const filename = path.basename(inputFile.path)
       const containerPath = `/data/${filename}`
 
-      // Add volume mount: host_path:container_path:ro (read-only)
-      volumeArgs.push('-v', `${inputFile.path}:${containerPath}:ro`)
+      // Add volume mount: host_path:container_path
+      volumeArgs.push('-v', `${inputFile.path}:${containerPath}`)
 
       this.logger.debug('Added file volume mount', {
         hostPath: inputFile.path,
