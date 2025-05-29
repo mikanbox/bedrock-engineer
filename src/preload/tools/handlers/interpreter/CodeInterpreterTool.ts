@@ -238,10 +238,13 @@ export class CodeInterpreterTool extends BaseTool<
         })
       })
 
+      // Preprocess code for matplotlib Japanese font support
+      const processedCode = this.addMatplotlibJapaneseFontSupport(input.code)
+
       // Execute code with environment-specific configuration
       const config = this.getExecutionConfig(input.environment)
       const execution = await this.dockerExecutor.executeCode(
-        input.code,
+        processedCode,
         'python',
         workspacePath,
         config,
@@ -536,6 +539,21 @@ export class CodeInterpreterTool extends BaseTool<
     const timestamp = Date.now()
     const random = Math.random().toString(36).substring(2, 8)
     return `session_${timestamp}_${random}`
+  }
+
+  /**
+   * Add matplotlib Japanese font support to Python code
+   */
+  private addMatplotlibJapaneseFontSupport(code: string): string {
+    // Check if code imports matplotlib
+    if (!code.includes('matplotlib') && !code.includes('pyplot') && !code.includes('plt')) {
+      return code
+    }
+
+    // Japanese font configuration code
+    const fontConfigCode = `# Matplotlib Japanese font configuration\nimport matplotlib\nimport matplotlib.pyplot as plt\nimport os\n\n# Set Japanese font for matplotlib\nif os.path.exists('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'):\n    plt.rcParams['font.family'] = ['Noto Sans CJK JP', 'DejaVu Sans']\nelse:\n    # Fallback to DejaVu Sans\n    plt.rcParams['font.family'] = 'DejaVu Sans'\n\n# Disable font warnings\nimport warnings\nwarnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')\n\n# User code starts here\n`
+
+    return fontConfigCode + code
   }
 
   /**

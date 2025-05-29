@@ -486,7 +486,9 @@ export class DockerExecutor {
           'libjpeg-dev',
           'libpng-dev',
           'libfreetype6-dev',
-          'pkg-config'
+          'pkg-config',
+          'fonts-noto-cjk',
+          'fonts-dejavu-core'
         ],
         environmentVariables: {
           PYTHONUNBUFFERED: '1',
