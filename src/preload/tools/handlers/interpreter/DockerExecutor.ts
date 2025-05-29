@@ -743,7 +743,18 @@ CMD ["python"]
 
         // Check file extension
         const ext = path.extname(inputFile.path).toLowerCase()
-        const allowedExtensions = ['.txt', '.csv', '.json', '.py', '.md', '.xml', '.yaml', '.yml']
+        const allowedExtensions = [
+          '.txt',
+          '.csv',
+          '.json',
+          '.py',
+          '.md',
+          '.xml',
+          '.yaml',
+          '.yml',
+          '.xls',
+          '.xlsx'
+        ]
         if (!allowedExtensions.includes(ext)) {
           this.logger.warn('File extension not allowed, skipping', {
             path: inputFile.path,
