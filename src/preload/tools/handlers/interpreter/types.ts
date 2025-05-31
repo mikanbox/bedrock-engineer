@@ -123,7 +123,6 @@ export interface WorkspaceConfig {
   sessionId: string
   maxFiles: number
   maxFileSize: number
-  allowedExtensions: string[]
   cleanupOnExit: boolean
 }
 

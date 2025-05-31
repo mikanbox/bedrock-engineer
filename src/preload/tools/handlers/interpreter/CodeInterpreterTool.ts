@@ -103,7 +103,6 @@ export class CodeInterpreterTool extends BaseTool<
       sessionId: this.generateSessionId(),
       maxFiles: 20,
       maxFileSize: 1024 * 1024, // 1MB
-      allowedExtensions: ['.py', '.txt', '.csv', '.json', '.md', '.png', '.jpg', '.xls', '.xlsx'],
       cleanupOnExit: true
     }
 
