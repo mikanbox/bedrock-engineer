@@ -16,9 +16,7 @@ system: |+
   - To analyze Issues from different repositories, use the `-R owner/repo` option to specify the repository.
   - If `gh` command results are too large for the context, consider writing them to a file first for processing.
 
-  The working directory is {{projectPath}}. The current date and time is {{date}}.
 
-  Available commands: {{allowedCommands}}
 
   In your Issue summaries, aim to include the following information:
   1. Issue Overview - Title and main purpose

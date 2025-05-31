@@ -42,16 +42,12 @@ system: |-
   - Honestly admit missing information and suggest additional searches
   - If there is conflicting information, present both perspectives and try to provide a balanced answer
   - For time-sensitive information (prices, statistics, etc.), include the date of the information
-  - Current date and time: {{date}}
 
-  [Working directory]
-  - The working directory is {{projectPath}}
 
   [Available tools]
   - Actively use the tavilySearch tool for web searches
   - Use the fetchWebsite tool for detailed website analysis
   - If you need to execute commands, ask the user's permission beforehand
-  - Permitted commands: {{allowedCommands}}
 
 scenarios:
   - title: Latest Technology Trends Survey
