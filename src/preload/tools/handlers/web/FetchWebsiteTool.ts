@@ -2,6 +2,7 @@
  * FetchWebsite tool implementation with line range support
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, FetchWebsiteOptions } from '../../base/types'
@@ -25,8 +26,78 @@ interface FetchWebsiteInput {
  * Tool for fetching website content with line range support
  */
 export class FetchWebsiteTool extends BaseTool<FetchWebsiteInput, string> {
-  readonly name = 'fetchWebsite'
-  readonly description = 'Fetch and parse website content with line range filtering'
+  static readonly toolName = 'fetchWebsite'
+  static readonly toolDescription = `Fetch content from a specified URL with line range filtering support. If the cleaning option is true, extracts plain text content from HTML by removing markup and unnecessary elements. Default is false.`
+
+  readonly name = FetchWebsiteTool.toolName
+  readonly description = FetchWebsiteTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: FetchWebsiteTool.toolName,
+    description: FetchWebsiteTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          url: {
+            type: 'string',
+            description: 'The URL to fetch content from'
+          },
+          options: {
+            type: 'object',
+            description: 'Optional request configurations',
+            properties: {
+              method: {
+                type: 'string',
+                description: 'HTTP method (GET, POST, etc.)',
+                enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']
+              },
+              headers: {
+                type: 'object',
+                description: 'Request headers',
+                additionalProperties: {
+                  type: 'string'
+                }
+              },
+              body: {
+                type: 'string',
+                description: 'Request body (for POST, PUT, etc.)'
+              },
+              cleaning: {
+                type: 'boolean',
+                description:
+                  'Optional. If true, extracts plain text content from HTML by removing markup and unnecessary elements. Default is false.'
+              },
+              lines: {
+                type: 'object',
+                description: 'Line range to display from the fetched content',
+                properties: {
+                  from: {
+                    type: 'number',
+                    description: 'Starting line number (1-based, inclusive)'
+                  },
+                  to: {
+                    type: 'number',
+                    description: 'Ending line number (1-based, inclusive)'
+                  }
+                }
+              }
+            }
+          }
+        },
+        required: ['url']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Retrieve content from specific URLs.\nSupports content cleaning and line filtering.'
 
   /**
    * Validate input

@@ -4,6 +4,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -21,8 +22,42 @@ interface CopyFileInput {
  * Tool for copying files
  */
 export class CopyFileTool extends BaseTool<CopyFileInput, string> {
-  readonly name = 'copyFile'
-  readonly description = 'Copy a file from source to destination'
+  static readonly toolName = 'copyFile'
+  static readonly toolDescription =
+    'Copy a file from one location to another. Use this when you need to duplicate a file in the project structure.'
+
+  readonly name = CopyFileTool.toolName
+  readonly description = CopyFileTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: CopyFileTool.toolName,
+    description: CopyFileTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          source: {
+            type: 'string',
+            description: 'The path of the file to copy'
+          },
+          destination: {
+            type: 'string',
+            description: 'The new path for the copied file'
+          }
+        },
+        required: ['source', 'destination']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Copy files to new locations.\nPreserves original file content.'
 
   /**
    * Validate input

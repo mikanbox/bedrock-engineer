@@ -2,6 +2,7 @@
  * InvokeFlow tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
@@ -45,8 +46,66 @@ interface InvokeFlowResult extends ToolResult {
  * Tool for invoking AWS Bedrock Prompt Flows
  */
 export class InvokeFlowTool extends BaseTool<InvokeFlowInput, InvokeFlowResult> {
-  readonly name = 'invokeFlow'
-  readonly description = 'Invoke an AWS Bedrock Prompt Flow to process data'
+  static readonly toolName = 'invokeFlow'
+  static readonly toolDescription =
+    'Invoke AWS Bedrock Flow to execute the specified flow. Flows can be used to automate workflows consisting of multiple steps.'
+
+  readonly name = InvokeFlowTool.toolName
+  readonly description = InvokeFlowTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: InvokeFlowTool.toolName,
+    description: InvokeFlowTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          flowIdentifier: {
+            type: 'string',
+            description: 'The identifier of the Flow to execute'
+          },
+          flowAliasIdentifier: {
+            type: 'string',
+            description: 'The alias identifier of the Flow'
+          },
+          input: {
+            type: 'object',
+            description: 'Input data for the Flow',
+            properties: {
+              content: {
+                type: 'object',
+                properties: {
+                  document: {
+                    description:
+                      'Data to send to the Flow. Accepts strings, numbers, booleans, objects, and arrays.',
+                    anyOf: [
+                      { type: 'string' },
+                      { type: 'number' },
+                      { type: 'boolean' },
+                      { type: 'object' },
+                      { type: 'array' }
+                    ]
+                  }
+                },
+                required: ['document']
+              }
+            },
+            required: ['content']
+          }
+        },
+        required: ['flowIdentifier', 'flowAliasIdentifier', 'input']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Execute AWS Bedrock workflows.\nAutomate multi-step processes.'
 
   /**
    * Parse input if it's a string

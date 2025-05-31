@@ -3,6 +3,7 @@
  */
 
 import * as fs from 'fs/promises'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -19,8 +20,38 @@ interface CreateFolderInput {
  * Tool for creating folders
  */
 export class CreateFolderTool extends BaseTool<CreateFolderInput, string> {
-  readonly name = 'createFolder'
-  readonly description = 'Create a new folder at the specified path'
+  static readonly toolName = 'createFolder'
+  static readonly toolDescription =
+    'Create a new folder at the specified path. Use this when you need to create a new directory in the project structure.'
+
+  readonly name = CreateFolderTool.toolName
+  readonly description = CreateFolderTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: CreateFolderTool.toolName,
+    description: CreateFolderTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'The path where the folder should be created'
+          }
+        },
+        required: ['path']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Create directories in your project.\nUse absolute paths starting from {{projectPath}}.'
 
   /**
    * Validate input

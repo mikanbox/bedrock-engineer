@@ -2,6 +2,7 @@
  * GenerateImage tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import { ipc } from '../../../ipc-client'
@@ -46,8 +47,82 @@ interface GenerateImageResult extends ToolResult {
  * Tool for generating images using AWS Bedrock
  */
 export class GenerateImageTool extends BaseTool<GenerateImageInput, GenerateImageResult> {
-  readonly name = 'generateImage'
-  readonly description = 'Generate images using AWS Bedrock image generation models'
+  static readonly toolName = 'generateImage'
+  static readonly toolDescription =
+    'Generate an image using Amazon Bedrock Foundation Models. By default uses stability.sd3-5-large-v1:0. Images are saved to the specified path. For Titan models, specific aspect ratios and sizes are supported.'
+
+  readonly name = GenerateImageTool.toolName
+  readonly description = GenerateImageTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: GenerateImageTool.toolName,
+    description: GenerateImageTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          prompt: {
+            type: 'string',
+            description: 'Text description of the image you want to generate'
+          },
+          outputPath: {
+            type: 'string',
+            description:
+              'Path where the generated image should be saved, including filename (e.g., "/path/to/image.png")'
+          },
+          negativePrompt: {
+            type: 'string',
+            description: 'Optional. Things to exclude from the image'
+          },
+          aspect_ratio: {
+            type: 'string',
+            description:
+              'Optional. Aspect ratio of the generated image. For Titan models, specific sizes will be chosen based on the aspect ratio.',
+            enum: [
+              '1:1',
+              '16:9',
+              '2:3',
+              '3:2',
+              '4:5',
+              '5:4',
+              '9:16',
+              '9:21',
+              '5:3',
+              '3:5',
+              '7:9',
+              '9:7',
+              '6:11',
+              '11:6',
+              '5:11',
+              '11:5',
+              '9:5'
+            ]
+          },
+          seed: {
+            type: 'number',
+            description:
+              'Optional. Seed for deterministic generation. For Titan models, range is 0 to 2147483647.'
+          },
+          output_format: {
+            type: 'string',
+            description: 'Optional. Output format of the generated image',
+            enum: ['png', 'jpeg', 'webp'],
+            default: 'png'
+          }
+        },
+        required: ['prompt', 'outputPath']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Generate images using AI models.\nAlways ask user permission before creating images.'
 
   /**
    * Validate input

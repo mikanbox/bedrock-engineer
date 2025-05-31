@@ -2,6 +2,7 @@
  * Think tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ToolResult } from '../../../../types/tools'
@@ -28,8 +29,38 @@ interface ThinkResult extends ToolResult {
  * Tool for detailed thinking and problem analysis
  */
 export class ThinkTool extends BaseTool<ThinkInput, ThinkResult> {
-  readonly name = 'think'
-  readonly description = 'Think through a problem in detail and return the reasoning process'
+  static readonly toolName = 'think'
+  static readonly toolDescription =
+    'Use the tool to think about something. It will not obtain new information or make any changes to the repository, but just log the thought. Use it when complex reasoning or brainstorming is needed. For example, if you explore the repo and discover the source of a bug, call this tool to brainstorm several unique ways of fixing the bug, and assess which change(s) are likely to be simplest and most effective. Alternatively, if you receive some test results, call this tool to brainstorm ways to fix the failing tests.'
+
+  readonly name = ThinkTool.toolName
+  readonly description = ThinkTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: ThinkTool.toolName,
+    description: ThinkTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          thought: {
+            type: 'string',
+            description: 'Your thoughts.'
+          }
+        },
+        required: ['thought']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Process complex reasoning and brainstorming.\nUse for analysis before making changes.'
 
   /**
    * Validate input

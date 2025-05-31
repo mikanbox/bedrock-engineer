@@ -3,6 +3,7 @@
  */
 
 import * as fs from 'fs/promises'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, ReadFileOptions } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -25,8 +26,66 @@ interface ReadFilesInput {
  * Tool for reading file contents with line range support
  */
 export class ReadFilesTool extends BaseTool<ReadFilesInput, string> {
-  readonly name = 'readFiles'
-  readonly description = 'Read contents of specified files with line range filtering'
+  static readonly toolName = 'readFiles'
+  static readonly toolDescription =
+    'Read the content of multiple files at the specified paths with line range filtering support. For Excel files, the content is converted to CSV format.'
+
+  readonly name = ReadFilesTool.toolName
+  readonly description = ReadFilesTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: ReadFilesTool.toolName,
+    description: ReadFilesTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          paths: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description:
+              'Array of file paths to read. Supports text files and Excel files (.xlsx, .xls).'
+          },
+          options: {
+            type: 'object',
+            description: 'Optional configurations for reading files',
+            properties: {
+              encoding: {
+                type: 'string',
+                description: 'File encoding (default: utf-8)'
+              },
+              lines: {
+                type: 'object',
+                description: 'Line range to read from the file',
+                properties: {
+                  from: {
+                    type: 'number',
+                    description: 'Starting line number (1-based, inclusive)'
+                  },
+                  to: {
+                    type: 'number',
+                    description: 'Ending line number (1-based, inclusive)'
+                  }
+                }
+              }
+            }
+          }
+        },
+        required: ['paths']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Read content from multiple files simultaneously.\nSupports line range filtering and Excel conversion.'
 
   /**
    * Validate input

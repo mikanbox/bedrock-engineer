@@ -4,6 +4,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult, ListDirectoryOptions } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -27,8 +28,73 @@ interface ListFilesInput {
  * Tool for listing files and directories with line range support
  */
 export class ListFilesTool extends BaseTool<ListFilesInput, string> {
-  readonly name = 'listFiles'
-  readonly description = 'List files and directories with optional filtering and line range support'
+  static readonly toolName = 'listFiles'
+  static readonly toolDescription =
+    'List the entire directory structure, including all subdirectories and files, in a hierarchical format with line range filtering support. Use maxDepth to limit directory depth and lines to filter output.'
+
+  readonly name = ListFilesTool.toolName
+  readonly description = ListFilesTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: ListFilesTool.toolName,
+    description: ListFilesTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'The root path to start listing the directory structure from'
+          },
+          options: {
+            type: 'object',
+            description: 'Optional configurations for listing files',
+            properties: {
+              ignoreFiles: {
+                type: 'array',
+                items: {
+                  type: 'string'
+                },
+                description: 'Array of patterns to ignore when listing files (gitignore format)'
+              },
+              maxDepth: {
+                type: 'number',
+                description: 'Maximum depth of directory traversal (-1 for unlimited)'
+              },
+              recursive: {
+                type: 'boolean',
+                description: 'Whether to list files recursively'
+              },
+              lines: {
+                type: 'object',
+                description: 'Line range to display from the directory listing output',
+                properties: {
+                  from: {
+                    type: 'number',
+                    description: 'Starting line number (1-based, inclusive)'
+                  },
+                  to: {
+                    type: 'number',
+                    description: 'Ending line number (1-based, inclusive)'
+                  }
+                }
+              }
+            }
+          }
+        },
+        required: ['path']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'List directory contents with optional filtering.\nUse to understand project structure before modifications.'
 
   /**
    * Validate input

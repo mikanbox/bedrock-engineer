@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next'
 import { ToolState } from '@/types/agent-chat'
 import { TOOL_CATEGORIES } from '../../components/AgentForm/ToolsSection/utils/toolCategories'
 import ToolSpecJsonModal from './ToolSpecJsonModal'
-import { tools } from '@/types/tools'
+// import { tools } from '@/types/tools' // 移行済み: 新しいAPIを使用
 import { CodeBracketIcon } from '@heroicons/react/24/outline'
 
 export interface CommandConfig {
@@ -270,8 +270,9 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
       return selectedToolBody?.toolSpec
     }
 
-    // 標準ツールの場合は tools 配列から取得
-    const standardTool = tools.find((tool) => tool.toolSpec?.name === selectedTool)
+    // 標準ツールの場合は新しいAPIから取得
+    const toolSpecs = window.api.tools.getToolSpecs()
+    const standardTool = toolSpecs.find((tool) => tool.toolSpec?.name === selectedTool)
     return standardTool?.toolSpec
   }
 

@@ -2,6 +2,7 @@
  * InvokeBedrockAgent tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ipc } from '../../../ipc-client'
 import * as fs from 'fs/promises'
 import * as path from 'path'
@@ -52,8 +53,68 @@ export class InvokeBedrockAgentTool extends BaseTool<
   InvokeBedrockAgentInput,
   InvokeBedrockAgentResult
 > {
-  readonly name = 'invokeBedrockAgent'
-  readonly description = 'Invoke an AWS Bedrock Agent to process requests'
+  static readonly toolName = 'invokeBedrockAgent'
+  static readonly toolDescription =
+    'Invoke an Amazon Bedrock Agent using the specified agent ID and alias ID. Use this when you need to interact with an agent.'
+
+  readonly name = InvokeBedrockAgentTool.toolName
+  readonly description = InvokeBedrockAgentTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: InvokeBedrockAgentTool.toolName,
+    description: InvokeBedrockAgentTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          agentId: {
+            type: 'string',
+            description: 'The ID of the agent to invoke'
+          },
+          agentAliasId: {
+            type: 'string',
+            description: 'The alias ID of the agent to invoke'
+          },
+          sessionId: {
+            type: 'string',
+            description:
+              'Optional. The session ID to use for the agent invocation. The session ID is issued when you execute invokeBedrockAgent for the first time and is included in the response. Specify it if you want to continue the conversation from the second time onwards.'
+          },
+          inputText: {
+            type: 'string',
+            description: 'The input text to send to the agent'
+          },
+          file: {
+            type: 'object',
+            description:
+              'Optional. The file to send to the agent. Be sure to specify if you need to analyze files.',
+            properties: {
+              filePath: {
+                type: 'string',
+                description: 'The path of the file to send to the agent'
+              },
+              useCase: {
+                type: 'string',
+                description:
+                  'The use case of the file. Specify "CODE_INTERPRETER" if Python code analysis is required. Otherwise, specify "CHAT".',
+                enum: ['CODE_INTERPRETER', 'CHAT']
+              }
+            }
+          }
+        },
+        required: ['agentId', 'agentAliasId', 'inputText']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Interact with AWS Bedrock agents.\nSupport file uploads and session management.'
 
   /**
    * Validate input - matches legacy implementation

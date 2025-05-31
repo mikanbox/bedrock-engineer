@@ -2,6 +2,7 @@
  * TavilySearch tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError, NetworkError } from '../../base/errors'
@@ -48,8 +49,49 @@ interface TavilySearchResult extends ToolResult {
  * Tool for searching using Tavily API
  */
 export class TavilySearchTool extends BaseTool<TavilySearchInput, TavilySearchResult> {
-  readonly name = 'tavilySearch'
-  readonly description = 'Search the web using Tavily search API'
+  static readonly toolName = 'tavilySearch'
+  static readonly toolDescription =
+    'Perform a web search using Tavily API to get up-to-date information or additional context. Use this when you need current information or feel a search could provide a better answer.'
+
+  readonly name = TavilySearchTool.toolName
+  readonly description = TavilySearchTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: TavilySearchTool.toolName,
+    description: TavilySearchTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The search query'
+          },
+          option: {
+            type: 'object',
+            description: 'Optional configurations for the search',
+            properties: {
+              include_raw_content: {
+                type: 'boolean',
+                description:
+                  'Whether to include raw content in the search results. DEFAULT is false'
+              }
+            }
+          }
+        },
+        required: ['query']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Search the web for current information.\nAlways cite sources and provide URLs.'
 
   /**
    * Validate input

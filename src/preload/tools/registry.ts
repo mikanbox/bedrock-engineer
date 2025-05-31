@@ -2,10 +2,28 @@
  * Tool registry for managing and executing tools
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ToolInput, ToolResult, isMcpTool, getOriginalMcpToolName } from '../../types/tools'
 import { ITool, ToolCategory, ToolRegistration, ToolDependencies } from './base/types'
 import { ToolNotFoundError, isToolError } from './base/errors'
 import { toolSystemLogger } from './common/Logger'
+import { CreateFolderTool } from './handlers/filesystem/CreateFolderTool'
+import { WriteToFileTool } from './handlers/filesystem/WriteToFileTool'
+import { ReadFilesTool } from './handlers/filesystem/ReadFilesTool'
+import { ListFilesTool } from './handlers/filesystem/ListFilesTool'
+import { ApplyDiffEditTool } from './handlers/filesystem/ApplyDiffEditTool'
+import { MoveFileTool } from './handlers/filesystem/MoveFileTool'
+import { CopyFileTool } from './handlers/filesystem/CopyFileTool'
+import { TavilySearchTool } from './handlers/web/TavilySearchTool'
+import { FetchWebsiteTool } from './handlers/web/FetchWebsiteTool'
+import { GenerateImageTool } from './handlers/bedrock/GenerateImageTool'
+import { RecognizeImageTool } from './handlers/bedrock/RecognizeImageTool'
+import { RetrieveTool } from './handlers/bedrock/RetrieveTool'
+import { InvokeBedrockAgentTool } from './handlers/bedrock/InvokeBedrockAgentTool'
+import { InvokeFlowTool } from './handlers/bedrock/InvokeFlowTool'
+import { ExecuteCommandTool } from './handlers/command/ExecuteCommandTool'
+import { ThinkTool } from './handlers/thinking/ThinkTool'
+import { CodeInterpreterTool } from './handlers/interpreter/CodeInterpreterTool'
 
 /**
  * Registry for managing tools
@@ -281,4 +299,198 @@ export class ToolRegistry {
  */
 export function createToolRegistry(dependencies: ToolDependencies): ToolRegistry {
   return new ToolRegistry(dependencies)
+}
+
+/**
+ * Static utility methods for tool metadata collection
+ */
+export class ToolMetadataCollector {
+  /**
+   * Collect tool specifications from tool classes
+   */
+  static getToolSpecs(): Tool[] {
+    const specs: Tool[] = []
+
+    // Add CreateFolderTool specification
+    if (CreateFolderTool.toolSpec) {
+      specs.push({ toolSpec: CreateFolderTool.toolSpec })
+    }
+
+    // Add WriteToFileTool specification
+    if (WriteToFileTool.toolSpec) {
+      specs.push({ toolSpec: WriteToFileTool.toolSpec })
+    }
+
+    // Add ReadFilesTool specification
+    if (ReadFilesTool.toolSpec) {
+      specs.push({ toolSpec: ReadFilesTool.toolSpec })
+    }
+
+    // Add ListFilesTool specification
+    if (ListFilesTool.toolSpec) {
+      specs.push({ toolSpec: ListFilesTool.toolSpec })
+    }
+
+    // Add ApplyDiffEditTool specification
+    if (ApplyDiffEditTool.toolSpec) {
+      specs.push({ toolSpec: ApplyDiffEditTool.toolSpec })
+    }
+
+    // Add MoveFileTool specification
+    if (MoveFileTool.toolSpec) {
+      specs.push({ toolSpec: MoveFileTool.toolSpec })
+    }
+
+    // Add CopyFileTool specification
+    if (CopyFileTool.toolSpec) {
+      specs.push({ toolSpec: CopyFileTool.toolSpec })
+    }
+
+    // Phase 2: Web Tools
+    if (TavilySearchTool.toolSpec) {
+      specs.push({ toolSpec: TavilySearchTool.toolSpec })
+    }
+
+    if (FetchWebsiteTool.toolSpec) {
+      specs.push({ toolSpec: FetchWebsiteTool.toolSpec })
+    }
+
+    // Phase 3: Bedrock Tools
+    if (GenerateImageTool.toolSpec) {
+      specs.push({ toolSpec: GenerateImageTool.toolSpec })
+    }
+
+    if (RecognizeImageTool.toolSpec) {
+      specs.push({ toolSpec: RecognizeImageTool.toolSpec })
+    }
+
+    if (RetrieveTool.toolSpec) {
+      specs.push({ toolSpec: RetrieveTool.toolSpec })
+    }
+
+    if (InvokeBedrockAgentTool.toolSpec) {
+      specs.push({ toolSpec: InvokeBedrockAgentTool.toolSpec })
+    }
+
+    if (InvokeFlowTool.toolSpec) {
+      specs.push({ toolSpec: InvokeFlowTool.toolSpec })
+    }
+
+    // Phase 4: Command & Thinking Tools
+    if (ExecuteCommandTool.toolSpec) {
+      specs.push({ toolSpec: ExecuteCommandTool.toolSpec })
+    }
+
+    if (ThinkTool.toolSpec) {
+      specs.push({ toolSpec: ThinkTool.toolSpec })
+    }
+
+    // Phase 5: Interpreter Tools
+    if (CodeInterpreterTool.toolSpec) {
+      specs.push({ toolSpec: CodeInterpreterTool.toolSpec })
+    }
+
+    return specs
+  }
+
+  /**
+   * Collect system prompt descriptions from tool classes
+   */
+  static getSystemPromptDescriptions(): Record<string, string> {
+    const descriptions: Record<string, string> = {}
+
+    // Add CreateFolderTool description
+    if (CreateFolderTool.systemPromptDescription) {
+      descriptions.createFolder = CreateFolderTool.systemPromptDescription
+    }
+
+    // Add WriteToFileTool description
+    if (WriteToFileTool.systemPromptDescription) {
+      descriptions.writeToFile = WriteToFileTool.systemPromptDescription
+    }
+
+    // Add ReadFilesTool description
+    if (ReadFilesTool.systemPromptDescription) {
+      descriptions.readFiles = ReadFilesTool.systemPromptDescription
+    }
+
+    // Add ListFilesTool description
+    if (ListFilesTool.systemPromptDescription) {
+      descriptions.listFiles = ListFilesTool.systemPromptDescription
+    }
+
+    // Add ApplyDiffEditTool description
+    if (ApplyDiffEditTool.systemPromptDescription) {
+      descriptions.applyDiffEdit = ApplyDiffEditTool.systemPromptDescription
+    }
+
+    // Add MoveFileTool description
+    if (MoveFileTool.systemPromptDescription) {
+      descriptions.moveFile = MoveFileTool.systemPromptDescription
+    }
+
+    // Add CopyFileTool description
+    if (CopyFileTool.systemPromptDescription) {
+      descriptions.copyFile = CopyFileTool.systemPromptDescription
+    }
+
+    // Phase 2: Web Tools
+    if (TavilySearchTool.systemPromptDescription) {
+      descriptions.tavilySearch = TavilySearchTool.systemPromptDescription
+    }
+
+    if (FetchWebsiteTool.systemPromptDescription) {
+      descriptions.fetchWebsite = FetchWebsiteTool.systemPromptDescription
+    }
+
+    // Phase 3: Bedrock Tools
+    if (GenerateImageTool.systemPromptDescription) {
+      descriptions.generateImage = GenerateImageTool.systemPromptDescription
+    }
+
+    if (RecognizeImageTool.systemPromptDescription) {
+      descriptions.recognizeImage = RecognizeImageTool.systemPromptDescription
+    }
+
+    if (RetrieveTool.systemPromptDescription) {
+      descriptions.retrieve = RetrieveTool.systemPromptDescription
+    }
+
+    if (InvokeBedrockAgentTool.systemPromptDescription) {
+      descriptions.invokeBedrockAgent = InvokeBedrockAgentTool.systemPromptDescription
+    }
+
+    if (InvokeFlowTool.systemPromptDescription) {
+      descriptions.invokeFlow = InvokeFlowTool.systemPromptDescription
+    }
+
+    // Phase 4: Command & Thinking Tools
+    if (ExecuteCommandTool.systemPromptDescription) {
+      descriptions.executeCommand = ExecuteCommandTool.systemPromptDescription
+    }
+
+    if (ThinkTool.systemPromptDescription) {
+      descriptions.think = ThinkTool.systemPromptDescription
+    }
+
+    // Phase 5: Interpreter Tools
+    if (CodeInterpreterTool.systemPromptDescription) {
+      descriptions.codeInterpreter = CodeInterpreterTool.systemPromptDescription
+    }
+
+    return descriptions
+  }
+
+  /**
+   * Get all available tool metadata
+   */
+  static getAllToolMetadata(): {
+    toolSpecs: Tool[]
+    systemPromptDescriptions: Record<string, string>
+  } {
+    return {
+      toolSpecs: this.getToolSpecs(),
+      systemPromptDescriptions: this.getSystemPromptDescriptions()
+    }
+  }
 }

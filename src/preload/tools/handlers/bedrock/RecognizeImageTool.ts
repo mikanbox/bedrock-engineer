@@ -2,6 +2,7 @@
  * RecognizeImage tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ipc } from '../../../ipc-client'
 import * as fs from 'fs/promises'
 import { BaseTool } from '../../base/BaseTool'
@@ -36,8 +37,47 @@ interface RecognizeImageResult extends ToolResult {
  * Tool for recognizing and analyzing images using AWS Bedrock
  */
 export class RecognizeImageTool extends BaseTool<RecognizeImageInput, RecognizeImageResult> {
-  readonly name = 'recognizeImage'
-  readonly description = 'Analyze and describe images using AWS Bedrock vision models'
+  static readonly toolName = 'recognizeImage'
+  static readonly toolDescription =
+    "Analyze and describe multiple images (up to 5) using Amazon Bedrock's Claude vision capabilities. The tool processes images in parallel and returns detailed descriptions."
+
+  readonly name = RecognizeImageTool.toolName
+  readonly description = RecognizeImageTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: RecognizeImageTool.toolName,
+    description: RecognizeImageTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          imagePaths: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
+            description:
+              'Paths to the image files to analyze (maximum 5). Supports common formats: .jpg, .jpeg, .png, .gif, .webp'
+          },
+          prompt: {
+            type: 'string',
+            description:
+              'Custom prompt to guide the image analysis (e.g., "Describe this image in detail", "What text appears in this image?", etc.). Default: "Describe this image in detail."'
+          }
+        },
+        required: ['imagePaths']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Analyze and describe image content.\nSupports multiple images simultaneously.'
 
   /**
    * Validate input
