@@ -2,6 +2,7 @@
  * ExecuteCommand tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError, PermissionDeniedError } from '../../base/errors'
@@ -50,8 +51,49 @@ let commandServiceState: CommandServiceState | null = null
  * Tool for executing system commands
  */
 export class ExecuteCommandTool extends BaseTool<ExecuteCommandInput, ExecuteCommandResult> {
-  readonly name = 'executeCommand'
-  readonly description = 'Execute system commands with proper permission controls'
+  static readonly toolName = 'executeCommand'
+  static readonly toolDescription =
+    'Execute a command or send input to a running process. First execute the command to get a PID, then use that PID to send input if needed. Usage: 1) First call with command and cwd to start process, 2) If input is required, call again with pid and stdin.'
+
+  readonly name = ExecuteCommandTool.toolName
+  readonly description = ExecuteCommandTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: ExecuteCommandTool.toolName,
+    description: ExecuteCommandTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: 'The command to execute (used when starting a new process)'
+          },
+          cwd: {
+            type: 'string',
+            description: 'The working directory for the command execution (used with command)'
+          },
+          pid: {
+            type: 'number',
+            description: 'Process ID to send input to (used when sending input to existing process)'
+          },
+          stdin: {
+            type: 'string',
+            description: 'Standard input to send to the process (used with pid)'
+          }
+        }
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Run system commands with user permission.\nOnly use commands from allowed list: {{allowedCommands}}.'
 
   /**
    * Get or create command service instance

@@ -39,6 +39,7 @@ export interface SystemPromptSectionProps {
   knowledgeBases: KnowledgeBase[]
   bedrockAgents: BedrockAgent[]
   flows?: FlowConfig[]
+  tools: ToolState[]
 }
 
 export interface ScenariosSectionProps {

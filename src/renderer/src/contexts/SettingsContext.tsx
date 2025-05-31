@@ -16,10 +16,10 @@ import type { AwsCredentialIdentity } from '@smithy/types'
 import { BedrockAgent } from '@/types/agent'
 import { AgentCategory } from '@/types/agent-chat'
 import { getToolsForCategory } from '../constants/defaultToolSets'
-import { tools } from '@/types/tools'
 import isEqual from 'lodash/isEqual'
 import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { CodeInterpreterContainerConfig } from 'src/preload/tools/handlers/interpreter/types'
+import { getEnvironmentContext } from '@renderer/pages/ChatPage/constants/AGENTS_ENVIRONMENT_CONTEXT'
 
 const DEFAULT_INFERENCE_PARAMS: InferenceParameters = {
   maxTokens: 4096,
@@ -209,6 +209,11 @@ export interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Tool specifications from ToolMetadataCollector
+  const tools = useMemo(() => {
+    return window.api?.tools?.getToolSpecs() || []
+  }, [])
+
   // Advanced Settings
   const [sendMsgKey, setSendMsgKey] = useState<SendMsgKey>('Enter')
 
@@ -1000,44 +1005,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return allAgents.find((a) => a.id === selectedAgentId)
   }, [allAgents, selectedAgentId])
 
-  // エージェント固有の設定を使用
-  const systemPrompt = useMemo(() => {
-    if (!currentAgent?.system) return ''
-
-    const systemPromptContext = `
-**<context>**
-
-- working directory: {{projectPath}}
-- date: {{date}}
-- allowedCommands: {{allowedCommands}}
-- KnowledgeBases: {{knowledgeBases}}
-- bedrockAgents: {{bedrockAgents}}
-- BedrockFlows: {{flows}}
-
-**</context>**
-
-**<visual expression rule>**
-- Create Mermaid.js diagrams for visual explanations (maximum 2 per response unless specified)
-- Ask user permission before generating images with Stable Diffusion
-- Display images using Markdown syntax: \`![image-name](url)\`
-  - (example) \`![img]({{projectPath}}/generated_image.png)\`
-  - (example) \`![img]({{projectPath}}/workspaces/workspace-20250529-session_1748509562336_4xe58p/generated_image.png)\`
-  - Do not start with file://. Start with /.
-- Use KaTeX format for mathematical formulas
-- For web applications, source images from Pexels or user-specified sources
-
-**</visual expression rule>**
-`
-
-    return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
-      projectPath,
-      allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
-      knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
-      bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || [],
-      flows: allAgents.find((a) => a.id === selectedAgentId)?.flows || []
-    })
-  }, [currentAgent, selectedAgentId, projectPath, allAgents])
-
   // 現在選択中のエージェントが変更されたらMCPツールを再読み込み
   useEffect(() => {
     if (!currentAgent) return
@@ -1219,9 +1186,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [allAgents]
   )
 
-  // effectiveToolsの宣言は getAgentTools 関数の定義後に移動しました
+  // エージェント固有の設定を使用
+  const systemPrompt = useMemo(() => {
+    if (!currentAgent?.system) return ''
 
-  // enabledToolsの宣言は後に移動しました
+    // 現在のエージェントの有効なツールを取得
+    const agentTools = getAgentTools(selectedAgentId)
+    const systemPromptContext = getEnvironmentContext(agentTools)
+
+    return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
+      projectPath,
+      allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
+      knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
+      bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || [],
+      flows: allAgents.find((a) => a.id === selectedAgentId)?.flows || []
+    })
+  }, [currentAgent, selectedAgentId, projectPath, allAgents, getAgentTools])
 
   // エージェントツール設定を更新する関数
   const updateAgentTools = useCallback(
@@ -1386,10 +1366,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   )
 
   // カテゴリーに基づいてデフォルトツール設定を返す関数
-  const getDefaultToolsForCategory = useCallback((category: string): ToolState[] => {
-    const allWindowTools = tools.map((tool) => ({ ...tool, enabled: true })) as ToolState[]
-    return getToolsForCategory(category as AgentCategory, allWindowTools)
-  }, [])
+  const getDefaultToolsForCategory = useCallback(
+    (category: string): ToolState[] => {
+      const allWindowTools = tools.map((tool) => ({ ...tool, enabled: true })) as ToolState[]
+      return getToolsForCategory(category as AgentCategory, allWindowTools)
+    },
+    [tools]
+  )
 
   const setPlanMode = useCallback((enabled: boolean) => {
     setStatePlanMode(enabled)

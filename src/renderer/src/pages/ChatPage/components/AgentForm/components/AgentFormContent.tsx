@@ -84,6 +84,7 @@ export const AgentFormContent: React.FC<{
               knowledgeBases={formData.knowledgeBases || []}
               bedrockAgents={formData.bedrockAgents || []}
               flows={formData.flows || []}
+              tools={agentTools}
             />
 
             <ScenariosSection

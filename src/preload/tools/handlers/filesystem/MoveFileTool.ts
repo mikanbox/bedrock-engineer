@@ -4,6 +4,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -21,8 +22,42 @@ interface MoveFileInput {
  * Tool for moving files
  */
 export class MoveFileTool extends BaseTool<MoveFileInput, string> {
-  readonly name = 'moveFile'
-  readonly description = 'Move a file from source to destination'
+  static readonly toolName = 'moveFile'
+  static readonly toolDescription =
+    'Move a file from one location to another. Use this when you need to organize files in the project structure.'
+
+  readonly name = MoveFileTool.toolName
+  readonly description = MoveFileTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: MoveFileTool.toolName,
+    description: MoveFileTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          source: {
+            type: 'string',
+            description: 'The current path of the file'
+          },
+          destination: {
+            type: 'string',
+            description: 'The new path for the file'
+          }
+        },
+        required: ['source', 'destination']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Move files between locations.\nUse absolute paths for source and destination.'
 
   /**
    * Validate input

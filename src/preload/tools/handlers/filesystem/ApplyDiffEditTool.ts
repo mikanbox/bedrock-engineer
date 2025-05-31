@@ -3,6 +3,7 @@
  */
 
 import * as fs from 'fs/promises'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -34,8 +35,56 @@ interface ApplyDiffEditResult extends ToolResult {
  * Tool for applying diff edits to files
  */
 export class ApplyDiffEditTool extends BaseTool<ApplyDiffEditInput, ApplyDiffEditResult> {
-  readonly name = 'applyDiffEdit'
-  readonly description = 'Apply a diff edit to a file by replacing original text with updated text'
+  static readonly toolName = 'applyDiffEdit'
+  static readonly toolDescription = `Apply a diff edit to a file. This tool replaces the specified original text with updated text at the exact location in the file. Use this when you need to make precise modifications to existing file content. The tool ensures that only the specified text is replaced, keeping the rest of the file intact.
+
+Example:
+{
+   path: '/path/to/file.ts',
+   originalText: 'function oldName() {\n  // old implementation\n}',
+   updatedText: 'function newName() {\n  // new implementation\n}'
+}
+        `
+
+  readonly name = ApplyDiffEditTool.toolName
+  readonly description = ApplyDiffEditTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: ApplyDiffEditTool.toolName,
+    description: ApplyDiffEditTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description:
+              'The absolute path of the file to modify. Make sure to provide the complete path starting from the root directory.'
+          },
+          originalText: {
+            type: 'string',
+            description:
+              'The exact original text to be replaced. Must match the text in the file exactly, including whitespace and line breaks. If the text is not found, the operation will fail.'
+          },
+          updatedText: {
+            type: 'string',
+            description:
+              'The new text that will replace the original text. Can be of different length than the original text. Whitespace and line breaks in this text will be preserved exactly as provided.'
+          }
+        },
+        required: ['path', 'originalText', 'updatedText']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Make precise edits to existing files.\nRequires exact text matching including whitespace.'
 
   /**
    * Validate input

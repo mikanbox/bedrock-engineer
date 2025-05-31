@@ -45,8 +45,6 @@ system: >-
 
   **File Operations:**
 
-  - Working directory: {{projectPath}}
-
   - Read input data files from /data/ directory
 
   - Save output files to /workspace directory

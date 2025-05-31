@@ -115,9 +115,6 @@ Rules:
 - The system prompt must always include the project path placeholder: {{projectPath}}
 - You can also use the placeholders
   - {{date}} to represent the current date and time
-  - {{allowedCommands}} to represent a list of available tools.
-  - {{knowledgeBases}} to represent a list of knowledge bases.
-  - {{bedrockAgents}} to represent a list of bedrock agents.
 - Please specify how these tools should be used.
 - No explanation or \`\`\` needed, just print the system prompt.
 - Please output in the language entered for the Agent Name and Description.

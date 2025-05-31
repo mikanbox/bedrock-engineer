@@ -2,6 +2,7 @@
  * Abstract base class for all tools
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ToolInput, ToolResult } from '../../../types/tools'
 import { ITool, ToolDependencies, ToolLogger, StoreManager, ValidationResult } from './types'
 import { wrapError, ValidationError } from './errors'
@@ -21,6 +22,16 @@ export abstract class BaseTool<TInput extends ToolInput = ToolInput, TResult = T
    * Tool description
    */
   abstract readonly description: string
+
+  /**
+   * AWS Bedrock tool specification - should be defined as static in each tool
+   */
+  static readonly toolSpec?: Tool['toolSpec']
+
+  /**
+   * System prompt description - should be defined as static in each tool
+   */
+  static readonly systemPromptDescription?: string
 
   /**
    * Dependencies injected into the tool

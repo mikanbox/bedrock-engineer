@@ -4,6 +4,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
 import { ExecutionError } from '../../base/errors'
@@ -21,8 +22,42 @@ interface WriteToFileInput {
  * Tool for writing content to files
  */
 export class WriteToFileTool extends BaseTool<WriteToFileInput, string> {
-  readonly name = 'writeToFile'
-  readonly description = 'Write content to a file at the specified path'
+  static readonly toolName = 'writeToFile'
+  static readonly toolDescription =
+    'Write content to an existing file at the specified path. Use this when you need to add or update content in an existing file.'
+
+  readonly name = WriteToFileTool.toolName
+  readonly description = WriteToFileTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: WriteToFileTool.toolName,
+    description: WriteToFileTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'The path of the file to write to'
+          },
+          content: {
+            type: 'string',
+            description: 'The content to write to the file'
+          }
+        },
+        required: ['path', 'content']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Write content to files in your project.\nAlways provide complete file content.'
 
   /**
    * Validate input

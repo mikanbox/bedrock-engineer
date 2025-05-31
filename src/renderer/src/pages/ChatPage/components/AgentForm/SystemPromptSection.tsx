@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { FiZap, FiEye, FiEyeOff, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import { SystemPromptSectionProps } from './types'
 import { replacePlaceholders } from '../../utils/placeholder'
+import { getEnvironmentContext } from '../../constants/AGENTS_ENVIRONMENT_CONTEXT'
 import { motion } from 'framer-motion'
 
 const PLACEHOLDERS = [
@@ -27,7 +28,8 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
   allowedCommands,
   knowledgeBases,
   bedrockAgents,
-  flows = []
+  flows = [],
+  tools
 }) => {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
@@ -37,6 +39,18 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
     if (!text) return text
     const path = projectPath || t('noProjectPath')
     return replacePlaceholders(text, {
+      projectPath: path,
+      allowedCommands,
+      knowledgeBases,
+      bedrockAgents,
+      flows
+    })
+  }
+
+  const getEnvironmentContextText = (): string => {
+    const path = projectPath || t('noProjectPath')
+    const environmentContext = getEnvironmentContext(tools || [])
+    return replacePlaceholders(environmentContext, {
       projectPath: path,
       allowedCommands,
       knowledgeBases,
@@ -184,12 +198,27 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
             <p className="text-xs text-gray-600 dark:text-gray-300 font-medium mb-2">
               {t('previewResult')}
             </p>
-            <p
-              className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md border border-gray-200
-                dark:border-gray-700 h-[512px] overflow-y-auto text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap"
-            >
-              {getPreviewText(system)}
-            </p>
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 h-[512px] overflow-y-auto text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              {/* User Input Section */}
+              <div className="mb-6">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-3 uppercase tracking-wide">
+                  User Input
+                </p>
+                <div className="whitespace-pre-wrap bg-white dark:bg-gray-900/50 p-3 rounded border border-gray-200 dark:border-gray-600">
+                  {getPreviewText(system)}
+                </div>
+              </div>
+
+              {/* Environment Context Section */}
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-3 uppercase tracking-wide">
+                  Auto-Added Environment Context
+                </p>
+                <div className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-700/50 p-3 rounded border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                  {getEnvironmentContextText()}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

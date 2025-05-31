@@ -2,6 +2,7 @@
  * Retrieve tool implementation
  */
 
+import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { ipc } from '../../../ipc-client'
 import { BaseTool } from '../../base/BaseTool'
 import { ValidationResult } from '../../base/types'
@@ -40,8 +41,42 @@ interface RetrieveResult extends ToolResult {
  * Tool for retrieving information from AWS Bedrock Knowledge Base
  */
 export class RetrieveTool extends BaseTool<RetrieveInput, RetrieveResult> {
-  readonly name = 'retrieve'
-  readonly description = 'Retrieve relevant information from AWS Bedrock Knowledge Base'
+  static readonly toolName = 'retrieve'
+  static readonly toolDescription =
+    'Retrieve information from a knowledge base using Amazon Bedrock Knowledge Base. Use this when you need to get information from a knowledge base.'
+
+  readonly name = RetrieveTool.toolName
+  readonly description = RetrieveTool.toolDescription
+
+  /**
+   * AWS Bedrock tool specification
+   */
+  static readonly toolSpec: Tool['toolSpec'] = {
+    name: RetrieveTool.toolName,
+    description: RetrieveTool.toolDescription,
+    inputSchema: {
+      json: {
+        type: 'object',
+        properties: {
+          knowledgeBaseId: {
+            type: 'string',
+            description: 'The ID of the knowledge base to retrieve from'
+          },
+          query: {
+            type: 'string',
+            description: 'The query to search for in the knowledge base'
+          }
+        },
+        required: ['knowledgeBaseId', 'query']
+      }
+    }
+  } as const
+
+  /**
+   * System prompt description
+   */
+  static readonly systemPromptDescription =
+    'Query knowledge bases for information.\nUse for domain-specific data retrieval.\nOnly use Bedrock Knowledgebase from allowed list: {{knowledgeBases}}'
 
   /**
    * Validate input
