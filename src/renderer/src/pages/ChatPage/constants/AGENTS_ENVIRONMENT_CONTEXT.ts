@@ -1,8 +1,7 @@
 import { ToolState } from '@/types/agent-chat'
 import { isMcpTool, getOriginalMcpToolName } from '@/types/tools'
 
-export const BASIC_ENVIRONMENT_CONTEXT = `
-**<context>**
+export const BASIC_ENVIRONMENT_CONTEXT = `**<context>**
 
 - working directory: {{projectPath}}
 - date: {{date}}
@@ -95,8 +94,7 @@ No tools are currently enabled for this agent.
  * ツールの配列ではなくToolStateの配列を受け取るように変更
  */
 export const getEnvironmentContext = (enabledTools: ToolState[] = []) => {
-  return `
-${BASIC_ENVIRONMENT_CONTEXT}
+  return `${BASIC_ENVIRONMENT_CONTEXT}
 
 ${VISUAL_EXPRESSION_RULES}
 
