@@ -105,7 +105,7 @@ export class InvokeFlowTool extends BaseTool<InvokeFlowInput, InvokeFlowResult> 
    * System prompt description
    */
   static readonly systemPromptDescription =
-    'Execute AWS Bedrock workflows.\nAutomate multi-step processes.'
+    'Execute AWS Bedrock Flows.\nOnly use Bedrock Flows from allowed list: {{bedrockFlows}}'
 
   /**
    * Parse input if it's a string

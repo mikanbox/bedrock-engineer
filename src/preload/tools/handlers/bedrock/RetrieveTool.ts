@@ -76,7 +76,7 @@ export class RetrieveTool extends BaseTool<RetrieveInput, RetrieveResult> {
    * System prompt description
    */
   static readonly systemPromptDescription =
-    'Query knowledge bases for information.\nUse for domain-specific data retrieval.'
+    'Query knowledge bases for information.\nUse for domain-specific data retrieval.\nOnly use Bedrock Knowledgebase from allowed list: {{knowledgeBases}}'
 
   /**
    * Validate input

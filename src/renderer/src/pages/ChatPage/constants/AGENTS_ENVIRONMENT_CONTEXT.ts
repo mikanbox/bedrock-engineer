@@ -5,10 +5,6 @@ export const BASIC_ENVIRONMENT_CONTEXT = `**<context>**
 
 - working directory: {{projectPath}}
 - date: {{date}}
-- allowedCommands: {{allowedCommands}}
-- KnowledgeBases: {{knowledgeBases}}
-- bedrockAgents: {{bedrockAgents}}
-- BedrockFlows: {{flows}}
 
 **</context>**
 `
@@ -21,6 +17,15 @@ If you expect the work will take a long time, create the following file to creat
 {{projectPath}}/.bedrock-engineer/{{TASK_NAME}}_TODO.md
 
 **</todo list handling rule>**`
+
+const PROJECT_RULE = `
+**<project rule>**
+
+- If there are files under {{projectPath}}/.bedrock-engineer/rules, make sure to load them before working on them.
+  This folder contains project-specific rules.
+
+**</project rule>**
+`
 
 const VISUAL_EXPRESSION_RULES = `
 **<visual expression rule>**
@@ -95,6 +100,8 @@ No tools are currently enabled for this agent.
  */
 export const getEnvironmentContext = (enabledTools: ToolState[] = []) => {
   return `${BASIC_ENVIRONMENT_CONTEXT}
+
+${PROJECT_RULE}
 
 ${VISUAL_EXPRESSION_RULES}
 

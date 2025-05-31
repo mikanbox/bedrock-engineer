@@ -114,7 +114,7 @@ export class InvokeBedrockAgentTool extends BaseTool<
    * System prompt description
    */
   static readonly systemPromptDescription =
-    'Interact with AWS Bedrock agents.\nSupport file uploads and session management.'
+    'Interact with AWS Bedrock agents.\nOnly use Bedrock Agents from allowed list: {{bedrockAgents}}'
 
   /**
    * Validate input - matches legacy implementation
