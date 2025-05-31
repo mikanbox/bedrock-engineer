@@ -20,6 +20,20 @@ const HomePage = {
   'Welcome to Bedrock Engineer': 'Welcome to Bedrock Engineer',
   'This is AI assistant of software development tasks':
     'This is AI assistant of software development tasks',
+  'This is AI assistant for business analysis and planning':
+    'This is AI assistant for business analysis and planning',
+  'This is AI assistant for content creation and documentation':
+    'This is AI assistant for content creation and documentation',
+  'This is AI assistant for data analysis and visualization':
+    'This is AI assistant for data analysis and visualization',
+  'This is AI assistant for project management and organization':
+    'This is AI assistant for project management and organization',
+  'This is AI assistant that helps streamline your workflow':
+    'This is AI assistant that helps streamline your workflow',
+  'This is AI assistant for creative problem solving':
+    'This is AI assistant for creative problem solving',
+  'This is AI assistant for research and information gathering':
+    'This is AI assistant for research and information gathering',
   'Start by the menu on the left or': 'Start by the menu on the left or'
 }
 

@@ -5,19 +5,46 @@ import { useTranslation } from 'react-i18next'
 import useSetting from '@renderer/hooks/useSetting'
 import { motion } from 'framer-motion'
 import { useTour } from '@reactour/tour'
+import { useState, useEffect } from 'react'
 
 const HomePage = () => {
   const { t } = useTranslation()
   const { awsRegion, awsAccessKeyId, awsSecretAccessKey } = useSetting()
   const isInitLoad = !awsRegion || !awsAccessKeyId || !awsSecretAccessKey
-  const textanimate = (text: string, delay?: number) =>
+
+  // Array of message keys for random selection
+  const messageKeys = [
+    'This is AI assistant of software development tasks',
+    'This is AI assistant for business analysis and planning',
+    'This is AI assistant for content creation and documentation',
+    'This is AI assistant for data analysis and visualization',
+    'This is AI assistant for project management and organization',
+    'This is AI assistant that helps streamline your workflow',
+    'This is AI assistant for creative problem solving',
+    'This is AI assistant for research and information gathering'
+  ]
+
+  // State for the current message index
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0)
+
+  // Cycle through messages every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % messageKeys.length)
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [messageKeys.length])
+
+  const textanimate = (text: string, delay?: number, animationKey?: number) =>
     text.split('').map((word, index) => {
+      const duration = (animationKey || 0) > 0 ? 1.0 : 0.2
       return (
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.2, delay: (delay || 0) + index * 0.01 }}
-          key={index}
+          transition={{ duration, delay: (delay || 0) + index * 0.01 }}
+          key={`${animationKey || 0}-${index}`}
         >
           {word}
         </motion.span>
@@ -42,7 +69,7 @@ const HomePage = () => {
 
       <div className="flex flex-col gap-2 justify-center align-center items-center">
         <span className="text-gray-400 text-sm">
-          {textanimate(t('This is AI assistant of software development tasks'), 0.5)}
+          {textanimate(t(messageKeys[currentMessageIndex]), 0.5, currentMessageIndex)}
         </span>
         <motion.span
           className="text-gray-400 text-xs"

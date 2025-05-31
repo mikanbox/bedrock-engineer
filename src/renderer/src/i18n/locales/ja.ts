@@ -20,6 +20,20 @@ const HomePage = {
   'Welcome to Bedrock Engineer': 'Bedrock Engineer にようこそ',
   'This is AI assistant of software development tasks':
     '私は、ソフトウェア開発タスクに特化したAIアシスタントです',
+  'This is AI assistant for business analysis and planning':
+    '私は、ビジネス分析と計画立案に特化したAIアシスタントです',
+  'This is AI assistant for content creation and documentation':
+    '私は、コンテンツ作成とドキュメント作成に特化したAIアシスタントです',
+  'This is AI assistant for data analysis and visualization':
+    '私は、データ分析と可視化に特化したAIアシスタントです',
+  'This is AI assistant for project management and organization':
+    '私は、プロジェクト管理と組織運営に特化したAIアシスタントです',
+  'This is AI assistant that helps streamline your workflow':
+    '私は、あなたのワークフローを効率化するAIアシスタントです',
+  'This is AI assistant for creative problem solving':
+    '私は、創造的な問題解決に特化したAIアシスタントです',
+  'This is AI assistant for research and information gathering':
+    '私は、研究と情報収集に特化したAIアシスタントです',
   'Start by the menu on the left or': '左のメニューから開始するか、次のショートカットが利用できます'
 }
 
