@@ -87,6 +87,43 @@ The distributed map processor repeats the batch of these rows and uses the Lambd
 After that, send a message to the SQS queue for each delayed order.`
 }
 
+const SpeakPage = {
+  'Nova Sonic Chat': 'Nova Sonic Chat',
+  'Voice conversation with AI': 'Voice conversation with AI',
+  'Voice Conversation': 'Voice Conversation',
+  'Start speaking to begin the conversation': 'Start speaking to begin the conversation',
+  'Ready to chat': 'Ready to chat',
+  'Click "Start Speaking" to begin your voice conversation':
+    'Click "Start Speaking" to begin your voice conversation',
+  'Conversation in progress...': 'Conversation in progress...',
+  'Conversation paused': 'Conversation paused',
+  'Scroll to bottom': 'Scroll to bottom',
+  'System Prompt': 'System Prompt',
+  'Enter system prompt for the AI assistant...': 'Enter system prompt for the AI assistant...',
+  'Disconnect to edit the system prompt': 'Disconnect to edit the system prompt',
+  'This prompt will be sent when you connect to start the conversation':
+    'This prompt will be sent when you connect to start the conversation',
+  'Connection error. Please try reconnecting.': 'Connection error. Please try reconnecting.',
+  Disconnected: 'Disconnected',
+  'Connecting...': 'Connecting...',
+  Connected: 'Connected',
+  Ready: 'Ready',
+  'Recording...': 'Recording...',
+  'Processing...': 'Processing...',
+  Error: 'Error',
+  Connect: 'Connect',
+  Disconnect: 'Disconnect',
+  'Start Speaking': 'Start Speaking',
+  'Stop Speaking': 'Stop Speaking',
+  Recording: 'Recording',
+  Processing: 'Processing',
+  Listening: 'Listening',
+  Thinking: 'Thinking',
+  'Listening...': 'Listening...',
+  'Thinking...': 'Thinking...',
+  'Edit System Prompt': 'Edit System Prompt'
+}
+
 const WebsiteGeneratorPage = {
   addRecommend: 'Considering additional recommended features',
   ecSiteTitle: 'EC site for plants',
@@ -220,6 +257,7 @@ const en = {
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.en,
+  ...SpeakPage,
   ...WebsiteGeneratorPage,
   ...iamPolicy.en,
   ...notificationSettings.en,

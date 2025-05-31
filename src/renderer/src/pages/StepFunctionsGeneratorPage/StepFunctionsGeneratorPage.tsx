@@ -97,7 +97,7 @@ function StepFunctionsGeneratorPage() {
   const { Modal: SystemPromptModal, openModal: openSystemPromptModal } = useModal()
 
   return (
-    <div className={'flex flex-col h-[calc(100vh-11rem)] overflow-y-auto z-10'}>
+    <div className={'flex flex-col p-3 h-[calc(100vh-11rem)] overflow-y-auto z-10'}>
       <SystemPromptModal header="SYSTEM PROMPT" size="7xl">
         <div className="dark:text-white">
           <MD>{systemPrompt}</MD>

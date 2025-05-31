@@ -94,6 +94,44 @@ DynamoDB または SNS を使用する場合は、Lambda を使用せず、AWS �
 その後、注文ごとに SQS キューにメッセージを送信します。`
 }
 
+const SpeakPage = {
+  'Nova Sonic Chat': 'Nova Sonic チャット',
+  'Voice conversation with AI': 'AIとの音声会話',
+  'Voice Conversation': '音声会話',
+  'Start speaking to begin the conversation': '話しかけて会話を開始してください',
+  'Ready to chat': 'チャット準備完了',
+  'Click "Start Speaking" to begin your voice conversation':
+    '「話し始める」をクリックして音声会話を開始してください',
+  'Conversation in progress...': '会話中...',
+  'Conversation paused': '会話一時停止',
+  'Scroll to bottom': '最下部にスクロール',
+  'System Prompt': 'システムプロンプト',
+  'Enter system prompt for the AI assistant...':
+    'AIアシスタント用のシステムプロンプトを入力してください...',
+  'Disconnect to edit the system prompt': 'システムプロンプトを編集するには切断してください',
+  'This prompt will be sent when you connect to start the conversation':
+    'このプロンプトは接続時に会話を開始するために送信されます',
+  'Connection error. Please try reconnecting.': '接続エラーです。再接続してください。',
+  Disconnected: '切断済み',
+  'Connecting...': '接続中...',
+  Connected: '接続済み',
+  Ready: '準備完了',
+  'Recording...': '録音中...',
+  'Processing...': '処理中...',
+  Error: 'エラー',
+  Connect: '接続',
+  Disconnect: '切断',
+  'Start Speaking': '話し始める',
+  'Stop Speaking': '話を止める',
+  Recording: '録音中',
+  Processing: '処理中',
+  Listening: '聞き取り中',
+  Thinking: '考え中',
+  'Listening...': '聞き取り中...',
+  'Thinking...': '考え中...',
+  'Edit System Prompt': 'システムプロンプト編集'
+}
+
 const WebsiteGeneratorPage = {
   addRecommend: 'おすすめの追加機能を考え中',
   ecSiteTitle: '観葉植物のECサイト',
@@ -245,6 +283,7 @@ const ja = {
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.ja,
+  ...SpeakPage,
   ...WebsiteGeneratorPage,
   ...iamPolicy.ja,
   ...notificationSettings.ja,

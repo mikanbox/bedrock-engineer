@@ -139,7 +139,7 @@ export default function ChatPage() {
 
   return (
     <React.Fragment>
-      <div className="flex h-[calc(100vh-11rem)]">
+      <div className="flex p-3 h-[calc(100vh-11rem)]">
         <div className="flex-1 flex flex-col">
           {/* ヘッダー - 固定 */}
           <div className="flex justify-between items-center">
