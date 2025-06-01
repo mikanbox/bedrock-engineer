@@ -123,7 +123,7 @@ class AudioPlayerProcessor extends AudioWorkletProcessor {
   }
 
   process(
-    inputs: Float32Array[][],
+    _inputs: Float32Array[][],
     outputs: Float32Array[][],
     _parameters: Record<string, Float32Array>
   ): boolean {

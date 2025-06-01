@@ -619,42 +619,6 @@ export class NovaSonicBidirectionalStreamClient {
     session.queueSignal.next()
   }
 
-  // Set up initial events for a session
-  private setupSessionStartEvent(sessionId: string): void {
-    console.log(`Setting up initial events for session ${sessionId}...`)
-    const session = this.activeSessions.get(sessionId)
-    if (!session) return
-
-    // Session start event
-    this.addEventToSessionQueue(sessionId, {
-      event: {
-        sessionStart: {
-          inferenceConfiguration: session.inferenceConfig
-        }
-      }
-    })
-  }
-
-  // Prepend SessionStart event to ensure it's first in the queue
-  private prependSessionStartEvent(sessionId: string): void {
-    console.log(`Prepending SessionStart event for session ${sessionId}...`)
-    const session = this.activeSessions.get(sessionId)
-    if (!session) return
-
-    // SessionStart event must be first, so prepend it to the queue
-    const sessionStartEvent = {
-      event: {
-        sessionStart: {
-          inferenceConfiguration: session.inferenceConfig
-        }
-      }
-    }
-
-    this.updateSessionActivity(sessionId)
-    session.queue.unshift(sessionStartEvent) // Prepend to front of queue
-    session.queueSignal.next()
-  }
-
   // Rebuild queue with SessionStart as the first event
   private rebuildQueueWithSessionStart(sessionId: string): void {
     console.log(`Rebuilding queue with SessionStart first for session ${sessionId}...`)
