@@ -16,7 +16,6 @@ import type { AwsCredentialIdentity } from '@smithy/types'
 import { BedrockAgent } from '@/types/agent'
 import { AgentCategory } from '@/types/agent-chat'
 import { getToolsForCategory } from '../constants/defaultToolSets'
-import isEqual from 'lodash/isEqual'
 import { Tool } from '@aws-sdk/client-bedrock-runtime'
 import { CodeInterpreterContainerConfig } from 'src/preload/tools/handlers/interpreter/types'
 import { getEnvironmentContext } from '@renderer/pages/ChatPage/constants/AGENTS_ENVIRONMENT_CONTEXT'
@@ -469,7 +468,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const existingAgent = savedAgents.find((agent) => agent.id === defaultAgent.id)
       processedIds.add(defaultAgent.id)
 
-      // プロパティが完全に一致するかチェック
+      // プロパティが完全に一致するかチェック（ツール設定は除外してユーザーのカスタマイズを保持）
       const isIdentical =
         existingAgent &&
         // 基本情報の比較
@@ -478,13 +477,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         existingAgent.system === defaultAgent.system &&
         existingAgent.icon === defaultAgent.icon &&
         existingAgent.iconColor === defaultAgent.iconColor &&
-        existingAgent.category === defaultAgent.category &&
-        // 配列の比較（lodashのisEqualを使用）
-        isEqual(existingAgent.scenarios, defaultAgent.scenarios) &&
-        isEqual(existingAgent.tools, defaultAgent.tools) &&
-        isEqual(existingAgent.allowedCommands, defaultAgent.allowedCommands) &&
-        isEqual(existingAgent.bedrockAgents, defaultAgent.bedrockAgents) &&
-        isEqual(existingAgent.knowledgeBases, defaultAgent.knowledgeBases)
+        existingAgent.category === defaultAgent.category
 
       if (existingAgent && !isIdentical) {
         // IDが一致するが内容が異なる場合は、デフォルトエージェントの内容で更新
