@@ -15,6 +15,7 @@ export const SpeakPage: React.FC = () => {
     isConnected,
     isRecording,
     thinkingState,
+    toolExecutionState,
     chat,
     connect,
     startRecording,
@@ -58,12 +59,12 @@ export const SpeakPage: React.FC = () => {
     isConnected && (status === 'ready' || status === 'connected') && !isRecording
   const canStopRecording = isRecording
 
-  // // Show chat when there are messages
-  // useEffect(() => {
-  //   if (chat.history.length > 0 && !showChat) {
-  //     setShowChat(true)
-  //   }
-  // }, [chat.history.length, showChat])
+  // Show chat when there are messages
+  useEffect(() => {
+    if (chat.history.length > 0 && !showChat) {
+      setShowChat(true)
+    }
+  }, [chat.history.length, showChat])
 
   if (showChat) {
     // Show full chat interface when needed
@@ -111,6 +112,7 @@ export const SpeakPage: React.FC = () => {
               <ChatDisplay
                 chat={chat}
                 thinkingState={thinkingState}
+                toolExecutionState={toolExecutionState}
                 className="h-full"
                 audioControls={
                   <div className="flex items-center justify-center space-x-4 p-4">

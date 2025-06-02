@@ -18,12 +18,25 @@ export interface ThinkingState {
   waitingForAssistantResponse: boolean
 }
 
+export interface ToolExecutionState {
+  isExecuting: boolean
+  currentTool?: {
+    toolName: string
+    toolUseId: string
+  }
+  lastResult?: {
+    toolName: string
+    result: any
+  }
+}
+
 export interface UseSpeakChatReturn {
   // Status
   status: SpeakChatStatus
   isConnected: boolean
   isRecording: boolean
   thinkingState: ThinkingState
+  toolExecutionState: ToolExecutionState
 
   // Chat history
   chat: ChatHistory
@@ -51,6 +64,9 @@ export function useSpeakChat(serverUrl?: string): UseSpeakChatReturn {
   const [thinkingState, setThinkingState] = useState<ThinkingState>({
     waitingForUserTranscription: false,
     waitingForAssistantResponse: false
+  })
+  const [toolExecutionState, setToolExecutionState] = useState<ToolExecutionState>({
+    isExecuting: false
   })
 
   // Session management
@@ -226,6 +242,28 @@ export function useSpeakChat(serverUrl?: string): UseSpeakChatReturn {
       setStatus('ready')
     },
 
+    toolUse: (data) => {
+      console.log('Tool use started:', data)
+      setToolExecutionState({
+        isExecuting: true,
+        currentTool: {
+          toolName: data.toolName,
+          toolUseId: data.toolUseId
+        }
+      })
+    },
+
+    toolResult: (data) => {
+      console.log('Tool result received:', data)
+      setToolExecutionState({
+        isExecuting: false,
+        lastResult: {
+          toolName: data.toolName || 'unknown',
+          result: data.result
+        }
+      })
+    },
+
     error: (error) => {
       console.error('Socket error:', error)
       setStatus('error')
@@ -366,6 +404,7 @@ export function useSpeakChat(serverUrl?: string): UseSpeakChatReturn {
     isConnected: socket.status === 'connected',
     isRecording: audioRecorder.isRecording,
     thinkingState,
+    toolExecutionState,
     chat,
     connect,
     disconnect,

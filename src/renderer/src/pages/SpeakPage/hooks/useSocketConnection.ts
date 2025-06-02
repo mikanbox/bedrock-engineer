@@ -10,6 +10,8 @@ export interface SocketEvents {
   contentEnd: (data: any) => void
   streamComplete: () => void
   error: (error: any) => void
+  toolUse: (data: any) => void
+  toolResult: (data: any) => void
 }
 
 export interface UseSocketConnectionReturn {
@@ -79,8 +81,18 @@ export function useSocketConnection(
       })
 
       socket.on('audioOutput', (data) => {
-        console.log('audioOutput received')
+        console.debug('audioOutput received')
         events?.audioOutput?.(data)
+      })
+
+      socket.on('toolUse', (data) => {
+        console.log('toolUse received:', data)
+        events?.toolUse?.(data)
+      })
+
+      socket.on('toolResult', (data) => {
+        console.log('toolResult received:', data)
+        events?.toolResult?.(data)
       })
 
       socket.on('contentEnd', (data) => {

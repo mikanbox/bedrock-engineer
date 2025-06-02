@@ -205,8 +205,8 @@ const bedrockClient = new NovaSonicBidirectionalStreamClient({
     maxConcurrentStreams: 10
   },
   clientConfig: {
-    region: process.env.AWS_REGION || 'us-east-1',
-    credentials: fromIni({ profile: AWS_PROFILE_NAME })
+    region: process.env.AWS_REGION || 'us-east-1', // TODO
+    credentials: fromIni({ profile: AWS_PROFILE_NAME }) // TODO
   }
 })
 
@@ -269,7 +269,6 @@ io.on('connection', (socket) => {
     })
 
     session.onEvent('audioOutput', (data) => {
-      console.log('Audio output received, sending to client')
       socket.emit('audioOutput', data)
     })
 
