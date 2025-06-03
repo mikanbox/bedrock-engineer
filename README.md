@@ -45,32 +45,50 @@ If a configuration file error occurs when starting the application, please check
 
 `/Users/{{username}}/Library/Application Support/bedrock-engineer/config.json`
 
+### Resolving Duplicate Permission Dialogs
+
+If you experience duplicate OS permission dialogs (such as microphone access), you can resolve this issue by running the following command after building and installing the application to add an ad-hoc signature:
+
+````bash
+sudo codesign --force --deep --sign - "/Applications/Bedrock Engineer.app"
+```
+
+This command applies an ad-hoc code signature to the application, which helps prevent duplicate system permission dialogs.
+
 </details>
 
 ### Build
 
 First, install the npm modules:
 
-```
+````
+
 npm install
+
 ```
 
 Then, build application package
 
 ```
+
 npm run build:mac
+
 ```
 
 or
 
 ```
+
 npm run build:win
+
 ```
 
 or
 
 ```
+
 npm run build:linux
+
 ```
 
 Use the application stored in the `dist` directory.
@@ -265,3 +283,4 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 This library is licensed under the MIT-0 License. See the LICENSE file.
 
 This software uses [Lottie Files](https://lottiefiles.com/free-animation/robot-futuristic-ai-animated-xyiArJ2DEF).
+```

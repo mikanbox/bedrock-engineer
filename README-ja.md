@@ -45,6 +45,16 @@ MacOS に最適化されていますが、Windows, Linux OS でもビルドし�
 
 `/Users/{{username}}/Library/Application Support/bedrock-engineer/config.json`
 
+### 重複した許可ダイヤログの解決
+
+OS の許可ダイヤログ（マイクロフォンアクセスなど）が重複して表示される場合、アプリケーションをビルド・インストールした後に以下のコマンドを実行してアドホック署名を追加することで、この問題を解決できます：
+
+```bash
+sudo codesign --force --deep --sign - "/Applications/Bedrock Engineer.app"
+```
+
+このコマンドは、アプリケーションにアドホックコード署名を適用し、システムの許可ダイヤログが重複して表示される問題を防ぎます。
+
 </details>
 
 ### ビルド

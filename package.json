@@ -25,6 +25,8 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac --universal",
+    "sign": "codesign --force --deep --sign - /path/to/YourApp.dmg",
+    "sign:mac": "codesign --force --deep --sign - \"/Applications/Bedrock Engineer.app\"",
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
@@ -96,7 +98,7 @@
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "10.4.20",
     "dotenv": "^16.4.5",
-    "electron": "31.0.2",
+    "electron": "36.3.2",
     "electron-builder": "24.13.3",
     "electron-vite": "3.1.0",
     "eslint": "8.57.0",

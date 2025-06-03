@@ -249,23 +249,6 @@ app.whenReady().then(async () => {
     userDataPath
   })
 
-  // Request microphone access on macOS to prevent repeated permission dialogs
-  // if (process.platform === 'darwin') {
-  //   try {
-  //     const microphoneAccess = await systemPreferences.askForMediaAccess('microphone')
-  //     log.info('Microphone access request completed', {
-  //       granted: microphoneAccess
-  //     })
-  //     if (!microphoneAccess) {
-  //       log.warn('Microphone access was denied. Voice features may not work properly.')
-  //     }
-  //   } catch (error) {
-  //     log.error('Failed to request microphone access', {
-  //       error: error instanceof Error ? error.message : String(error)
-  //     })
-  //   }
-  // }
-
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
