@@ -57,9 +57,15 @@ const DEFAULT_SYSTEM_PROMPT =
   'dialog exchanging the transcripts of a natural real-time conversation. Keep your responses short, ' +
   'generally two or three sentences for chatty scenarios.'
 
-export function useSpeakChat(serverUrl?: string): UseSpeakChatReturn {
+export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string): UseSpeakChatReturn {
   const [status, setStatus] = useState<SpeakChatStatus>('disconnected')
-  const [systemPrompt, setSystemPrompt] = useState<string>(DEFAULT_SYSTEM_PROMPT)
+
+  // エージェントのシステムプロンプトを音声会話用に調整
+  const enhancedAgentPrompt = agentSystemPrompt
+    ? `${agentSystemPrompt}\n\nAdditional instructions for voice conversation: Keep your responses short and natural, generally two or three sentences for chatty scenarios. Speak as if you are having a real-time conversation.`
+    : DEFAULT_SYSTEM_PROMPT
+
+  const [systemPrompt, setSystemPrompt] = useState<string>(enhancedAgentPrompt)
   const [chat, setChat] = useState<ChatHistory>({ history: [] })
   const [thinkingState, setThinkingState] = useState<ThinkingState>({
     waitingForUserTranscription: false,
@@ -83,6 +89,14 @@ export function useSpeakChat(serverUrl?: string): UseSpeakChatReturn {
   useEffect(() => {
     chatRef.current = chat
   }, [chat])
+
+  // Update system prompt when agent system prompt changes
+  useEffect(() => {
+    const enhancedPrompt = agentSystemPrompt
+      ? `${agentSystemPrompt}\n\nAdditional instructions for voice conversation: Keep your responses short and natural, generally two or three sentences for chatty scenarios. Speak as if you are having a real-time conversation.`
+      : DEFAULT_SYSTEM_PROMPT
+    setSystemPrompt(enhancedPrompt)
+  }, [agentSystemPrompt])
 
   // Initialize chat history manager
   useEffect(() => {

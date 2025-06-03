@@ -16,9 +16,7 @@ import {
   DefaultAudioInputConfiguration,
   DefaultAudioOutputConfiguration,
   DefaultSystemPrompt,
-  DefaultTextConfiguration,
-  DefaultToolSchema,
-  WeatherToolSchema
+  DefaultTextConfiguration
 } from './consts'
 import { SonicToolExecutor } from './tool-executor'
 import { ToolInput } from '../../../types/tools'
@@ -685,25 +683,6 @@ export class NovaSonicBidirectionalStreamClient {
           },
           toolConfiguration: {
             tools: [
-              {
-                toolSpec: {
-                  name: 'getDateAndTimeTool',
-                  description: 'Get information about the current date and time.',
-                  inputSchema: {
-                    json: DefaultToolSchema
-                  }
-                }
-              },
-              {
-                toolSpec: {
-                  name: 'getWeatherTool',
-                  description:
-                    'Get the current weather for a given location, based on its WGS84 coordinates.',
-                  inputSchema: {
-                    json: WeatherToolSchema
-                  }
-                }
-              },
               {
                 toolSpec: {
                   name: 'tavilySearch',

@@ -4,11 +4,13 @@ import VoiceAILottie from '../WebsiteGeneratorPage/VoiceAI.lottie'
 import { ChatDisplay } from './components/ChatDisplay'
 import { CompactThinkingIndicator } from './components/ThinkingIndicator'
 import { useSystemPromptModal } from './modals/useSystemPromptModal'
+import { useSettings } from '@renderer/contexts/SettingsContext'
 
 const API_ENDPOINT = window.store.get('apiEndpoint')
 
 export const SpeakPage: React.FC = () => {
   const [showChat, setShowChat] = useState(false)
+  const { currentAgentSystemPrompt } = useSettings()
 
   const {
     status,
@@ -22,7 +24,7 @@ export const SpeakPage: React.FC = () => {
     stopRecording,
     systemPrompt,
     setSystemPrompt
-  } = useSpeakChat(API_ENDPOINT)
+  } = useSpeakChat(API_ENDPOINT, currentAgentSystemPrompt)
 
   // Auto-connect when component mounts
   useEffect(() => {
