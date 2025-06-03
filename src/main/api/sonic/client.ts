@@ -16,9 +16,9 @@ import { take } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 import {
   DefaultAudioInputConfiguration,
-  DefaultAudioOutputConfiguration,
   DefaultSystemPrompt,
-  DefaultTextConfiguration
+  DefaultTextConfiguration,
+  getAudioOutputConfiguration
 } from './consts'
 import { SonicToolExecutor } from './tool-executor'
 import { ToolInput } from '../../../types/tools'
@@ -46,8 +46,8 @@ export class StreamSession {
     return this // For chaining
   }
 
-  public async setupPromptStart(tools?: any[]): Promise<void> {
-    this.client.setupPromptStartEvent(this.sessionId, tools)
+  public async setupPromptStart(tools?: any[], voiceId?: string): Promise<void> {
+    this.client.setupPromptStartEvent(this.sessionId, tools, voiceId)
   }
 
   public async setupSystemPrompt(
@@ -938,7 +938,7 @@ export class NovaSonicBidirectionalStreamClient {
     return convertedTools
   }
 
-  public setupPromptStartEvent(sessionId: string, tools?: any[]): void {
+  public setupPromptStartEvent(sessionId: string, tools?: any[], voiceId?: string): void {
     console.log(`Setting up prompt start event for session ${sessionId}...`)
     const session = this.activeSessions.get(sessionId)
     if (!session) return
@@ -946,6 +946,10 @@ export class NovaSonicBidirectionalStreamClient {
     // ツール設定を動的に生成
     const novaSonicTools = this.convertToolsToNovaSonicFormat(tools)
     console.log(`Configured ${novaSonicTools.length} tools for Nova Sonic session ${sessionId}`)
+
+    // 音声設定を動的に取得
+    const audioOutputConfig = getAudioOutputConfiguration(voiceId)
+    console.log(`Using voice: ${audioOutputConfig.voiceId} for session ${sessionId}`)
 
     // Prompt start event
     this.addEventToSessionQueue(sessionId, {
@@ -955,7 +959,7 @@ export class NovaSonicBidirectionalStreamClient {
           textOutputConfiguration: {
             mediaType: 'text/plain'
           },
-          audioOutputConfiguration: DefaultAudioOutputConfiguration,
+          audioOutputConfiguration: audioOutputConfig,
           toolUseOutputConfiguration: {
             mediaType: 'application/json'
           },

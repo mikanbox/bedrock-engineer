@@ -204,6 +204,10 @@ export interface SettingsContextType {
   // Ignore Files Settings
   ignoreFiles: string[]
   setIgnoreFiles: (files: string[]) => void
+
+  // Voice Settings
+  selectedVoiceId: string
+  setSelectedVoiceId: (voiceId: string) => void
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
@@ -325,6 +329,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     'node_modules',
     '.github'
   ])
+
+  // Voice Settings
+  const [selectedVoiceId, setStateSelectedVoiceId] = useState<string>('amy')
 
   // Initialize all settings
   useEffect(() => {
@@ -563,6 +570,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // 設定を保存
     window.store.set('agentChatConfig', agentChatConfig)
+
+    // Load Voice Settings
+    const storedVoiceId = window.store.get('selectedVoiceId') as string
+    if (storedVoiceId && typeof storedVoiceId === 'string') {
+      setStateSelectedVoiceId(storedVoiceId)
+    }
   }, [])
 
   useEffect(() => {
@@ -1379,6 +1392,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('planMode', enabled)
   }, [])
 
+  const setSelectedVoiceId = useCallback((voiceId: string) => {
+    setStateSelectedVoiceId(voiceId)
+    window.store.set('selectedVoiceId', voiceId)
+  }, [])
+
   const value = {
     // Advanced Settings
     sendMsgKey,
@@ -1513,7 +1531,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Ignore Files Settings
     ignoreFiles,
-    setIgnoreFiles
+    setIgnoreFiles,
+
+    // Voice Settings
+    selectedVoiceId,
+    setSelectedVoiceId
   }
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>

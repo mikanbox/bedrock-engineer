@@ -61,7 +61,8 @@ const DEFAULT_SYSTEM_PROMPT =
 export function useSpeakChat(
   serverUrl?: string,
   agentSystemPrompt?: string,
-  agentTools?: ToolState[]
+  agentTools?: ToolState[],
+  selectedVoiceId?: string
 ): UseSpeakChatReturn {
   const [status, setStatus] = useState<SpeakChatStatus>('disconnected')
 
@@ -313,7 +314,7 @@ export function useSpeakChat(
       const enabledTools = agentTools?.filter((tool) => tool.enabled) || []
 
       // Send events in sequence
-      socket.sendPromptStart(enabledTools)
+      socket.sendPromptStart(enabledTools, selectedVoiceId)
       socket.sendSystemPrompt(systemPrompt)
       socket.sendAudioStart()
 

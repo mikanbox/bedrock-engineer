@@ -121,7 +121,18 @@ const SpeakPage = {
   Thinking: 'Thinking',
   'Listening...': 'Listening...',
   'Thinking...': 'Thinking...',
-  'Edit System Prompt': 'Edit System Prompt'
+  'Edit System Prompt': 'Edit System Prompt',
+  // Voice Selection
+  'Select Voice': 'Select Voice',
+  'Start New Chat': 'Start New Chat',
+  Cancel: 'Cancel',
+  // Voice Descriptions
+  'voice.tiffany.description': 'Warm and friendly',
+  'voice.tiffany.characteristics': 'Approachable and empathetic, creates comfortable conversations',
+  'voice.amy.description': 'Calm and composed',
+  'voice.amy.characteristics': 'Thoughtful and measured, provides clear and balanced responses',
+  'voice.matthew.description': 'Confident and authoritative',
+  'voice.matthew.characteristics': 'Knowledgeable, professional, and dependable impression'
 }
 
 const WebsiteGeneratorPage = {

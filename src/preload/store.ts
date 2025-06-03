@@ -149,6 +149,9 @@ type StoreScheme = {
 
   /** YAML形式から読み込まれた共有エージェントの一覧 */
   sharedAgents?: CustomAgent[]
+
+  /** Nova Sonic音声チャットで使用する音声ID */
+  selectedVoiceId?: string
 }
 
 const electronStore = new Store<StoreScheme>()
@@ -274,6 +277,12 @@ const init = () => {
       cpuLimit: 0.5,
       timeout: 30
     })
+  }
+
+  // Initialize selectedVoiceId if not present
+  const selectedVoiceId = electronStore.get('selectedVoiceId')
+  if (!selectedVoiceId) {
+    electronStore.set('selectedVoiceId', 'amy') // デフォルトはAmy
   }
 }
 

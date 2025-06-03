@@ -45,8 +45,11 @@ export const DefaultSystemPrompt =
 
 export const DefaultAudioOutputConfiguration = {
   ...DefaultAudioInputConfiguration,
-  sampleRateHertz: 24000,
-  // voiceId: 'tiffany'
-  // voiceId: 'matthew'
-  voiceId: 'amy'
+  sampleRateHertz: 24000
 }
+
+// 音声設定を取得する関数
+export const getAudioOutputConfiguration = (voiceId?: string) => ({
+  ...DefaultAudioOutputConfiguration,
+  voiceId: voiceId || 'amy' // デフォルトはAmy
+})

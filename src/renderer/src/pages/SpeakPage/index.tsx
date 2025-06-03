@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSpeakChat } from './hooks/useSpeakChat'
-import VoiceAILottie from '../WebsiteGeneratorPage/VoiceAI.lottie'
+import { VoiceAILottie } from '@renderer/components/VoiceAI'
 import { ChatDisplay } from './components/ChatDisplay'
 import { useSystemPromptModal } from '../ChatPage/modals/useSystemPromptModal'
 import { useAgentSettingsModal } from '../ChatPage/modals/useAgentSettingsModal'
@@ -9,6 +9,8 @@ import { ViewToggleButton } from '@renderer/components/ViewToggleButton'
 import { useSettings } from '@renderer/contexts/SettingsContext'
 import useSetting from '@renderer/hooks/useSetting'
 import { SpeakChatStatus, ThinkingState, ToolExecutionState } from './hooks/useSpeakChat'
+import { VoiceSelector } from './components/VoiceSelector'
+import { VoiceId } from './constants/voices'
 
 const API_ENDPOINT = window.store.get('apiEndpoint')
 
@@ -21,13 +23,15 @@ interface PageHeaderProps {
   selectedAgentId: string
   onOpenAgentSettings: () => void
   onOpenSystemPrompt: () => void
+  onOpenVoiceSelector: () => void
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
   agents,
   selectedAgentId,
   onOpenAgentSettings,
-  onOpenSystemPrompt
+  onOpenSystemPrompt,
+  onOpenVoiceSelector
 }) => (
   <div className="flex justify-between items-center">
     <div className="flex items-center gap-4">
@@ -38,6 +42,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       />
     </div>
     <div className="flex items-center gap-2">
+      <span
+        className="text-xs text-gray-400 font-thin cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
+        onClick={onOpenVoiceSelector}
+      >
+        VOICE
+      </span>
       <span
         className="text-xs text-gray-400 font-thin cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
         onClick={onOpenSystemPrompt}
@@ -75,10 +85,10 @@ const RecordingButton: React.FC<RecordingButtonProps> = ({
       <button
         onClick={onStop}
         disabled={!canStopRecording}
-        className={`${sizeClass} rounded-full flex items-center justify-center font-medium transition-all transform hover:scale-105 shadow-lg ${
+        className={`${sizeClass} rounded-full flex items-center justify-center font-medium transition-colors border ${
           canStopRecording
-            ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
-            : 'bg-gray-400 cursor-not-allowed text-white'
+            ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+            : 'bg-gray-100 cursor-not-allowed text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700'
         }`}
         title="Stop Recording"
       >
@@ -93,12 +103,12 @@ const RecordingButton: React.FC<RecordingButtonProps> = ({
     <button
       onClick={onStart}
       disabled={!canStartRecording}
-      className={`${sizeClass} rounded-full flex items-center justify-center font-medium transition-all transform hover:scale-105 shadow-lg ${
+      className={`${sizeClass} rounded-full flex items-center justify-center font-medium transition-colors border ${
         canStartRecording
           ? size === 'large'
-            ? 'bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/50 dark:hover:bg-blue-800/60 dark:text-blue-200'
-            : 'bg-green-500 hover:bg-green-600 text-white'
-          : 'bg-gray-400 cursor-not-allowed text-white'
+            ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+            : 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/30 dark:text-green-300 dark:border-green-800'
+          : 'bg-gray-100 cursor-not-allowed text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700'
       }`}
       title={status === 'processing' ? 'Processing...' : 'Start Recording'}
     >
@@ -311,7 +321,14 @@ const DetailView: React.FC<DetailViewProps> = ({
 
 export const SpeakPage: React.FC = () => {
   const [showChat, setShowChat] = useState(false)
-  const { currentAgentSystemPrompt, selectedAgentId, getAgentTools } = useSettings()
+  const [showVoiceSelector, setShowVoiceSelector] = useState(false)
+  const {
+    currentAgentSystemPrompt,
+    selectedAgentId,
+    getAgentTools,
+    selectedVoiceId,
+    setSelectedVoiceId
+  } = useSettings()
   const { agents, setSelectedAgentId } = useSetting()
 
   // 現在のエージェントのツール情報を取得
@@ -325,10 +342,11 @@ export const SpeakPage: React.FC = () => {
     toolExecutionState,
     chat,
     connect,
+    disconnect,
     startRecording,
     stopRecording,
     systemPrompt
-  } = useSpeakChat(API_ENDPOINT, currentAgentSystemPrompt, agentTools)
+  } = useSpeakChat(API_ENDPOINT, currentAgentSystemPrompt, agentTools, selectedVoiceId)
 
   // Auto-connect when component mounts
   useEffect(() => {
@@ -377,6 +395,31 @@ export const SpeakPage: React.FC = () => {
     stopRecording()
   }
 
+  // Voice selector handlers
+  const handleOpenVoiceSelector = () => {
+    setShowVoiceSelector(true)
+  }
+
+  const handleCloseVoiceSelector = () => {
+    setShowVoiceSelector(false)
+  }
+
+  const handleSelectVoice = (voiceId: VoiceId) => {
+    setSelectedVoiceId(voiceId)
+  }
+
+  const handleStartNewChatWithVoice = () => {
+    // チャット履歴をクリアして新しいチャットを開始
+    if (isConnected) {
+      disconnect()
+    }
+    setShowVoiceSelector(false)
+    // 少し遅延してから接続を開始
+    setTimeout(() => {
+      connect()
+    }, 100)
+  }
+
   const canStartRecording =
     isConnected && (status === 'ready' || status === 'connected') && !isRecording
   const canStopRecording = isRecording
@@ -400,6 +443,7 @@ export const SpeakPage: React.FC = () => {
           selectedAgentId={selectedAgentId}
           onOpenAgentSettings={openAgentSettingsModal}
           onOpenSystemPrompt={handleOpenSystemPromptModal}
+          onOpenVoiceSelector={handleOpenVoiceSelector}
         />
 
         {/* Main Content */}
@@ -421,6 +465,15 @@ export const SpeakPage: React.FC = () => {
           onClose={handleCloseAgentSettingsModal}
           selectedAgentId={selectedAgentId}
           onSelectAgent={setSelectedAgentId}
+        />
+
+        {/* Voice Selector Modal */}
+        <VoiceSelector
+          isOpen={showVoiceSelector}
+          selectedVoiceId={selectedVoiceId as VoiceId}
+          onSelectVoice={handleSelectVoice}
+          onStartNewChat={handleStartNewChatWithVoice}
+          onCancel={handleCloseVoiceSelector}
         />
 
         {/* Fixed Elements */}

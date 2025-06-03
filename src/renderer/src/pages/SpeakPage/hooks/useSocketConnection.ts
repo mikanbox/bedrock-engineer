@@ -18,7 +18,7 @@ export interface UseSocketConnectionReturn {
   socket: Socket | null
   status: ConnectionStatus
   sendAudioInput: (audioData: string) => void
-  sendPromptStart: (tools?: any[]) => void
+  sendPromptStart: (tools?: any[], voiceId?: string) => void
   sendSystemPrompt: (prompt: string) => void
   sendAudioStart: () => void
   sendStopAudio: () => void
@@ -218,10 +218,10 @@ export function useSocketConnection(
   }, [])
 
   // Send prompt start
-  const sendPromptStart = useCallback((tools?: any[]) => {
+  const sendPromptStart = useCallback((tools?: any[], voiceId?: string) => {
     if (socketRef.current?.connected) {
-      console.log('Sending promptStart with tools:', tools?.length || 0)
-      socketRef.current.emit('promptStart', { tools })
+      console.log('Sending promptStart with tools:', tools?.length || 0, 'voiceId:', voiceId)
+      socketRef.current.emit('promptStart', { tools, voiceId })
     } else {
       console.warn('Cannot send prompt start: socket not connected')
     }

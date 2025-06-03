@@ -129,7 +129,18 @@ const SpeakPage = {
   Thinking: '考え中',
   'Listening...': '聞き取り中...',
   'Thinking...': '考え中...',
-  'Edit System Prompt': 'システムプロンプト編集'
+  'Edit System Prompt': 'システムプロンプト編集',
+  // Voice Selection
+  'Select Voice': '音声を選択してください',
+  'Start New Chat': '新しいチャットを始める',
+  Cancel: 'キャンセルする',
+  // Voice Descriptions
+  'voice.tiffany.description': '温かく親しみやすい',
+  'voice.tiffany.characteristics': '親近感があり共感的で、居心地の良い会話を作り出します',
+  'voice.amy.description': '冷静で落ち着いている',
+  'voice.amy.characteristics': '思慮深く慎重で、明確でバランスの取れた回答を提供します',
+  'voice.matthew.description': '自信に満ち、威厳的',
+  'voice.matthew.characteristics': '知識豊富で専門的、頼りがいのある印象を与えます'
 }
 
 const WebsiteGeneratorPage = {
