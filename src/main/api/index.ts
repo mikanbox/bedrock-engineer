@@ -323,10 +323,10 @@ io.on('connection', (socket) => {
       }
     })
 
-    socket.on('promptStart', async () => {
+    socket.on('promptStart', async (data) => {
       try {
-        console.log('Prompt start received')
-        await session.setupPromptStart()
+        console.log('Prompt start received with tools:', data?.tools?.length || 0)
+        await session.setupPromptStart(data?.tools)
         sessionState.promptStartSent = true
         await checkAndInitializeSession()
       } catch (error) {

@@ -10,7 +10,10 @@ const API_ENDPOINT = window.store.get('apiEndpoint')
 
 export const SpeakPage: React.FC = () => {
   const [showChat, setShowChat] = useState(false)
-  const { currentAgentSystemPrompt } = useSettings()
+  const { currentAgentSystemPrompt, selectedAgentId, getAgentTools } = useSettings()
+  
+  // 現在のエージェントのツール情報を取得
+  const agentTools = getAgentTools(selectedAgentId)
 
   const {
     status,
@@ -24,7 +27,7 @@ export const SpeakPage: React.FC = () => {
     stopRecording,
     systemPrompt,
     setSystemPrompt
-  } = useSpeakChat(API_ENDPOINT, currentAgentSystemPrompt)
+  } = useSpeakChat(API_ENDPOINT, currentAgentSystemPrompt, agentTools)
 
   // Auto-connect when component mounts
   useEffect(() => {

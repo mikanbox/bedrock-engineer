@@ -44,8 +44,8 @@ export class StreamSession {
     return this // For chaining
   }
 
-  public async setupPromptStart(): Promise<void> {
-    this.client.setupPromptStartEvent(this.sessionId)
+  public async setupPromptStart(tools?: any[]): Promise<void> {
+    this.client.setupPromptStartEvent(this.sessionId, tools)
   }
 
   public async setupSystemPrompt(
@@ -665,10 +665,101 @@ export class NovaSonicBidirectionalStreamClient {
     this.updateSessionActivity(sessionId)
     session.queueSignal.next()
   }
-  public setupPromptStartEvent(sessionId: string): void {
+  /**
+   * Convert ToolState[] from frontend to Nova Sonic tool format
+   */
+  private convertToolsToNovaSonicFormat(tools?: any[]): any[] {
+    console.log('convertToolsToNovaSonicFormat called with tools:', tools?.length || 0)
+
+    if (!tools || tools.length === 0) {
+      console.log('No tools provided, using default tavilySearch')
+      // デフォルトでtavilySearchツールを含める
+      return [
+        {
+          toolSpec: {
+            name: 'tavilySearch',
+            description:
+              'Perform a web search using Tavily API to get up-to-date information or additional context. Use this when you need current information or feel a search could provide a better answer.',
+            inputSchema: {
+              json: JSON.stringify({
+                type: 'object',
+                properties: {
+                  query: {
+                    type: 'string',
+                    description: 'The search query'
+                  },
+                  option: {
+                    type: 'object',
+                    description: 'Optional configurations for the search',
+                    properties: {
+                      include_raw_content: {
+                        type: 'boolean',
+                        description:
+                          'Whether to include raw content in the search results. DEFAULT is false'
+                      }
+                    }
+                  }
+                },
+                required: ['query']
+              })
+            }
+          }
+        }
+      ]
+    }
+
+    console.log(
+      'Processing tools:',
+      tools.map((t) => ({
+        enabled: t.enabled,
+        hasToolSpec: !!t.toolSpec,
+        toolName: t.toolSpec?.name
+      }))
+    )
+
+    const filteredTools = tools.filter((tool) => tool.enabled && tool.toolSpec)
+    console.log('Filtered tools:', filteredTools.length)
+
+    const convertedTools = filteredTools.map((tool) => {
+      console.log('Converting tool:', {
+        name: tool.toolSpec.name,
+        inputSchema: tool.toolSpec.inputSchema
+      })
+
+      // フロントエンドから送られてくるinputSchemaはすでに { json: {...} } 形式
+      // Nova Sonic APIが期待するのは { json: "JSON文字列" } なので、
+      // tool.toolSpec.inputSchema.json を文字列化する
+      const inputSchemaJson = tool.toolSpec.inputSchema?.json 
+        ? JSON.stringify(tool.toolSpec.inputSchema.json)
+        : JSON.stringify(tool.toolSpec.inputSchema)
+
+      const converted = {
+        toolSpec: {
+          name: tool.toolSpec.name,
+          description: tool.toolSpec.description,
+          inputSchema: {
+            json: inputSchemaJson
+          }
+        }
+      }
+
+      console.log('Converted tool inputSchema.json:', converted.toolSpec.inputSchema.json)
+      return converted
+    })
+
+    console.log('Final converted tools count:', convertedTools.length)
+    return convertedTools
+  }
+
+  public setupPromptStartEvent(sessionId: string, tools?: any[]): void {
     console.log(`Setting up prompt start event for session ${sessionId}...`)
     const session = this.activeSessions.get(sessionId)
     if (!session) return
+
+    // ツール設定を動的に生成
+    const novaSonicTools = this.convertToolsToNovaSonicFormat(tools)
+    console.log(`Configured ${novaSonicTools.length} tools for Nova Sonic session ${sessionId}`)
+
     // Prompt start event
     this.addEventToSessionQueue(sessionId, {
       event: {
@@ -682,38 +773,7 @@ export class NovaSonicBidirectionalStreamClient {
             mediaType: 'application/json'
           },
           toolConfiguration: {
-            tools: [
-              {
-                toolSpec: {
-                  name: 'tavilySearch',
-                  description:
-                    'Perform a web search using Tavily API to get up-to-date information or additional context. Use this when you need current information or feel a search could provide a better answer.',
-                  inputSchema: {
-                    json: JSON.stringify({
-                      type: 'object',
-                      properties: {
-                        query: {
-                          type: 'string',
-                          description: 'The search query'
-                        },
-                        option: {
-                          type: 'object',
-                          description: 'Optional configurations for the search',
-                          properties: {
-                            include_raw_content: {
-                              type: 'boolean',
-                              description:
-                                'Whether to include raw content in the search results. DEFAULT is false'
-                            }
-                          }
-                        }
-                      },
-                      required: ['query']
-                    })
-                  }
-                }
-              }
-            ]
+            tools: novaSonicTools
           }
         }
       }

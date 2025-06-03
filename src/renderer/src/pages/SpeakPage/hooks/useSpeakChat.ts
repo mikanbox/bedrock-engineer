@@ -3,6 +3,7 @@ import { useSocketConnection, SocketEvents } from './useSocketConnection'
 import { useAudioRecorder } from './useAudioRecorder'
 import { useAudioPlayer } from './useAudioPlayer'
 import { ChatHistoryManager, ChatHistory } from '../lib/ChatHistoryManager'
+import { ToolState } from 'src/types/agent-chat'
 
 export type SpeakChatStatus =
   | 'disconnected'
@@ -57,7 +58,7 @@ const DEFAULT_SYSTEM_PROMPT =
   'dialog exchanging the transcripts of a natural real-time conversation. Keep your responses short, ' +
   'generally two or three sentences for chatty scenarios.'
 
-export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string): UseSpeakChatReturn {
+export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string, agentTools?: ToolState[]): UseSpeakChatReturn {
   const [status, setStatus] = useState<SpeakChatStatus>('disconnected')
 
   // エージェントのシステムプロンプトを音声会話用に調整
@@ -304,8 +305,11 @@ export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string): Us
     try {
       console.log('Initializing session...')
 
+      // Nova Sonicで使用するツールを準備（有効なツールのみ）
+      const enabledTools = agentTools?.filter(tool => tool.enabled) || []
+      
       // Send events in sequence
-      socket.sendPromptStart()
+      socket.sendPromptStart(enabledTools)
       socket.sendSystemPrompt(systemPrompt)
       socket.sendAudioStart()
 
@@ -316,7 +320,7 @@ export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string): Us
       console.error('Failed to initialize session:', error)
       setStatus('error')
     }
-  }, [socket, systemPrompt])
+  }, [socket, systemPrompt, agentTools])
 
   // Connect to server
   const connect = useCallback(async () => {
