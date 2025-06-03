@@ -31,14 +31,23 @@ export const SpeakPage: React.FC = () => {
 
   // Auto-connect when component mounts
   useEffect(() => {
-    // Only connect on initial mount
+    // Only connect on initial mount and if not already connected
     const timer = setTimeout(() => {
       if (!isConnected && status === 'disconnected') {
+        console.log('SpeakPage: Attempting to connect to server...')
         connect()
+      } else {
+        console.log('SpeakPage: Skipping connection (already connected or connecting)', {
+          isConnected,
+          status
+        })
       }
     }, 100) // Small delay to ensure proper initialization
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      console.log('SpeakPage: Component unmounting')
+    }
   }, []) // Empty dependency array to run only once on mount
 
   const {

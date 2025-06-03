@@ -38,6 +38,17 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     return btoa(binary.join(''))
   }, [])
 
+  // Check microphone permission status
+  const checkMicrophonePermission = useCallback(async (): Promise<PermissionState> => {
+    try {
+      const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName })
+      return permission.state
+    } catch (error) {
+      console.warn('Could not check microphone permission:', error)
+      return 'prompt' // Default to prompt if checking fails
+    }
+  }, [])
+
   // Start recording
   const startRecording = useCallback(async (): Promise<void> => {
     if (status === 'recording') {
@@ -47,15 +58,25 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}): UseAudi
     try {
       setStatus('processing')
 
+      // Check microphone permission first
+      const permissionState = await checkMicrophonePermission()
+      console.log('Microphone permission state:', permissionState)
+
+      if (permissionState === 'denied') {
+        throw new Error(
+          'Microphone access is denied. Please allow microphone access in your browser settings.'
+        )
+      }
+
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
+        audio: true
+        // audio: {
+        //   echoCancellation: true,
+        //   noiseSuppression: true,
+        //   autoGainControl: true
+        // }
       })
-
       audioStreamRef.current = stream
 
       // Create audio context

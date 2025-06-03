@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { ChatHistory, ChatMessage } from '../lib/ChatHistoryManager'
 import { ThinkingState, ToolExecutionState } from '../hooks/useSpeakChat'
 import { ThinkingIndicator } from './ThinkingIndicator'
@@ -202,19 +202,6 @@ const EmptyState: React.FC<{ audioControls?: React.ReactNode }> = ({ audioContro
   </div>
 )
 
-// Custom hook for auto-scroll
-// const useAutoScroll = (dependencies: unknown[]) => {
-//   const chatContainerRef = useRef<HTMLDivElement>(null)
-
-//   useEffect(() => {
-//     if (chatContainerRef.current) {
-//       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-//     }
-//   }, dependencies)
-
-//   return { chatContainerRef }
-// }
-
 // Main component
 export const ChatDisplay: React.FC<ChatDisplayProps> = ({
   chat,
@@ -223,8 +210,6 @@ export const ChatDisplay: React.FC<ChatDisplayProps> = ({
   className = '',
   audioControls
 }) => {
-  // const { chatContainerRef } = useAutoScroll([chat.history, thinkingState, toolExecutionState])
-
   const hasMessages = chat.history.length > 0
   const hasThinking =
     thinkingState.waitingForUserTranscription || thinkingState.waitingForAssistantResponse

@@ -1,9 +1,16 @@
 import { ObjectExt } from './ObjectsExt'
 
-const AudioPlayerWorkletUrl = new URL(
-  './AudioPlayerProcessor.worklet.ts',
-  import.meta.url
-).toString()
+// Use static path for AudioWorklet that works in both development and production
+const getAudioWorkletUrl = (): string => {
+  // In Electron, we need to construct the correct URL based on the app's location
+  if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+    // Production build - use relative path from the app's root
+    return './worklets/audio-player-processor.js'
+  } else {
+    // Development server - use absolute path
+    return '/worklets/audio-player-processor.js'
+  }
+}
 
 export interface AudioPlayedListener {
   (samples: Float32Array): void
@@ -57,12 +64,17 @@ export class AudioPlayer {
       this.analyser.fftSize = 512
       console.log('AudioPlayer: Analyser created')
 
-      // Chrome caches worklet code more aggressively, so add a nocache parameter to make sure we get the latest
-      const workletUrl = AudioPlayerWorkletUrl + '?v=' + Date.now()
+      // Get the appropriate worklet URL based on environment
+      const workletUrl = getAudioWorkletUrl()
       console.log('AudioPlayer: Loading AudioWorklet from:', workletUrl)
 
-      await this.audioContext.audioWorklet.addModule(workletUrl)
-      console.log('AudioPlayer: AudioWorklet module loaded successfully')
+      try {
+        await this.audioContext.audioWorklet.addModule(workletUrl)
+        console.log('AudioPlayer: AudioWorklet module loaded successfully')
+      } catch (error) {
+        console.error('AudioPlayer: Failed to load AudioWorklet module:', error)
+        throw new Error(`Failed to load AudioWorklet module: ${error}`)
+      }
 
       this.workletNode = new AudioWorkletNode(this.audioContext, 'audio-player-processor')
       console.log('AudioPlayer: AudioWorkletNode created')

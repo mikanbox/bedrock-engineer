@@ -14,6 +14,8 @@ asarUnpack:
 extraResources:
   - from: "src/renderer/src/assets/directory-agents"
     to: "directory-agents"
+  - from: "public/worklets"
+    to: "worklets"
 win:
   executableName: Bedrock Engineer
 nsis:

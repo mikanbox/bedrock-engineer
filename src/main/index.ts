@@ -238,7 +238,7 @@ registerGlobalErrorHandlers()
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set userDataPath in store
   store.set('userDataPath', userDataPath)
 
@@ -248,6 +248,23 @@ app.whenReady().then(() => {
     arch: process.arch,
     userDataPath
   })
+
+  // Request microphone access on macOS to prevent repeated permission dialogs
+  // if (process.platform === 'darwin') {
+  //   try {
+  //     const microphoneAccess = await systemPreferences.askForMediaAccess('microphone')
+  //     log.info('Microphone access request completed', {
+  //       granted: microphoneAccess
+  //     })
+  //     if (!microphoneAccess) {
+  //       log.warn('Microphone access was denied. Voice features may not work properly.')
+  //     }
+  //   } catch (error) {
+  //     log.error('Failed to request microphone access', {
+  //       error: error instanceof Error ? error.message : String(error)
+  //     })
+  //   }
+  // }
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
