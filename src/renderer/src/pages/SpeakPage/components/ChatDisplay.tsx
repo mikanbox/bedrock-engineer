@@ -203,17 +203,17 @@ const EmptyState: React.FC<{ audioControls?: React.ReactNode }> = ({ audioContro
 )
 
 // Custom hook for auto-scroll
-const useAutoScroll = (dependencies: unknown[]) => {
-  const chatContainerRef = useRef<HTMLDivElement>(null)
+// const useAutoScroll = (dependencies: unknown[]) => {
+//   const chatContainerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-    }
-  }, dependencies)
+//   useEffect(() => {
+//     if (chatContainerRef.current) {
+//       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+//     }
+//   }, dependencies)
 
-  return { chatContainerRef }
-}
+//   return { chatContainerRef }
+// }
 
 // Main component
 export const ChatDisplay: React.FC<ChatDisplayProps> = ({
@@ -223,7 +223,7 @@ export const ChatDisplay: React.FC<ChatDisplayProps> = ({
   className = '',
   audioControls
 }) => {
-  const { chatContainerRef } = useAutoScroll([chat.history, thinkingState, toolExecutionState])
+  // const { chatContainerRef } = useAutoScroll([chat.history, thinkingState, toolExecutionState])
 
   const hasMessages = chat.history.length > 0
   const hasThinking =
@@ -232,7 +232,7 @@ export const ChatDisplay: React.FC<ChatDisplayProps> = ({
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Chat Messages */}
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {!hasMessages && !hasThinking && <EmptyState audioControls={audioControls} />}
 
         {/* Render messages */}

@@ -11,7 +11,7 @@ const API_ENDPOINT = window.store.get('apiEndpoint')
 export const SpeakPage: React.FC = () => {
   const [showChat, setShowChat] = useState(false)
   const { currentAgentSystemPrompt, selectedAgentId, getAgentTools } = useSettings()
-  
+
   // 現在のエージェントのツール情報を取得
   const agentTools = getAgentTools(selectedAgentId)
 
@@ -63,13 +63,6 @@ export const SpeakPage: React.FC = () => {
   const canStartRecording =
     isConnected && (status === 'ready' || status === 'connected') && !isRecording
   const canStopRecording = isRecording
-
-  // Show chat when there are messages
-  useEffect(() => {
-    if (chat.history.length > 0 && !showChat) {
-      setShowChat(true)
-    }
-  }, [chat.history.length, showChat])
 
   if (showChat) {
     // Show full chat interface when needed

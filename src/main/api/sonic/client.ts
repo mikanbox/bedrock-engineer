@@ -10,6 +10,8 @@ import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 import { InferenceConfig } from './types'
 import { Subject } from 'rxjs'
+import * as path from 'path'
+import { store } from '../../../preload/store'
 import { take } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 import {
@@ -268,7 +270,11 @@ export class NovaSonicBidirectionalStreamClient {
 
     try {
       console.log(`Converting tool input for ${toolName}...`)
-      const toolInput = this.convertToToolInput(toolName, toolUseContent)
+      let toolInput = this.convertToToolInput(toolName, toolUseContent)
+
+      // Apply default values for tools that need them
+      toolInput = this.applyDefaultValuesForTool(toolName, toolInput)
+
       console.log(`Executing tool via preload system:`, {
         toolInput
       })
@@ -350,6 +356,224 @@ export class NovaSonicBidirectionalStreamClient {
       console.error(`Error converting tool input for ${toolName}:`, error)
       throw new Error(`Failed to convert tool input for ${toolName}: ${error}`)
     }
+  }
+
+  /**
+   * Apply default values for tools based on current project directory
+   */
+  private applyDefaultValuesForTool(toolName: string, toolInput: ToolInput): ToolInput {
+    try {
+      // Get project path from store - we'll need to import this
+      const projectPath = this.getProjectPath()
+      if (!projectPath) {
+        console.warn('Project path not available, skipping default value application')
+        return toolInput
+      }
+
+      console.log(`Applying default values for tool ${toolName}`, {
+        toolName,
+        projectPath,
+        originalInput: this.sanitizeInputForLogging(toolInput)
+      })
+
+      const updatedInput = { ...toolInput }
+
+      switch (toolName) {
+        case 'generateImage':
+          this.applyGenerateImageDefaults(updatedInput, projectPath)
+          break
+
+        case 'writeToFile':
+        case 'readFiles':
+        case 'applyDiffEdit':
+          this.applyFilePathDefaults(updatedInput, projectPath)
+          break
+
+        case 'createFolder':
+        case 'listFiles':
+          this.applyDirectoryPathDefaults(updatedInput, projectPath)
+          break
+
+        case 'moveFile':
+        case 'copyFile':
+          this.applySourceDestinationDefaults(updatedInput, projectPath)
+          break
+
+        case 'executeCommand':
+          this.applyExecuteCommandDefaults(updatedInput, projectPath)
+          break
+
+        default:
+          // No default values needed for this tool
+          break
+      }
+
+      console.log(`Default values applied for ${toolName}`, {
+        toolName,
+        hasChanges: JSON.stringify(updatedInput) !== JSON.stringify(toolInput),
+        updatedInput: this.sanitizeInputForLogging(updatedInput)
+      })
+
+      return updatedInput
+    } catch (error) {
+      console.error(`Error applying default values for ${toolName}:`, error)
+      // Return original input if error occurs
+      return toolInput
+    }
+  }
+
+  /**
+   * Get project path from store
+   */
+  private getProjectPath(): string | undefined {
+    try {
+      const projectPath = store.get('projectPath')
+      if (projectPath && typeof projectPath === 'string') {
+        return projectPath
+      }
+
+      // Fallback to user home directory
+      const homeDir = process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME']
+      console.warn('No project path in store, using home directory:', homeDir)
+      return homeDir
+    } catch (error) {
+      console.error('Error getting project path from store:', error)
+      // Fallback to user home directory
+      return process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME']
+    }
+  }
+
+  /**
+   * Apply defaults for generateImage tool
+   */
+  private applyGenerateImageDefaults(toolInput: any, projectPath: string): void {
+    // Handle both outputPath and output_path (Nova Sonic sometimes uses underscore format)
+    const currentOutputPath = toolInput.outputPath || toolInput.output_path
+
+    if (
+      !currentOutputPath ||
+      typeof currentOutputPath !== 'string' ||
+      currentOutputPath.trim() === ''
+    ) {
+      const timestamp = Date.now()
+      const defaultFileName = `generated_image_${timestamp}.png`
+      const defaultPath = path.join(projectPath, defaultFileName)
+
+      // Set both formats to ensure compatibility
+      toolInput.outputPath = defaultPath
+      toolInput.output_path = defaultPath
+
+      console.log(`Applied default outputPath for generateImage: ${defaultPath}`)
+    } else if (!path.isAbsolute(currentOutputPath)) {
+      // Convert relative path to absolute
+      const absolutePath = path.resolve(projectPath, currentOutputPath)
+
+      // Set both formats to ensure compatibility
+      toolInput.outputPath = absolutePath
+      toolInput.output_path = absolutePath
+
+      console.log(`Converted relative outputPath to absolute: ${absolutePath}`)
+    } else {
+      // Ensure both formats are set with the absolute path
+      toolInput.outputPath = currentOutputPath
+      toolInput.output_path = currentOutputPath
+    }
+  }
+
+  /**
+   * Apply defaults for file path tools (writeToFile, readFiles, applyDiffEdit)
+   */
+  private applyFilePathDefaults(toolInput: any, projectPath: string): void {
+    // Handle single path
+    if (toolInput.path && typeof toolInput.path === 'string' && !path.isAbsolute(toolInput.path)) {
+      toolInput.path = path.resolve(projectPath, toolInput.path)
+      console.log(`Converted relative path to absolute: ${toolInput.path}`)
+    }
+
+    // Handle paths array (for readFiles)
+    if (toolInput.paths && Array.isArray(toolInput.paths)) {
+      toolInput.paths = toolInput.paths.map((p: string) => {
+        if (typeof p === 'string' && !path.isAbsolute(p)) {
+          const absolutePath = path.resolve(projectPath, p)
+          console.log(`Converted relative path to absolute: ${p} -> ${absolutePath}`)
+          return absolutePath
+        }
+        return p
+      })
+    }
+  }
+
+  /**
+   * Apply defaults for directory path tools (createFolder, listFiles)
+   */
+  private applyDirectoryPathDefaults(toolInput: any, projectPath: string): void {
+    if (!toolInput.path || typeof toolInput.path !== 'string') {
+      // For listFiles, default to project directory
+      if (toolInput.type === 'listFiles') {
+        toolInput.path = projectPath
+        console.log(`Applied default path for listFiles: ${toolInput.path}`)
+      }
+    } else if (!path.isAbsolute(toolInput.path)) {
+      // Convert relative path to absolute
+      toolInput.path = path.resolve(projectPath, toolInput.path)
+      console.log(`Converted relative path to absolute: ${toolInput.path}`)
+    }
+  }
+
+  /**
+   * Apply defaults for tools with source/destination (moveFile, copyFile)
+   */
+  private applySourceDestinationDefaults(toolInput: any, projectPath: string): void {
+    if (
+      toolInput.source &&
+      typeof toolInput.source === 'string' &&
+      !path.isAbsolute(toolInput.source)
+    ) {
+      toolInput.source = path.resolve(projectPath, toolInput.source)
+      console.log(`Converted relative source path to absolute: ${toolInput.source}`)
+    }
+
+    if (
+      toolInput.destination &&
+      typeof toolInput.destination === 'string' &&
+      !path.isAbsolute(toolInput.destination)
+    ) {
+      toolInput.destination = path.resolve(projectPath, toolInput.destination)
+      console.log(`Converted relative destination path to absolute: ${toolInput.destination}`)
+    }
+  }
+
+  /**
+   * Apply defaults for executeCommand tool
+   */
+  private applyExecuteCommandDefaults(toolInput: any, projectPath: string): void {
+    if (!toolInput.cwd || typeof toolInput.cwd !== 'string') {
+      toolInput.cwd = projectPath
+      console.log(`Applied default cwd for executeCommand: ${toolInput.cwd}`)
+    } else if (!path.isAbsolute(toolInput.cwd)) {
+      toolInput.cwd = path.resolve(projectPath, toolInput.cwd)
+      console.log(`Converted relative cwd to absolute: ${toolInput.cwd}`)
+    }
+  }
+
+  /**
+   * Sanitize input for logging (remove sensitive data, truncate long strings)
+   */
+  private sanitizeInputForLogging(input: any): any {
+    if (typeof input !== 'object' || input === null) {
+      return input
+    }
+
+    const sanitized = { ...input }
+
+    // Truncate long strings
+    Object.keys(sanitized).forEach((key) => {
+      if (typeof sanitized[key] === 'string' && sanitized[key].length > 200) {
+        sanitized[key] = sanitized[key].substring(0, 200) + '...'
+      }
+    })
+
+    return sanitized
   }
 
   // Stream audio for a specific session
@@ -668,45 +892,8 @@ export class NovaSonicBidirectionalStreamClient {
   /**
    * Convert ToolState[] from frontend to Nova Sonic tool format
    */
-  private convertToolsToNovaSonicFormat(tools?: any[]): any[] {
+  private convertToolsToNovaSonicFormat(tools: any[] = []): any[] {
     console.log('convertToolsToNovaSonicFormat called with tools:', tools?.length || 0)
-
-    if (!tools || tools.length === 0) {
-      console.log('No tools provided, using default tavilySearch')
-      // デフォルトでtavilySearchツールを含める
-      return [
-        {
-          toolSpec: {
-            name: 'tavilySearch',
-            description:
-              'Perform a web search using Tavily API to get up-to-date information or additional context. Use this when you need current information or feel a search could provide a better answer.',
-            inputSchema: {
-              json: JSON.stringify({
-                type: 'object',
-                properties: {
-                  query: {
-                    type: 'string',
-                    description: 'The search query'
-                  },
-                  option: {
-                    type: 'object',
-                    description: 'Optional configurations for the search',
-                    properties: {
-                      include_raw_content: {
-                        type: 'boolean',
-                        description:
-                          'Whether to include raw content in the search results. DEFAULT is false'
-                      }
-                    }
-                  }
-                },
-                required: ['query']
-              })
-            }
-          }
-        }
-      ]
-    }
 
     console.log(
       'Processing tools:',
@@ -729,7 +916,7 @@ export class NovaSonicBidirectionalStreamClient {
       // フロントエンドから送られてくるinputSchemaはすでに { json: {...} } 形式
       // Nova Sonic APIが期待するのは { json: "JSON文字列" } なので、
       // tool.toolSpec.inputSchema.json を文字列化する
-      const inputSchemaJson = tool.toolSpec.inputSchema?.json 
+      const inputSchemaJson = tool.toolSpec.inputSchema?.json
         ? JSON.stringify(tool.toolSpec.inputSchema.json)
         : JSON.stringify(tool.toolSpec.inputSchema)
 

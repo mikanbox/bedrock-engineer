@@ -58,7 +58,11 @@ const DEFAULT_SYSTEM_PROMPT =
   'dialog exchanging the transcripts of a natural real-time conversation. Keep your responses short, ' +
   'generally two or three sentences for chatty scenarios.'
 
-export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string, agentTools?: ToolState[]): UseSpeakChatReturn {
+export function useSpeakChat(
+  serverUrl?: string,
+  agentSystemPrompt?: string,
+  agentTools?: ToolState[]
+): UseSpeakChatReturn {
   const [status, setStatus] = useState<SpeakChatStatus>('disconnected')
 
   // エージェントのシステムプロンプトを音声会話用に調整
@@ -306,8 +310,8 @@ export function useSpeakChat(serverUrl?: string, agentSystemPrompt?: string, age
       console.log('Initializing session...')
 
       // Nova Sonicで使用するツールを準備（有効なツールのみ）
-      const enabledTools = agentTools?.filter(tool => tool.enabled) || []
-      
+      const enabledTools = agentTools?.filter((tool) => tool.enabled) || []
+
       // Send events in sequence
       socket.sendPromptStart(enabledTools)
       socket.sendSystemPrompt(systemPrompt)
