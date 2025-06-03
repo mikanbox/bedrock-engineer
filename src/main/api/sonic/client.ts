@@ -4,8 +4,6 @@ import {
   InvokeModelWithBidirectionalStreamCommand,
   InvokeModelWithBidirectionalStreamInput
 } from '@aws-sdk/client-bedrock-runtime'
-import axios from 'axios'
-import https from 'https'
 import { NodeHttp2Handler, NodeHttp2HandlerOptions } from '@smithy/node-http-handler'
 import { Provider } from '@smithy/types'
 import { Buffer } from 'node:buffer'
@@ -22,6 +20,8 @@ import {
   DefaultToolSchema,
   WeatherToolSchema
 } from './consts'
+import { SonicToolExecutor } from './tool-executor'
+import { ToolInput } from '../../../types/tools'
 
 export interface NovaSonicBidirectionalStreamClientConfig {
   requestHandlerConfig?: NodeHttp2HandlerOptions | Provider<NodeHttp2HandlerOptions | void>
@@ -157,6 +157,7 @@ export class NovaSonicBidirectionalStreamClient {
   private activeSessions: Map<string, SessionData> = new Map()
   private sessionLastActivity: Map<string, number> = new Map()
   private sessionCleanupInProgress = new Set<string>()
+  private toolExecutor?: SonicToolExecutor
 
   constructor(config: NovaSonicBidirectionalStreamClientConfig) {
     const nodeHttp2Handler = new NodeHttp2Handler({
@@ -206,6 +207,13 @@ export class NovaSonicBidirectionalStreamClient {
     return this.sessionCleanupInProgress.has(sessionId)
   }
 
+  /**
+   * Set the tool executor for this client
+   */
+  public setToolExecutor(toolExecutor: SonicToolExecutor): void {
+    this.toolExecutor = toolExecutor
+  }
+
   // Create a new streaming session
   public createStreamSession(
     sessionId: string = randomUUID(),
@@ -238,95 +246,111 @@ export class NovaSonicBidirectionalStreamClient {
   }
 
   private async processToolUse(toolName: string, toolUseContent: object): Promise<object> {
-    const tool = toolName.toLowerCase()
+    console.log(`Processing tool use: ${toolName}`, {
+      toolName,
+      hasToolExecutor: !!this.toolExecutor,
+      contentPreview: JSON.stringify(toolUseContent).substring(0, 100) + '...'
+    })
 
-    switch (tool) {
-      case 'getdateandtimetool': {
-        const date = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
-        const pstDate = new Date(date)
-        return {
-          date: pstDate.toISOString().split('T')[0],
-          year: pstDate.getFullYear(),
-          month: pstDate.getMonth() + 1,
-          day: pstDate.getDate(),
-          dayOfWeek: pstDate.toLocaleString('en-US', { weekday: 'long' }).toUpperCase(),
-          timezone: 'PST',
-          formattedTime: pstDate.toLocaleTimeString('en-US', {
-            hour12: true,
-            hour: '2-digit',
-            minute: '2-digit'
-          })
-        }
-      }
-      case 'getweathertool': {
-        console.log(`weather tool`)
-        const parsedContent = await this.parseToolUseContentForWeather(toolUseContent)
-        console.log('parsed content')
-        if (!parsedContent) {
-          throw new Error('parsedContent is undefined')
-        }
-        return this.fetchWeatherData(parsedContent?.latitude, parsedContent?.longitude)
-      }
-      default:
-        console.log(`Tool ${tool} not supported`)
-        throw new Error(`Tool ${tool} not supported`)
-    }
-  }
-
-  private async parseToolUseContentForWeather(
-    toolUseContent: any
-  ): Promise<{ latitude: number; longitude: number } | null> {
-    try {
-      // Check if the content field exists and is a string
-      if (toolUseContent && typeof toolUseContent.content === 'string') {
-        // Parse the JSON string into an object
-        const parsedContent = JSON.parse(toolUseContent.content)
-        console.log(`parsedContent ${parsedContent}`)
-        // Return the parsed content
-        return {
-          latitude: parsedContent.latitude,
-          longitude: parsedContent.longitude
-        }
-      }
-      return null
-    } catch (error) {
-      console.error('Failed to parse tool use content:', error)
-      return null
-    }
-  }
-
-  private async fetchWeatherData(
-    latitude: number,
-    longitude: number
-  ): Promise<Record<string, any>> {
-    const ipv4Agent = new https.Agent({ family: 4 })
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
-
-    try {
-      const response = await axios.get(url, {
-        httpsAgent: ipv4Agent,
-        timeout: 5000,
-        headers: {
-          'User-Agent': 'MyApp/1.0',
-          Accept: 'application/json'
-        }
-      })
-      const weatherData = response.data
-      console.log('weatherData:', weatherData)
+    // Ensure tool executor is available
+    if (!this.toolExecutor) {
+      const errorMessage = `Tool executor not available. Please ensure frontend connection is active.`
+      console.error(errorMessage, { toolName })
 
       return {
-        weather_data: weatherData
+        error: true,
+        message: errorMessage,
+        details: {
+          toolName,
+          timestamp: new Date().toISOString(),
+          reason: 'No tool executor available'
+        }
       }
+    }
+
+    try {
+      console.log(`Converting tool input for ${toolName}...`)
+      const toolInput = this.convertToToolInput(toolName, toolUseContent)
+      console.log(`Executing tool via preload system:`, {
+        toolInput
+      })
+
+      const result = await this.toolExecutor.executeToolViaSocket(toolInput)
+      console.log(`Tool executed successfully:`, {
+        toolName,
+        resultType: typeof result,
+        resultPreview:
+          typeof result === 'string'
+            ? result.substring(0, 100) + '...'
+            : JSON.stringify(result).substring(0, 100) + '...'
+      })
+
+      // Handle different result types
+      let parsedResult
+      try {
+        parsedResult = typeof result === 'string' ? JSON.parse(result) : result
+      } catch (parseError) {
+        console.warn(`Failed to parse tool result as JSON, using as string:`, parseError)
+        parsedResult = { result: result }
+      }
+
+      return parsedResult
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(`Error fetching weather data: ${error.message}`, error)
-      } else {
-        console.error(
-          `Unexpected error: ${error instanceof Error ? error.message : String(error)} `,
-          error
-        )
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error(`Tool execution failed for ${toolName}:`, {
+        toolName,
+        error: errorMessage,
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+        stack: error instanceof Error ? error.stack : undefined
+      })
+
+      // Return structured error response
+      return {
+        error: true,
+        message: `Tool execution failed: ${errorMessage}`,
+        details: {
+          toolName,
+          originalError: errorMessage,
+          timestamp: new Date().toISOString(),
+          reason: 'Tool execution error'
+        }
       }
-      throw error
+    }
+  }
+
+  /**
+   * Convert Nova Sonic tool format to preload tool format
+   */
+  private convertToToolInput(toolName: string, toolUseContent: any): ToolInput {
+    // console.log({ toolUseContent })
+    // {
+    //   toolUseContent: {
+    //     completionId: '92186f21-5211-40cd-a258-592d3ad20e48',
+    //     content: '{"query":"what is amazon bedrock"}',
+    //     contentId: 'b9eac6f4-2b51-4528-9009-4c270296ac23',
+    //     promptName: '27a9a6cb-5023-48c3-904c-8706328e5d8f',
+    //     role: 'TOOL',
+    //     sessionId: 'f2c9d046-cb6b-4f88-b8bb-cb7e1a3009f6',
+    //     toolName: 'tavilySearch',
+    //     toolUseId: '8a688273-2a9a-486e-9c20-50dd4bda4924'
+    //   }
+    // }
+    try {
+      // Parse the content if it's a string
+      const content =
+        typeof toolUseContent.content === 'string'
+          ? JSON.parse(toolUseContent.content)
+          : toolUseContent.content || {}
+
+      const toolInput = {
+        type: toolName,
+        ...content
+      }
+
+      return toolInput
+    } catch (error) {
+      console.error(`Error converting tool input for ${toolName}:`, error)
+      throw new Error(`Failed to convert tool input for ${toolName}: ${error}`)
     }
   }
 
@@ -677,6 +701,36 @@ export class NovaSonicBidirectionalStreamClient {
                     'Get the current weather for a given location, based on its WGS84 coordinates.',
                   inputSchema: {
                     json: WeatherToolSchema
+                  }
+                }
+              },
+              {
+                toolSpec: {
+                  name: 'tavilySearch',
+                  description:
+                    'Perform a web search using Tavily API to get up-to-date information or additional context. Use this when you need current information or feel a search could provide a better answer.',
+                  inputSchema: {
+                    json: JSON.stringify({
+                      type: 'object',
+                      properties: {
+                        query: {
+                          type: 'string',
+                          description: 'The search query'
+                        },
+                        option: {
+                          type: 'object',
+                          description: 'Optional configurations for the search',
+                          properties: {
+                            include_raw_content: {
+                              type: 'boolean',
+                              description:
+                                'Whether to include raw content in the search results. DEFAULT is false'
+                            }
+                          }
+                        }
+                      },
+                      required: ['query']
+                    })
                   }
                 }
               }

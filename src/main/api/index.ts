@@ -9,6 +9,7 @@ import { store } from '../../preload/store'
 import { createCategoryLogger } from '../../common/logger'
 import { Server } from 'socket.io'
 import http from 'http'
+import { SonicToolExecutor } from './sonic/tool-executor'
 
 // Create category logger for API
 const apiLogger = createCategoryLogger('api:express')
@@ -210,9 +211,16 @@ const bedrockClient = new NovaSonicBidirectionalStreamClient({
   }
 })
 
+// Initialize tool executor and connect it to the bedrock client
+const toolExecutor = new SonicToolExecutor(io)
+bedrockClient.setToolExecutor(toolExecutor)
+
 // Socket.IO connection handler
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id)
+
+  // Register tool execution handlers for this socket
+  toolExecutor.registerSocketHandlers(socket)
 
   // Create a unique session ID for this client
   const sessionId = socket.id

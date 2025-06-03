@@ -110,6 +110,88 @@ export function useSocketConnection(
         setStatus('error')
         events?.error?.(error)
       })
+
+      // Tool execution request handler
+      socket.on('tool:executeRequest', async (toolRequest) => {
+        const startTime = Date.now()
+        const requestId = toolRequest.requestId || 'unknown'
+
+        try {
+          console.log('Received tool execution request:', {
+            requestId,
+            toolRequest: toolRequest
+          })
+
+          // Validate request structure
+          if (!toolRequest.type) {
+            throw new Error('Tool type is required')
+          }
+
+          if (!toolRequest.requestId) {
+            throw new Error('Request ID is required')
+          }
+
+          // Execute the tool using the preload API
+          console.log(`Executing tool ${toolRequest.type} via preload API...`)
+          const result = await window.api.bedrock.executeTool(toolRequest)
+
+          const duration = Date.now() - startTime
+          console.log('Tool execution completed successfully:', {
+            requestId,
+            toolType: toolRequest.type,
+            duration: `${duration}ms`,
+            resultType: typeof result,
+            resultPreview:
+              typeof result === 'string'
+                ? result.substring(0, 100) + '...'
+                : JSON.stringify(result).substring(0, 100) + '...'
+          })
+
+          // Send response back to server
+          socket.emit('tool:executeResponse', {
+            requestId: toolRequest.requestId,
+            success: true,
+            result: result
+          })
+        } catch (error) {
+          const duration = Date.now() - startTime
+          const errorMessage = error instanceof Error ? error.message : String(error)
+
+          console.error('Tool execution failed:', {
+            requestId,
+            toolType: toolRequest.type,
+            duration: `${duration}ms`,
+            error: errorMessage,
+            errorType: error instanceof Error ? error.constructor.name : typeof error,
+            stack: error instanceof Error ? error.stack : undefined
+          })
+
+          // Determine error category for better debugging
+          let errorCategory = 'unknown'
+          if (errorMessage.includes('include_raw_content')) {
+            errorCategory = 'validation'
+          } else if (errorMessage.includes('timeout')) {
+            errorCategory = 'timeout'
+          } else if (errorMessage.includes('Network')) {
+            errorCategory = 'network'
+          } else if (errorMessage.includes('permission')) {
+            errorCategory = 'permission'
+          }
+
+          // Send detailed error response back to server
+          socket.emit('tool:executeResponse', {
+            requestId: toolRequest.requestId,
+            success: false,
+            error: errorMessage,
+            errorDetails: {
+              category: errorCategory,
+              duration: `${duration}ms`,
+              toolType: toolRequest.type,
+              timestamp: new Date().toISOString()
+            }
+          })
+        }
+      })
     } catch (error) {
       console.error('Failed to create socket connection:', error)
       setStatus('error')
