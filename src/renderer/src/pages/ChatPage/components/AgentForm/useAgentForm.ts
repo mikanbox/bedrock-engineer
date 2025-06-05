@@ -152,20 +152,21 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     const category = initialAgent.category || 'all'
     setAgentCategory(category)
 
-    // カテゴリに基づくデフォルトツール
-    const defaultTools = getDefaultToolsForCategory(category)
+    // カテゴリに基づくすべてのツールを取得（デフォルトでは全て無効）
+    const allAvailableTools = getDefaultToolsForCategory(category).map((tool) => ({
+      ...tool,
+      enabled: false // デフォルトは無効
+    }))
 
-    // エージェント固有のツール設定があればそれを適用
-    if (initialAgent.tools && initialAgent.tools.length > 0) {
-      const toolsWithState = defaultTools.map((toolState) => {
-        const toolName = toolState.toolSpec?.name as ToolName
-        const isEnabled = initialAgent.tools?.includes(toolName) || false
-        return { ...toolState, enabled: isEnabled }
-      })
-      setAgentTools(toolsWithState)
-    } else {
-      setAgentTools(defaultTools)
-    }
+    // エージェント固有のツール設定を適用
+    const toolsWithState = allAvailableTools.map((toolState) => {
+      const toolName = toolState.toolSpec?.name as ToolName
+      // エージェントのツールリストに含まれている場合のみ有効化
+      const isEnabled = initialAgent.tools?.includes(toolName) || false
+      return { ...toolState, enabled: isEnabled }
+    })
+
+    setAgentTools(toolsWithState)
 
     // 既存のエージェントが持つすべてのツール設定情報を明示的にformDataに設定
     updateMultipleFields([

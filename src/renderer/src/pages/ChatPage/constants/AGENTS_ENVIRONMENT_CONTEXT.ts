@@ -29,6 +29,9 @@ const PROJECT_RULE = `
 
 const VISUAL_EXPRESSION_RULES = `
 **<visual expression rule>**
+
+If you are acting as a voice chat, please ignore this illustration rule.
+
 - Create Mermaid.js diagrams for visual explanations (maximum 2 per response unless specified)
 - Ask user permission before generating images with Stable Diffusion
 - Display images using Markdown syntax: \`![image-name](url)\`

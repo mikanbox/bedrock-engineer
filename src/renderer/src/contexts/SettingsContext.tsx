@@ -1380,8 +1380,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // カテゴリーに基づいてデフォルトツール設定を返す関数
   const getDefaultToolsForCategory = useCallback(
-    (category: string): ToolState[] => {
-      const allWindowTools = tools.map((tool) => ({ ...tool, enabled: true })) as ToolState[]
+    (category: string, enableByDefault: boolean = true): ToolState[] => {
+      const allWindowTools = tools.map((tool) => ({
+        ...tool,
+        enabled: enableByDefault
+      })) as ToolState[]
       return getToolsForCategory(category as AgentCategory, allWindowTools)
     },
     [tools]
