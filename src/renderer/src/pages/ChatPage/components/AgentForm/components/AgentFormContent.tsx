@@ -79,8 +79,12 @@ export const AgentFormContent: React.FC<{
               name={formData.name}
               description={formData.description}
               additionalInstruction={formData.additionalInstruction}
+              environmentContextSettings={formData.environmentContextSettings}
               onChange={(value) => updateField('system', value)}
               onAdditionalInstructionChange={handleAdditionalInstructionChange}
+              onEnvironmentContextSettingsChange={(settings) =>
+                updateField('environmentContextSettings', settings)
+              }
               onAutoGenerate={handleAutoGeneratePrompt}
               onVoiceChatGenerate={handleVoiceChatGenerate}
               isGenerating={isGeneratingSystem}

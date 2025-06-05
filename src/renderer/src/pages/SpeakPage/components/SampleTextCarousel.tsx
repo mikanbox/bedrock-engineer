@@ -31,7 +31,7 @@ export const SampleTextCarousel: React.FC<SampleTextCarouselProps> = ({
 
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % validScenarios.length)
-    }, 3000) // 3 seconds
+    }, 6000) // 6 seconds
 
     return () => clearInterval(interval)
   }, [isVisible, validScenarios.length])

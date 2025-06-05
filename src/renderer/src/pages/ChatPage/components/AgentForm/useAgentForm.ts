@@ -7,7 +7,8 @@ import {
   KnowledgeBase,
   McpServerConfig,
   Scenario,
-  FlowConfig
+  FlowConfig,
+  EnvironmentContextSettings
 } from '@/types/agent-chat'
 import { ToolName, isMcpTool } from '@/types/tools'
 import useSetting from '@renderer/hooks/useSetting'
@@ -35,7 +36,12 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     iconColor: initialAgent?.iconColor,
     tools: initialAgent?.tools || ([] as ToolName[]),
     category: initialAgent?.category || 'all',
-    additionalInstruction: initialAgent?.additionalInstruction || ''
+    additionalInstruction: initialAgent?.additionalInstruction || '',
+    environmentContextSettings: {
+      todoListInstruction: initialAgent?.environmentContextSettings?.todoListInstruction ?? true,
+      projectRule: initialAgent?.environmentContextSettings?.projectRule ?? true,
+      visualExpressionRules: initialAgent?.environmentContextSettings?.visualExpressionRules ?? true
+    }
   })
 
   // タブナビゲーション用の状態
@@ -99,6 +105,7 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
             | BedrockAgent[]
             | FlowConfig[]
             | string[]
+            | EnvironmentContextSettings
           )
         ]
       >

@@ -1205,7 +1205,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // 現在のエージェントの有効なツールを取得
     const agentTools = getAgentTools(selectedAgentId)
-    const systemPromptContext = getEnvironmentContext(agentTools)
+    // エージェント固有の環境コンテキスト設定を取得
+    const systemPromptContext = getEnvironmentContext(
+      agentTools,
+      currentAgent?.environmentContextSettings
+    )
 
     return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
       projectPath,

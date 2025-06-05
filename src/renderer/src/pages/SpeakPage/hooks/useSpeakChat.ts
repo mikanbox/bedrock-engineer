@@ -14,6 +14,12 @@ export type SpeakChatStatus =
   | 'processing'
   | 'error'
 
+export interface ErrorState {
+  type: 'connection' | 'recording' | 'audio' | 'unknown'
+  message: string
+  timestamp: number
+}
+
 export interface ThinkingState {
   waitingForUserTranscription: boolean
   waitingForAssistantResponse: boolean
@@ -38,6 +44,7 @@ export interface UseSpeakChatReturn {
   isRecording: boolean
   thinkingState: ThinkingState
   toolExecutionState: ToolExecutionState
+  errorState: ErrorState | null
 
   // Chat history
   chat: ChatHistory
@@ -80,6 +87,7 @@ export function useSpeakChat(
   const [toolExecutionState, setToolExecutionState] = useState<ToolExecutionState>({
     isExecuting: false
   })
+  const [errorState, setErrorState] = useState<ErrorState | null>(null)
 
   // Session management
   const sessionInitializedRef = useRef<boolean>(false)
@@ -275,13 +283,13 @@ export function useSpeakChat(
 
     toolResult: (data) => {
       console.log('Tool result received:', data)
-      setToolExecutionState({
+      setToolExecutionState((prev) => ({
         isExecuting: false,
         lastResult: {
-          toolName: data.toolName || 'unknown',
+          toolName: prev.currentTool?.toolName || data.toolName || 'unknown',
           result: data.result
         }
-      })
+      }))
     },
 
     error: (error) => {
@@ -403,24 +411,53 @@ export function useSpeakChat(
     }
   }, [audioRecorder, socket])
 
+  // Monitor connection during recording and handle disconnections
+  useEffect(() => {
+    if (audioRecorder.isRecording && socket.status !== 'connected') {
+      console.warn('Socket disconnected during recording, stopping recording')
+      stopRecording()
+      setStatus('error')
+      setErrorState({
+        type: 'connection',
+        message: 'Connection lost during recording',
+        timestamp: Date.now()
+      })
+    }
+  }, [socket.status, audioRecorder.isRecording, stopRecording])
+
   // Update status based on socket connection
   useEffect(() => {
     switch (socket.status) {
       case 'connecting':
         setStatus('connecting')
+        setErrorState(null) // Clear any previous errors when attempting to connect
         break
       case 'connected':
         setStatus('connected')
+        setErrorState(null) // Clear errors on successful connection
         break
       case 'disconnected':
         setStatus('disconnected')
         sessionInitializedRef.current = false
+        // Only set error if it wasn't a user-initiated disconnect
+        if (status !== 'disconnected') {
+          setErrorState({
+            type: 'connection',
+            message: 'Connection lost',
+            timestamp: Date.now()
+          })
+        }
         break
       case 'error':
         setStatus('error')
+        setErrorState({
+          type: 'connection',
+          message: 'Connection error occurred',
+          timestamp: Date.now()
+        })
         break
     }
-  }, [socket.status])
+  }, [socket.status, status])
 
   return {
     status,
@@ -428,6 +465,7 @@ export function useSpeakChat(
     isRecording: audioRecorder.isRecording,
     thinkingState,
     toolExecutionState,
+    errorState,
     chat,
     connect,
     disconnect,

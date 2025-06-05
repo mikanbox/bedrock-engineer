@@ -195,29 +195,79 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ thinkingState }) 
 
 interface ErrorDisplayProps {
   status: SpeakChatStatus
+  errorState: any
 }
 
-const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ status }) => {
+const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ status, errorState }) => {
+  const { t } = useTranslation()
+
   if (status !== 'error') return null
 
-  return (
-    <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
-      <div className="flex items-center space-x-2">
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+  const handleReload = () => {
+    window.location.reload()
+  }
+
+  // Get error message based on error state
+  const getErrorMessage = () => {
+    if (errorState) {
+      switch (errorState.type) {
+        case 'connection':
+          return errorState.message || 'Connection error occurred'
+        case 'recording':
+          return errorState.message || 'Recording error occurred'
+        case 'audio':
+          return errorState.message || 'Audio processing error occurred'
+        default:
+          return errorState.message || 'An unknown error occurred'
+      }
+    }
+    return 'Connection error. Please try reconnecting.'
+  }
+
+  // Get error icon based on error type
+  const getErrorIcon = () => {
+    if (errorState?.type === 'recording') {
+      return (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
           />
         </svg>
-        <span className="text-sm font-medium">Connection error. Please try reconnecting.</span>
+      )
+    }
+    return (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    )
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg max-w-xs">
+      <div className="flex items-start space-x-2">
+        {getErrorIcon()}
+        <div className="flex flex-col space-y-1 flex-1">
+          <span className="text-sm font-medium">{getErrorMessage()}</span>
+          {errorState?.timestamp && (
+            <span className="text-xs text-red-200">
+              {new Date(errorState.timestamp).toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={handleReload}
+            className="text-xs bg-red-600 hover:bg-red-700 px-2 py-1 rounded transition-colors self-start"
+          >
+            {t('Reload Page')}
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -227,14 +277,20 @@ interface FixedElementsProps {
   showChat: boolean
   onToggleChat: (show: boolean) => void
   status: SpeakChatStatus
+  errorState: any
 }
 
-const FixedElements: React.FC<FixedElementsProps> = ({ showChat, onToggleChat, status }) => (
+const FixedElements: React.FC<FixedElementsProps> = ({
+  showChat,
+  onToggleChat,
+  status,
+  errorState
+}) => (
   <>
     <div className={`fixed right-4 z-50 ${status === 'error' ? 'bottom-20' : 'bottom-4'}`}>
       <ViewToggleButton isDetailView={showChat} onToggle={onToggleChat} />
     </div>
-    <ErrorDisplay status={status} />
+    <ErrorDisplay status={status} errorState={errorState} />
   </>
 )
 
@@ -385,6 +441,7 @@ export const SpeakPage: React.FC = () => {
     isRecording,
     thinkingState,
     toolExecutionState,
+    errorState,
     chat,
     connect,
     disconnect,
@@ -532,7 +589,12 @@ export const SpeakPage: React.FC = () => {
         <PermissionHelpModal />
 
         {/* Fixed Elements */}
-        <FixedElements showChat={showChat} onToggleChat={setShowChat} status={status} />
+        <FixedElements
+          showChat={showChat}
+          onToggleChat={setShowChat}
+          status={status}
+          errorState={errorState}
+        />
       </div>
     </div>
   )

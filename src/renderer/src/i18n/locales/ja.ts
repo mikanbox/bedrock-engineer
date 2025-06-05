@@ -112,6 +112,7 @@ const SpeakPage = {
   'This prompt will be sent when you connect to start the conversation':
     'このプロンプトは接続時に会話を開始するために送信されます',
   'Connection error. Please try reconnecting.': '接続エラーです。再接続してください。',
+  'Reload Page': 'ページを再読み込み',
   Disconnected: '切断済み',
   'Connecting...': '接続中...',
   Connected: '接続済み',
@@ -300,7 +301,20 @@ const AgentFormTabs = {
   'Connection Failed': '接続失敗',
   'tools available': 'ツールが利用可能',
   'Startup time': '起動時間',
-  Solution: '解決策'
+  Solution: '解決策',
+  // Environment Context Settings
+  'Environment Context Settings': '環境コンテキスト設定',
+  'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.':
+    'システムプロンプトに含める環境コンテキストセクションを選択してください。基本コンテキスト（プロジェクトパス、日付）は常に含まれます。',
+  'Project Rule': 'プロジェクトルール',
+  'Includes instructions to load project-specific rules from .bedrock-engineer/rules folder':
+    'カスタムのコーディング規約、アーキテクチャガイドライン、特定の開発プラクティスがあるプロジェクトで作業する際に有効にしてください。AIが.bedrock-engineer/rulesフォルダからルールを自動的に読み込み、プロジェクトの規約に従って一貫性を保ちます。',
+  'Visual Expression Rules': '視覚表現ルール',
+  'Includes instructions for creating diagrams, images, and mathematical formulas':
+    'AIに図表（フローチャート、アーキテクチャ図）の作成、画像生成、数式の記述をさせたい場合に有効にしてください。ドキュメント作成、技術説明、データ可視化、教育コンテンツの作成に役立ちます。',
+  'TODO List Instruction': 'TODOリスト指示',
+  'Includes instructions to create TODO lists for long-running tasks':
+    '複雑で複数ステップからなるプロジェクトで、AIに大きなタスクを管理可能なアクションアイテムに分解してもらいたい場合に有効にしてください。プロジェクト計画、機能開発、リファクタリング、複数セッションにわたる作業で特に有用です。'
 }
 
 const ja = {

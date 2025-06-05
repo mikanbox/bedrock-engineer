@@ -2,6 +2,7 @@ import React from 'react'
 import { ChatHistory, ChatMessage } from '../lib/ChatHistoryManager'
 import { ThinkingState, ToolExecutionState } from '../hooks/useSpeakChat'
 import { ThinkingIndicator } from './ThinkingIndicator'
+import { ToolResultDisplay } from './ToolResultDisplay'
 import { LiaUserCircleSolid } from 'react-icons/lia'
 import AILogo from '@renderer/assets/images/icons/ai.svg'
 
@@ -135,45 +136,6 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isLast }) => {
   )
 }
 
-const ToolExecutionDisplay: React.FC<{ toolExecutionState: ToolExecutionState }> = ({
-  toolExecutionState
-}) => {
-  if (!toolExecutionState.isExecuting && !toolExecutionState.lastResult) {
-    return null
-  }
-
-  return (
-    <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-      {toolExecutionState.isExecuting && toolExecutionState.currentTool && (
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div>
-            <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              実行中: {toolExecutionState.currentTool.toolName}
-            </p>
-            <p className="text-xs text-blue-600 dark:text-blue-300">
-              ID: {toolExecutionState.currentTool.toolUseId}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {toolExecutionState.lastResult && (
-        <div className="mt-2">
-          <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-1">
-            完了: {toolExecutionState.lastResult.toolName}
-          </p>
-          <div className="text-xs bg-white dark:bg-gray-800 p-2 rounded border">
-            <pre className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-              {JSON.stringify(toolExecutionState.lastResult.result, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 const EmptyState: React.FC<{ audioControls?: React.ReactNode }> = ({ audioControls }) => (
   <div className="flex items-center justify-center h-full">
     <div className="text-center text-gray-500 dark:text-gray-400">
@@ -233,7 +195,22 @@ export const ChatDisplay: React.FC<ChatDisplayProps> = ({
         )}
 
         {/* Tool execution display */}
-        <ToolExecutionDisplay toolExecutionState={toolExecutionState} />
+        {toolExecutionState.isExecuting && toolExecutionState.currentTool && (
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div>
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  実行中: {toolExecutionState.currentTool.toolName}
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-300">
+                  ID: {toolExecutionState.currentTool.toolUseId}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        <ToolResultDisplay toolExecutionState={toolExecutionState} />
       </div>
     </div>
   )

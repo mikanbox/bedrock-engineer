@@ -104,6 +104,7 @@ const SpeakPage = {
   'This prompt will be sent when you connect to start the conversation':
     'This prompt will be sent when you connect to start the conversation',
   'Connection error. Please try reconnecting.': 'Connection error. Please try reconnecting.',
+  'Reload Page': 'Reload Page',
   Disconnected: 'Disconnected',
   'Connecting...': 'Connecting...',
   Connected: 'Connected',
@@ -274,7 +275,20 @@ const AgentFormTabs = {
   'Invalid format: Must use claude_desktop_config.json format with mcpServers object':
     'Invalid format: Must use claude_desktop_config.json format with mcpServers object',
   'When editing, please include exactly one server in mcpServers':
-    'When editing, please include exactly one server in mcpServers'
+    'When editing, please include exactly one server in mcpServers',
+  // Environment Context Settings
+  'Environment Context Settings': 'Environment Context Settings',
+  'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.':
+    'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.',
+  'Project Rule': 'Project Rule',
+  'Includes instructions to load project-specific rules from .bedrock-engineer/rules folder':
+    'Enable when working on projects with custom coding standards, architectural guidelines, or specific development practices. The AI will automatically load and follow rules from your .bedrock-engineer/rules folder to maintain consistency with your project conventions.',
+  'Visual Expression Rules': 'Visual Expression Rules',
+  'Includes instructions for creating diagrams, images, and mathematical formulas':
+    'Enable when you need the AI to create diagrams (flowcharts, architecture diagrams), generate images, or write mathematical formulas. Useful for documentation, technical explanations, data visualization, and educational content creation.',
+  'TODO List Instruction': 'TODO List Instruction',
+  'Includes instructions to create TODO lists for long-running tasks':
+    'Enable for complex, multi-step projects where you want the AI to break down large tasks into manageable action items. Particularly helpful for project planning, feature development, refactoring, and any work that spans multiple sessions.'
 }
 
 const en = {

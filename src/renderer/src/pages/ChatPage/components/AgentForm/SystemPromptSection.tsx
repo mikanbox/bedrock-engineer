@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FiZap, FiEye, FiEyeOff, FiChevronDown, FiChevronUp, FiMic } from 'react-icons/fi'
+import { ToggleSwitch } from 'flowbite-react'
 import { SystemPromptSectionProps } from './types'
 import { replacePlaceholders } from '../../utils/placeholder'
 import { getEnvironmentContext } from '../../constants/AGENTS_ENVIRONMENT_CONTEXT'
@@ -20,8 +21,10 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
   name,
   description,
   additionalInstruction,
+  environmentContextSettings,
   onChange,
   onAdditionalInstructionChange,
+  onEnvironmentContextSettingsChange,
   onAutoGenerate,
   onVoiceChatGenerate,
   isGenerating,
@@ -51,7 +54,7 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
 
   const getEnvironmentContextText = (): string => {
     const path = projectPath || t('noProjectPath')
-    const environmentContext = getEnvironmentContext(tools || [])
+    const environmentContext = getEnvironmentContext(tools || [], environmentContextSettings)
     return replacePlaceholders(environmentContext, {
       projectPath: path,
       allowedCommands,
@@ -85,7 +88,7 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
         <div className="flex-grow">
           <div className="flex items-center gap-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-              System Prompt
+              {t('systemPrompt')}
             </label>
             <div className="flex justify-end items-center space-x-2">
               <div
@@ -223,7 +226,7 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
               {/* User Input Section */}
               <div className="mb-6">
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-3 uppercase tracking-wide">
-                  User Input
+                  {t('userInput')}
                 </p>
                 <div className="whitespace-pre-wrap bg-white dark:bg-gray-900/50 p-3 rounded border border-gray-200 dark:border-gray-600">
                   {getPreviewText(system)}
@@ -233,7 +236,7 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
               {/* Environment Context Section */}
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-3 uppercase tracking-wide">
-                  Auto-Added Environment Context
+                  {t('autoAddedEnvironmentContext')}
                 </p>
                 <div className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-700/50 p-3 rounded border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300">
                   {getEnvironmentContextText()}
@@ -242,6 +245,94 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Environment Context Settings */}
+      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+          {t('Environment Context Settings')}
+        </h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          {t(
+            'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.'
+          )}
+        </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm text-gray-700 dark:text-gray-200">{t('Project Rule')}</span>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t(
+                  'Includes instructions to load project-specific rules from .bedrock-engineer/rules folder'
+                )}
+              </p>
+            </div>
+            <ToggleSwitch
+              checked={Boolean(environmentContextSettings?.projectRule)}
+              onChange={(checked) => {
+                if (onEnvironmentContextSettingsChange) {
+                  const newSettings = {
+                    todoListInstruction: environmentContextSettings?.todoListInstruction ?? true,
+                    projectRule: checked,
+                    visualExpressionRules: environmentContextSettings?.visualExpressionRules ?? true
+                  }
+                  onEnvironmentContextSettingsChange(newSettings)
+                }
+              }}
+              label=""
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm text-gray-700 dark:text-gray-200">
+                {t('Visual Expression Rules')}
+              </span>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t(
+                  'Includes instructions for creating diagrams, images, and mathematical formulas'
+                )}
+              </p>
+            </div>
+            <ToggleSwitch
+              checked={Boolean(environmentContextSettings?.visualExpressionRules)}
+              onChange={(checked) => {
+                if (onEnvironmentContextSettingsChange) {
+                  onEnvironmentContextSettingsChange({
+                    todoListInstruction: environmentContextSettings?.todoListInstruction ?? true,
+                    projectRule: environmentContextSettings?.projectRule ?? true,
+                    visualExpressionRules: checked
+                  })
+                }
+              }}
+              label=""
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm text-gray-700 dark:text-gray-200">
+                {t('TODO List Instruction')}
+              </span>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t('Includes instructions to create TODO lists for long-running tasks')}
+              </p>
+            </div>
+            <ToggleSwitch
+              checked={Boolean(environmentContextSettings?.todoListInstruction)}
+              onChange={(checked) => {
+                if (onEnvironmentContextSettingsChange) {
+                  onEnvironmentContextSettingsChange({
+                    todoListInstruction: checked,
+                    projectRule: environmentContextSettings?.projectRule ?? true,
+                    visualExpressionRules: environmentContextSettings?.visualExpressionRules ?? true
+                  })
+                }
+              }}
+              label=""
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -32,6 +32,8 @@ export function useSocketConnection(
 ): UseSocketConnectionReturn {
   const [status, setStatus] = useState<ConnectionStatus>('disconnected')
   const socketRef = useRef<Socket | null>(null)
+  const lastErrorTimeRef = useRef<number>(0)
+  const ERROR_THROTTLE_MS = 5000 // 5秒間は同じエラーを出力しない
 
   // Connect to server
   const connect = useCallback(() => {
@@ -213,7 +215,11 @@ export function useSocketConnection(
     if (socketRef.current?.connected) {
       socketRef.current.emit('audioInput', audioData)
     } else {
-      console.warn('Cannot send audio input: socket not connected')
+      const now = Date.now()
+      if (now - lastErrorTimeRef.current > ERROR_THROTTLE_MS) {
+        console.warn('Cannot send audio input: socket not connected')
+        lastErrorTimeRef.current = now
+      }
     }
   }, [])
 
