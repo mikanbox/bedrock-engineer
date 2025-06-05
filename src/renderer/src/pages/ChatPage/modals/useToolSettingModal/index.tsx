@@ -209,12 +209,37 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
 
     if (!selectedAgentId) return
 
-    const updatedTools = agentTools.map((tool) => {
-      if (tool.toolSpec?.name === toolName) {
-        return { ...tool, enabled: !tool.enabled }
+    // 現在のツールを探す
+    const existingToolIndex = agentTools.findIndex((tool) => tool.toolSpec?.name === toolName)
+
+    let updatedTools: ToolState[]
+
+    if (existingToolIndex !== -1) {
+      // ツールが存在する場合は状態を切り替え
+      updatedTools = agentTools.map((tool) => {
+        if (tool.toolSpec?.name === toolName) {
+          return { ...tool, enabled: !tool.enabled }
+        }
+        return tool
+      })
+    } else {
+      // ツールが存在しない場合は新しく追加
+      const standardToolSpecs = window.api?.tools?.getToolSpecs() || []
+      const toolSpec = standardToolSpecs.find((spec) => spec.toolSpec?.name === toolName)
+
+      if (toolSpec?.toolSpec) {
+        const newTool: ToolState = {
+          toolSpec: toolSpec.toolSpec,
+          enabled: true
+        }
+        updatedTools = [...agentTools, newTool]
+      } else {
+        // ToolSpecが見つからない場合はエラー
+        console.error(`ToolSpec not found for tool: ${toolName}`)
+        return
       }
-      return tool
-    })
+    }
+
     setAgentTools(updatedTools)
 
     // エージェントの設定を更新
@@ -228,6 +253,9 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
 
   // 各カテゴリのツールを取得する
   const getToolsByCategory = () => {
+    // 標準ツールのToolSpecを取得
+    const standardToolSpecs = window.api?.tools?.getToolSpecs() || []
+
     const toolsByCategory = TOOL_CATEGORIES.map((category) => {
       // MCP カテゴリの場合は MCP ツールのみを含める
       if (category.isMcpCategory) {
@@ -240,14 +268,22 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
         }
       }
 
-      // 通常のカテゴリの場合は MCP ツール以外を含める
-      const toolsInCategory =
-        agentTools?.filter(
-          (tool) =>
-            tool.toolSpec?.name &&
-            category.tools.includes(tool.toolSpec.name) &&
-            !isMcpTool(tool.toolSpec.name)
-        ) || []
+      // 通常のカテゴリの場合：カテゴリで定義されているすべてのツールを表示
+      const toolsInCategory = category.tools
+        .map((toolName) => {
+          // 標準ツールのToolSpecを探す
+          const toolSpec = standardToolSpecs.find((spec) => spec.toolSpec?.name === toolName)
+
+          // エージェントがこのツールを有効にしているかチェック
+          const agentTool = agentTools?.find((tool) => tool.toolSpec?.name === toolName)
+          const isEnabled = agentTool?.enabled || false
+
+          return {
+            toolSpec: toolSpec?.toolSpec,
+            enabled: isEnabled
+          } as ToolState
+        })
+        .filter((tool) => tool.toolSpec) // ToolSpecが見つからないものは除外
 
       return {
         ...category,
@@ -255,8 +291,17 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
       }
     })
 
-    // ツールがないカテゴリは表示しない
-    return toolsByCategory.filter((category) => category.toolsData.length > 0)
+    // MCPカテゴリの場合はツールがある場合のみ表示、
+    // 通常のカテゴリの場合はツールが定義されている場合は表示（有効/無効に関係なく）
+    return toolsByCategory.filter((category) => {
+      if (category.isMcpCategory) {
+        // MCPカテゴリはツールがある場合のみ表示
+        return category.toolsData.length > 0
+      } else {
+        // 通常のカテゴリはカテゴリにツールが定義されている場合は表示
+        return category.tools.length > 0
+      }
+    })
   }
 
   const categorizedTools = getToolsByCategory()

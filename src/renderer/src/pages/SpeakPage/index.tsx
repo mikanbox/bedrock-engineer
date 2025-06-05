@@ -11,6 +11,7 @@ import useSetting from '@renderer/hooks/useSetting'
 import { SpeakChatStatus, ThinkingState, ToolExecutionState } from './hooks/useSpeakChat'
 import { VoiceSelector } from './components/VoiceSelector'
 import { VoiceId } from './constants/voices'
+import { SampleTextCarousel } from './components/SampleTextCarousel'
 
 const API_ENDPOINT = window.store.get('apiEndpoint')
 
@@ -221,6 +222,8 @@ interface SimpleViewProps {
   thinkingState: ThinkingState
   onStartRecording: () => void
   onStopRecording: () => void
+  currentAgentScenarios?: Array<{ title: string; content: string }>
+  chat: any
 }
 
 const SimpleView: React.FC<SimpleViewProps> = ({
@@ -230,35 +233,48 @@ const SimpleView: React.FC<SimpleViewProps> = ({
   status,
   thinkingState,
   onStartRecording,
-  onStopRecording
-}) => (
-  <>
-    {/* Main content - centered AI icon */}
-    <div className="flex-1 flex items-center justify-center">
-      <div className="flex flex-col items-center space-y-4">
-        <VoiceAILottie
-          style={{ width: 240, height: 240 }}
-          loop={isRecording || status === 'processing'}
-          autoplay={isRecording || status === 'processing'}
-        />
-        <ThinkingIndicator thinkingState={thinkingState} />
-      </div>
-    </div>
+  onStopRecording,
+  currentAgentScenarios = [],
+  chat
+}) => {
+  const hasMessages = chat && chat.history && chat.history.length > 0
 
-    {/* Bottom controls */}
-    <div className="pb-16 flex items-center justify-center">
-      <RecordingButton
-        isRecording={isRecording}
-        canStartRecording={canStartRecording}
-        canStopRecording={canStopRecording}
-        status={status}
-        onStart={onStartRecording}
-        onStop={onStopRecording}
-        size="large"
-      />
-    </div>
-  </>
-)
+  return (
+    <>
+      {/* Main content - centered AI icon */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-6">
+          <VoiceAILottie
+            style={{ width: 240, height: 240 }}
+            loop={isRecording || status === 'processing'}
+            autoplay={isRecording || status === 'processing'}
+          />
+          <ThinkingIndicator thinkingState={thinkingState} />
+
+          {/* Sample Text Animation */}
+          <SampleTextCarousel
+            scenarios={currentAgentScenarios}
+            isVisible={!hasMessages}
+            className="mt-4"
+          />
+        </div>
+      </div>
+
+      {/* Bottom controls */}
+      <div className="pb-16 flex items-center justify-center">
+        <RecordingButton
+          isRecording={isRecording}
+          canStartRecording={canStartRecording}
+          canStopRecording={canStopRecording}
+          status={status}
+          onStart={onStartRecording}
+          onStop={onStopRecording}
+          size="large"
+        />
+      </div>
+    </>
+  )
+}
 
 interface DetailViewProps {
   chat: any
@@ -327,7 +343,8 @@ export const SpeakPage: React.FC = () => {
     selectedAgentId,
     getAgentTools,
     selectedVoiceId,
-    setSelectedVoiceId
+    setSelectedVoiceId,
+    currentAgent
   } = useSettings()
   const { agents, setSelectedAgentId } = useSetting()
 
@@ -450,7 +467,11 @@ export const SpeakPage: React.FC = () => {
         {showChat ? (
           <DetailView chat={chat} toolExecutionState={toolExecutionState} {...commonProps} />
         ) : (
-          <SimpleView {...commonProps} />
+          <SimpleView
+            {...commonProps}
+            currentAgentScenarios={currentAgent?.scenarios || []}
+            chat={chat}
+          />
         )}
 
         {/* Modals */}

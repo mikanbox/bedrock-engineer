@@ -140,7 +140,11 @@ const SpeakPage = {
   'voice.amy.description': '冷静で落ち着いている',
   'voice.amy.characteristics': '思慮深く慎重で、明確でバランスの取れた回答を提供します',
   'voice.matthew.description': '自信に満ち、威厳的',
-  'voice.matthew.characteristics': '知識豊富で専門的、頼りがいのある印象を与えます'
+  'voice.matthew.characteristics': '知識豊富で専門的、頼りがいのある印象を与えます',
+  // Sample Text
+  'Try talking like this': 'こんな風に話しかけてみましょう',
+  'sample.noScenarios': 'サンプル会話がありません',
+  'Nova Sonic currently supports English only': 'Nova Sonicは現在英語のみをサポートしています'
 }
 
 const WebsiteGeneratorPage = {

@@ -132,7 +132,11 @@ const SpeakPage = {
   'voice.amy.description': 'Calm and composed',
   'voice.amy.characteristics': 'Thoughtful and measured, provides clear and balanced responses',
   'voice.matthew.description': 'Confident and authoritative',
-  'voice.matthew.characteristics': 'Knowledgeable, professional, and dependable impression'
+  'voice.matthew.characteristics': 'Knowledgeable, professional, and dependable impression',
+  // Sample Text
+  'Try talking like this': 'Try talking like this',
+  'sample.noScenarios': 'No sample conversations available',
+  'Nova Sonic currently supports English only': 'Nova Sonic currently supports English only'
 }
 
 const WebsiteGeneratorPage = {
