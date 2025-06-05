@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FiZap, FiEye, FiEyeOff, FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import { FiZap, FiEye, FiEyeOff, FiChevronDown, FiChevronUp, FiMic } from 'react-icons/fi'
 import { SystemPromptSectionProps } from './types'
 import { replacePlaceholders } from '../../utils/placeholder'
 import { getEnvironmentContext } from '../../constants/AGENTS_ENVIRONMENT_CONTEXT'
@@ -23,7 +23,9 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
   onChange,
   onAdditionalInstructionChange,
   onAutoGenerate,
+  onVoiceChatGenerate,
   isGenerating,
+  isGeneratingVoiceChat,
   projectPath,
   allowedCommands,
   knowledgeBases,
@@ -95,17 +97,36 @@ export const SystemPromptSection: React.FC<SystemPromptSectionProps> = ({
                 {showPreview ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
               </div>
               {name && description && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={onAutoGenerate}
-                  disabled={isGenerating}
-                  className="inline-flex items-center text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 dark:hover:bg-blue-800
-                  text-blue-600 dark:text-blue-400 rounded px-2 py-0.5 transition-colors duration-200 border border-blue-200 dark:border-blue-800"
-                >
-                  <FiZap className={`w-3 h-3 mr-1 ${isGenerating ? 'animate-pulse' : ''}`} />
-                  <span>{isGenerating ? t('generating') : t('generateSystemPrompt')}</span>
-                </motion.button>
+                <>
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={onAutoGenerate}
+                    disabled={isGenerating}
+                    className="inline-flex items-center text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 dark:hover:bg-blue-800
+                    text-blue-600 dark:text-blue-400 rounded px-2 py-0.5 transition-colors duration-200 border border-blue-200 dark:border-blue-800"
+                  >
+                    <FiZap className={`w-3 h-3 mr-1 ${isGenerating ? 'animate-pulse' : ''}`} />
+                    <span>{isGenerating ? t('generating') : t('generateSystemPrompt')}</span>
+                  </motion.button>
+
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={onVoiceChatGenerate}
+                    disabled={isGeneratingVoiceChat}
+                    className="inline-flex items-center text-xs bg-green-50 hover:bg-green-100 dark:bg-green-900 dark:hover:bg-green-800
+                    text-green-600 dark:text-green-400 rounded px-2 py-0.5 transition-colors duration-200 border border-green-200 dark:border-green-800"
+                    title={t('generateVoiceChatPromptTooltip')}
+                  >
+                    <FiMic
+                      className={`w-3 h-3 mr-1 ${isGeneratingVoiceChat ? 'animate-pulse' : ''}`}
+                    />
+                    <span>
+                      {isGeneratingVoiceChat ? t('generating') : t('generateVoiceChatPrompt')}
+                    </span>
+                  </motion.button>
+                </>
               )}
 
               {/* Additional Instruction Toggle Button */}

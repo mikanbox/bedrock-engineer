@@ -27,8 +27,10 @@ export const AgentFormContent: React.FC<{
   isLoadingMcpTools: boolean
   tempMcpTools: ToolState[]
   handleAutoGeneratePrompt: () => void
+  handleVoiceChatGenerate: () => void
   handleGenerateScenarios: () => void
   isGeneratingSystem: boolean
+  isGeneratingVoiceChat: boolean
   isGeneratingScenarios: boolean
   availableTags: string[]
   fetchMcpTools: (servers?: McpServerConfig[]) => Promise<void>
@@ -45,8 +47,10 @@ export const AgentFormContent: React.FC<{
   isLoadingMcpTools,
   tempMcpTools,
   handleAutoGeneratePrompt,
+  handleVoiceChatGenerate,
   handleGenerateScenarios,
   isGeneratingSystem,
+  isGeneratingVoiceChat,
   isGeneratingScenarios,
   availableTags,
   fetchMcpTools,
@@ -78,7 +82,9 @@ export const AgentFormContent: React.FC<{
               onChange={(value) => updateField('system', value)}
               onAdditionalInstructionChange={handleAdditionalInstructionChange}
               onAutoGenerate={handleAutoGeneratePrompt}
+              onVoiceChatGenerate={handleVoiceChatGenerate}
               isGenerating={isGeneratingSystem}
+              isGeneratingVoiceChat={isGeneratingVoiceChat}
               projectPath={projectPath}
               allowedCommands={formData.allowedCommands || []}
               knowledgeBases={formData.knowledgeBases || []}

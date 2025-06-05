@@ -1,8 +1,7 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import useSetting from '@renderer/hooks/useSetting'
 import { AgentFormProps } from './types'
 import { useAgentForm } from './useAgentForm'
-import { usePromptGeneration } from './usePromptGeneration'
 import { formEventUtils } from './utils/formEventUtils'
 import { useAgentFilter } from '../AgentList'
 
@@ -27,6 +26,12 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
     agentCategory,
     isLoadingMcpTools,
     tempMcpTools,
+    generateSystemPrompt,
+    generateVoiceChatPrompt,
+    generateScenarios,
+    isGeneratingSystem,
+    isGeneratingVoiceChat,
+    isGeneratingScenarios,
     updateField,
     handleSubmit,
     handleToolsChange,
@@ -35,44 +40,13 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
     fetchMcpTools
   } = useAgentForm(agent, onSave)
 
-  // システムプロンプトとシナリオ更新ハンドラー
-  const handleSystemPromptGenerated = React.useCallback(
-    (prompt: string) => updateField('system', prompt),
-    [updateField]
-  )
-
-  const handleScenariosGenerated = React.useCallback(
-    (scenarios: Array<{ title: string; content: string }>) => updateField('scenarios', scenarios),
-    [updateField]
-  )
-
   const handleAdditionalInstructionChange = React.useCallback(
     (value: string) => updateField('additionalInstruction', value),
     [updateField]
   )
 
-  // 標準ツールとMCPツールを結合
-  const combinedTools = useMemo(() => {
-    // MCPツールが存在し、有効なtoolSpecを持つもののみフィルタリング
-    const mcpToolsToUse = tempMcpTools.filter((tool) => tool.toolSpec?.name)
-    // 標準ツールとMCPツールを結合
-    return [...agentTools, ...mcpToolsToUse]
-  }, [agentTools, tempMcpTools])
-
-  // プロンプト生成フック - 結合したツール情報を渡す
-  const { generateSystemPrompt, generateScenarios, isGeneratingSystem, isGeneratingScenarios } =
-    usePromptGeneration(
-      formData.name,
-      formData.description,
-      formData.system,
-      handleSystemPromptGenerated,
-      handleScenariosGenerated,
-      formData.additionalInstruction,
-      combinedTools
-    )
-
   // 合成された生成状態
-  const isGenerating = isGeneratingSystem || isGeneratingScenarios
+  const isGenerating = isGeneratingSystem || isGeneratingVoiceChat || isGeneratingScenarios
 
   return (
     <div>
@@ -108,8 +82,10 @@ export const AgentForm: React.FC<AgentFormProps> = ({ agent, onSave, onCancel })
               isLoadingMcpTools={isLoadingMcpTools}
               tempMcpTools={tempMcpTools}
               handleAutoGeneratePrompt={generateSystemPrompt}
+              handleVoiceChatGenerate={generateVoiceChatPrompt}
               handleGenerateScenarios={generateScenarios}
               isGeneratingSystem={isGeneratingSystem}
+              isGeneratingVoiceChat={isGeneratingVoiceChat}
               isGeneratingScenarios={isGeneratingScenarios}
               availableTags={availableTags}
               fetchMcpTools={fetchMcpTools}

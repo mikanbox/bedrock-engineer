@@ -33,7 +33,9 @@ export interface SystemPromptSectionProps {
   onChange: (value: string) => void
   onAdditionalInstructionChange?: (value: string) => void
   onAutoGenerate: () => void
+  onVoiceChatGenerate: () => void
   isGenerating: boolean
+  isGeneratingVoiceChat: boolean
   projectPath: string
   allowedCommands: CommandConfig[]
   knowledgeBases: KnowledgeBase[]

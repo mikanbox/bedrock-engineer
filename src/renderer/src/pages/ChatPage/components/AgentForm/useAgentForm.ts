@@ -13,6 +13,7 @@ import { ToolName, isMcpTool } from '@/types/tools'
 import useSetting from '@renderer/hooks/useSetting'
 import { BedrockAgent } from '@/types/agent'
 import { CommandConfig } from '../../modals/useToolSettingModal'
+import { usePromptGeneration } from './usePromptGeneration'
 
 /**
  * エージェントフォームの状態管理と主要機能を担当するカスタムフック
@@ -53,6 +54,24 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
 
   // 設定データへのアクセス
   const { getDefaultToolsForCategory } = useSetting()
+
+  // プロンプト生成機能の統合
+  const {
+    generateSystemPrompt,
+    generateVoiceChatPrompt,
+    generateScenarios,
+    isGeneratingSystem,
+    isGeneratingVoiceChat,
+    isGeneratingScenarios
+  } = usePromptGeneration(
+    formData.name,
+    formData.description,
+    formData.system,
+    (prompt: string) => updateField('system', prompt),
+    (scenarios: Array<{ title: string; content: string }>) => updateField('scenarios', scenarios),
+    formData.additionalInstruction,
+    agentTools
+  )
 
   // useCallbackでメモ化して、再レンダリングによる関数参照の変更を防止
   const updateField = useCallback(
@@ -349,6 +368,14 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     agentCategory,
     isLoadingMcpTools,
     tempMcpTools,
+
+    // プロンプト生成関連
+    generateSystemPrompt,
+    generateVoiceChatPrompt,
+    generateScenarios,
+    isGeneratingSystem,
+    isGeneratingVoiceChat,
+    isGeneratingScenarios,
 
     // 状態更新関数
     updateField,
