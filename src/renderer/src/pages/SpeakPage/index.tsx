@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { BsQuestionCircle } from 'react-icons/bs'
 import { useSpeakChat } from './hooks/useSpeakChat'
 import { VoiceAILottie } from '@renderer/components/VoiceAI'
 import { ChatDisplay } from './components/ChatDisplay'
@@ -12,6 +14,7 @@ import { SpeakChatStatus, ThinkingState, ToolExecutionState } from './hooks/useS
 import { VoiceSelector } from './components/VoiceSelector'
 import { VoiceId } from './constants/voices'
 import { SampleTextCarousel } from './components/SampleTextCarousel'
+import { usePermissionHelpModal } from './components/PermissionHelpModal'
 
 const API_ENDPOINT = window.store.get('apiEndpoint')
 
@@ -25,6 +28,7 @@ interface PageHeaderProps {
   onOpenAgentSettings: () => void
   onOpenSystemPrompt: () => void
   onOpenVoiceSelector: () => void
+  onOpenPermissionHelp: () => void
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -32,32 +36,56 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   selectedAgentId,
   onOpenAgentSettings,
   onOpenSystemPrompt,
-  onOpenVoiceSelector
-}) => (
-  <div className="flex justify-between items-center">
-    <div className="flex items-center gap-4">
-      <AgentSelector
-        agents={agents}
-        selectedAgent={selectedAgentId}
-        onOpenSettings={onOpenAgentSettings}
-      />
+  onOpenVoiceSelector,
+  onOpenPermissionHelp
+}) => {
+  const { t } = useTranslation()
+
+  // Check if running on macOS
+  const isMacOS = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+
+  return (
+    <div className="flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <AgentSelector
+          agents={agents}
+          selectedAgent={selectedAgentId}
+          onOpenSettings={onOpenAgentSettings}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        {isMacOS && (
+          <div className="relative mr-2 group">
+            <BsQuestionCircle
+              className="w-4 h-4 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer"
+              onClick={onOpenPermissionHelp}
+            />
+            <div
+              className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 text-xs
+                          font-medium text-white bg-gray-900 dark:bg-gray-700 rounded-lg shadow-sm opacity-0 group-hover:opacity-100
+                          transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+            >
+              {t('permissionHelp.tooltip')}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-900 dark:border-b-gray-700"></div>
+            </div>
+          </div>
+        )}
+        <span
+          className="text-xs text-gray-400 font-thin cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
+          onClick={onOpenVoiceSelector}
+        >
+          VOICE
+        </span>
+        <span
+          className="text-xs text-gray-400 font-thin cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
+          onClick={onOpenSystemPrompt}
+        >
+          SYSTEM_PROMPT
+        </span>
+      </div>
     </div>
-    <div className="flex items-center gap-2">
-      <span
-        className="text-xs text-gray-400 font-thin cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
-        onClick={onOpenVoiceSelector}
-      >
-        VOICE
-      </span>
-      <span
-        className="text-xs text-gray-400 font-thin cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
-        onClick={onOpenSystemPrompt}
-      >
-        SYSTEM_PROMPT
-      </span>
-    </div>
-  </div>
-)
+  )
+}
 
 interface RecordingButtonProps {
   isRecording: boolean
@@ -400,6 +428,8 @@ export const SpeakPage: React.FC = () => {
     AgentSettingsModal
   } = useAgentSettingsModal()
 
+  const { PermissionHelpModal, openModal: openPermissionHelpModal } = usePermissionHelpModal()
+
   const handleStartRecording = async () => {
     try {
       await startRecording()
@@ -461,6 +491,7 @@ export const SpeakPage: React.FC = () => {
           onOpenAgentSettings={openAgentSettingsModal}
           onOpenSystemPrompt={handleOpenSystemPromptModal}
           onOpenVoiceSelector={handleOpenVoiceSelector}
+          onOpenPermissionHelp={openPermissionHelpModal}
         />
 
         {/* Main Content */}
@@ -496,6 +527,9 @@ export const SpeakPage: React.FC = () => {
           onStartNewChat={handleStartNewChatWithVoice}
           onCancel={handleCloseVoiceSelector}
         />
+
+        {/* Permission Help Modal */}
+        <PermissionHelpModal />
 
         {/* Fixed Elements */}
         <FixedElements showChat={showChat} onToggleChat={setShowChat} status={status} />

@@ -136,7 +136,17 @@ const SpeakPage = {
   // Sample Text
   'Try talking like this': 'Try talking like this',
   'sample.noScenarios': 'No sample conversations available',
-  'Nova Sonic currently supports English only': 'Nova Sonic currently supports English only'
+  'Nova Sonic currently supports English only': 'Nova Sonic currently supports English only',
+  // Permission Help Modal
+  'permissionHelp.title': 'Resolve Duplicate Permission Dialogs',
+  'permissionHelp.description': 'Information to resolve duplicate permission dialogs on macOS',
+  'permissionHelp.commandTitle': 'Resolution Command',
+  'permissionHelp.commandDescription':
+    'If OS permission dialogs (such as microphone access) are displayed duplicately, you can resolve this issue by running the following command after building and installing the application to add an ad-hoc signature:',
+  'permissionHelp.noteTitle': 'Note',
+  'permissionHelp.noteDescription':
+    'This command applies an ad-hoc code signature to the application and prevents the system permission dialogs from being displayed duplicately.',
+  'permissionHelp.tooltip': 'Help with permission dialogs'
 }
 
 const WebsiteGeneratorPage = {

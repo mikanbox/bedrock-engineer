@@ -2,9 +2,8 @@ import express, { Request, Response, ErrorRequestHandler } from 'express'
 import cors from 'cors'
 import { RequestHandler, NextFunction } from 'express'
 import { RetrieveAndGenerateCommandInput } from '@aws-sdk/client-bedrock-agent-runtime'
-import { fromIni } from '@aws-sdk/credential-providers'
 import { BedrockService, CallConverseAPIProps } from './bedrock'
-import { NovaSonicBidirectionalStreamClient } from './sonic/client'
+import { createNovaSonicClient } from './bedrock/client'
 import { store } from '../../preload/store'
 import { createCategoryLogger } from '../../common/logger'
 import { Server } from 'socket.io'
@@ -14,9 +13,6 @@ import { SonicToolExecutor } from './sonic/tool-executor'
 // Create category logger for API
 const apiLogger = createCategoryLogger('api:express')
 const bedrockLogger = createCategoryLogger('api:bedrock')
-
-// AWS Profile configuration
-const AWS_PROFILE_NAME = process.env.AWS_PROFILE || 'default'
 
 export const bedrock = new BedrockService({ store })
 
@@ -201,23 +197,25 @@ api.get(
   })
 )
 
-const bedrockClient = new NovaSonicBidirectionalStreamClient({
-  requestHandlerConfig: {
-    maxConcurrentStreams: 10
-  },
-  clientConfig: {
-    region: process.env.AWS_REGION || 'us-east-1', // TODO
-    credentials: fromIni({ profile: AWS_PROFILE_NAME }) // TODO
-  }
-})
-
-// Initialize tool executor and connect it to the bedrock client
-const toolExecutor = new SonicToolExecutor(io)
-bedrockClient.setToolExecutor(toolExecutor)
-
 // Socket.IO connection handler
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id)
+
+  // storeからAWS設定を取得してNova Sonicクライアントを作成
+  const awsConfig = store.get('aws')
+
+  const sonicClient = createNovaSonicClient({
+    region: awsConfig?.region || 'us-east-1',
+    accessKeyId: awsConfig?.accessKeyId || '',
+    secretAccessKey: awsConfig?.secretAccessKey || '',
+    sessionToken: awsConfig?.sessionToken,
+    useProfile: awsConfig?.useProfile ?? true,
+    profile: awsConfig?.profile || 'default'
+  })
+
+  // Initialize tool executor and connect it to the bedrock client
+  const toolExecutor = new SonicToolExecutor(io)
+  sonicClient.setToolExecutor(toolExecutor)
 
   // Register tool execution handlers for this socket
   toolExecutor.registerSocketHandlers(socket)
@@ -227,7 +225,7 @@ io.on('connection', (socket) => {
 
   try {
     // Create session with the new API (but don't initiate AWS stream yet)
-    const session = bedrockClient.createStreamSession(sessionId)
+    const session = sonicClient.createStreamSession(sessionId)
 
     // Track initialization state
     const sessionState = {
@@ -248,7 +246,7 @@ io.on('connection', (socket) => {
         try {
           console.log(`All setup events received, initiating AWS stream for session ${sessionId}`)
           sessionState.initialized = true
-          await bedrockClient.initiateSession(sessionId)
+          await sonicClient.initiateSession(sessionId)
           console.log(`AWS stream initiated successfully for session ${sessionId}`)
         } catch (error) {
           console.error(`Error initiating session ${sessionId}:`, error)
@@ -398,7 +396,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', async () => {
       console.log('Client disconnected abruptly:', socket.id)
 
-      if (bedrockClient.isSessionActive(sessionId)) {
+      if (sonicClient.isSessionActive(sessionId)) {
         try {
           console.log(`Beginning cleanup for abruptly disconnected session: ${socket.id}`)
 
@@ -419,7 +417,7 @@ io.on('connection', (socket) => {
         } catch (error) {
           console.error(`Error cleaning up session after disconnect: ${socket.id}`, error)
           try {
-            bedrockClient.forceCloseSession(sessionId)
+            sonicClient.forceCloseSession(sessionId)
             console.log(`Force closed session: ${sessionId}`)
           } catch (e) {
             console.error(`Failed even force close for session: ${sessionId}`, e)

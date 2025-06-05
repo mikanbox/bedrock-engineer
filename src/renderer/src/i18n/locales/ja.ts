@@ -144,7 +144,17 @@ const SpeakPage = {
   // Sample Text
   'Try talking like this': 'こんな風に話しかけてみましょう',
   'sample.noScenarios': 'サンプル会話がありません',
-  'Nova Sonic currently supports English only': 'Nova Sonicは現在英語のみをサポートしています'
+  'Nova Sonic currently supports English only': 'Nova Sonicは現在英語のみをサポートしています',
+  // Permission Help Modal
+  'permissionHelp.title': '重複した許可ダイヤログの解決',
+  'permissionHelp.description': 'macOSでの重複した許可ダイヤログを解決するための情報',
+  'permissionHelp.commandTitle': '解決コマンド',
+  'permissionHelp.commandDescription':
+    'OSの許可ダイヤログ（マイクロフォンアクセスなど）が重複して表示される場合、アプリケーションをビルド・インストールした後に以下のコマンドを実行してアドホック署名を追加することで、この問題を解決できます：',
+  'permissionHelp.noteTitle': '注意',
+  'permissionHelp.noteDescription':
+    'このコマンドは、アプリケーションにアドホックコード署名を適用し、システムの許可ダイヤログが重複して表示される問題を防ぎます。',
+  'permissionHelp.tooltip': '許可ダイヤログが繰り返し表示される？'
 }
 
 const WebsiteGeneratorPage = {
