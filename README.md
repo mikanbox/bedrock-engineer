@@ -9,7 +9,7 @@ Bedrock Engineer is Autonomous software development agent apps using [Amazon Bed
 
 ## 💻 Demo
 
-https://github.com/user-attachments/assets/788583b6-148b-4e9d-9015-c24ad4be6162
+https://github.com/user-attachments/assets/f6ed028d-f3c3-4e2c-afff-de2dd9444759
 
 ## 🍎 Getting Started
 
