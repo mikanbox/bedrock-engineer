@@ -35,6 +35,10 @@ mac:
   target:
     - dmg
     - pkg
+dmg:
+  artifactName: ${name}-${version}.${ext}
+pkg:
+  artifactName: ${name}-${version}.${ext}
 linux:
   target:
     - AppImage
