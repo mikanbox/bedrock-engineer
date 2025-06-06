@@ -37,6 +37,22 @@ const HomePage = {
   'Start by the menu on the left or': '左のメニューから開始するか、次のショートカットが利用できます'
 }
 
+const Translation = {
+  title: '翻訳',
+  translating: '翻訳中...',
+  error: 'エラー',
+  retry: 'リトライ',
+  formality: '敬語',
+  profanity: '不適切表現フィルター',
+  enableTranslation: '翻訳を有効にする',
+  targetLanguage: '翻訳先言語',
+  sourceLanguage: '翻訳元言語',
+  'auto-detect': '自動検出',
+  clearCache: '翻訳キャッシュをクリア',
+  cacheStats: 'キャッシュ統計',
+  translationSettings: '翻訳設定'
+}
+
 const SettingPage = {
   Setting: '設定',
   'Config Directory': 'アプリの設定',
@@ -135,6 +151,16 @@ const SpeakPage = {
   'Select Voice': '音声を選択してください',
   'Start New Chat': '新しいチャットを始める',
   Cancel: 'キャンセルする',
+  Voice: '音声',
+  // Translation Settings in Voice Modal
+  'Real-time Translation': 'リアルタイム翻訳',
+  'Translate AI responses to your preferred language': 'AIの応答を希望する言語に翻訳します',
+  'Target Language': '翻訳先言語',
+  Selected: '選択中',
+  'Translation Info': '翻訳について',
+  'Only AI responses will be translated': 'AIの応答のみが翻訳されます',
+  'Translation appears below the original message': '翻訳は元のメッセージの下に表示されます',
+  'You can retry failed translations': '翻訳に失敗した場合は再試行できます',
   // Voice Descriptions
   'voice.tiffany.description': '温かく親しみやすい',
   'voice.tiffany.characteristics': '親近感があり共感的で、居心地の良い会話を作り出します',
@@ -324,6 +350,7 @@ const ja = {
   ...chatPage.ja,
   ...SpeakPage,
   ...WebsiteGeneratorPage,
+  ...Translation,
   ...iamPolicy.ja,
   ...notificationSettings.ja,
   ...bedrockSettings.ja,

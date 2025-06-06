@@ -207,6 +207,12 @@ export interface SettingsContextType {
   // Voice Settings
   selectedVoiceId: string
   setSelectedVoiceId: (voiceId: string) => void
+
+  // Translation Settings
+  translationEnabled: boolean
+  setTranslationEnabled: (enabled: boolean) => void
+  translationTargetLanguage: string
+  setTranslationTargetLanguage: (language: string) => void
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
@@ -331,6 +337,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Voice Settings
   const [selectedVoiceId, setStateSelectedVoiceId] = useState<string>('amy')
+
+  // Translation Settings
+  const [translationEnabled, setStateTranslationEnabled] = useState<boolean>(false)
+  const [translationTargetLanguage, setStateTranslationTargetLanguage] = useState<string>('ja')
 
   // Initialize all settings
   useEffect(() => {
@@ -568,6 +578,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const storedVoiceId = window.store.get('selectedVoiceId') as string
     if (storedVoiceId && typeof storedVoiceId === 'string') {
       setStateSelectedVoiceId(storedVoiceId)
+    }
+
+    // Load Translation Settings
+    const storedTranslationEnabled = window.store.get('translationEnabled' as any)
+    if (typeof storedTranslationEnabled === 'boolean') {
+      setStateTranslationEnabled(storedTranslationEnabled)
+    }
+
+    const storedTranslationLanguage = window.store.get('translationTargetLanguage' as any)
+    if (typeof storedTranslationLanguage === 'string') {
+      setStateTranslationTargetLanguage(storedTranslationLanguage)
     }
   }, [])
 
@@ -1397,6 +1418,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('selectedVoiceId', voiceId)
   }, [])
 
+  // Translation Settings functions
+  const setTranslationEnabled = useCallback((enabled: boolean) => {
+    setStateTranslationEnabled(enabled)
+    ;(window.store as any).set('translationEnabled', enabled)
+  }, [])
+
+  const setTranslationTargetLanguage = useCallback((language: string) => {
+    setStateTranslationTargetLanguage(language)
+    ;(window.store as any).set('translationTargetLanguage', language)
+  }, [])
+
   const value = {
     // Advanced Settings
     sendMsgKey,
@@ -1535,7 +1567,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Voice Settings
     selectedVoiceId,
-    setSelectedVoiceId
+    setSelectedVoiceId,
+
+    // Translation Settings
+    translationEnabled,
+    setTranslationEnabled,
+    translationTargetLanguage,
+    setTranslationTargetLanguage
   }
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>

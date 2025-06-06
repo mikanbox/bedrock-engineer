@@ -37,6 +37,22 @@ const HomePage = {
   'Start by the menu on the left or': 'Start by the menu on the left or'
 }
 
+const Translation = {
+  title: 'Translation',
+  translating: 'Translating...',
+  error: 'Error',
+  retry: 'Retry',
+  formality: 'Formality',
+  profanity: 'Profanity Filter',
+  enableTranslation: 'Enable Translation',
+  targetLanguage: 'Target Language',
+  sourceLanguage: 'Source Language',
+  'auto-detect': 'Auto Detect',
+  clearCache: 'Clear Translation Cache',
+  cacheStats: 'Cache Statistics',
+  translationSettings: 'Translation Settings'
+}
+
 const SettingPage = {
   Setting: 'Setting',
   'Config Directory': 'Config Directory',
@@ -127,6 +143,18 @@ const SpeakPage = {
   'Select Voice': 'Select Voice',
   'Start New Chat': 'Start New Chat',
   Cancel: 'Cancel',
+  Voice: 'Voice',
+  // Translation Settings in Voice Modal
+  'Real-time Translation': 'Real-time Translation',
+  'Translate AI responses to your preferred language':
+    'Translate AI responses to your preferred language',
+  'Target Language': 'Target Language',
+  Selected: 'Selected',
+  'Translation Info': 'Translation Info',
+  'Only AI responses will be translated': 'Only AI responses will be translated',
+  'Translation appears below the original message':
+    'Translation appears below the original message',
+  'You can retry failed translations': 'You can retry failed translations',
   // Voice Descriptions
   'voice.tiffany.description': 'Warm and friendly',
   'voice.tiffany.characteristics': 'Approachable and empathetic, creates comfortable conversations',
@@ -298,6 +326,7 @@ const en = {
   ...chatPage.en,
   ...SpeakPage,
   ...WebsiteGeneratorPage,
+  ...Translation,
   ...iamPolicy.en,
   ...notificationSettings.en,
   ...bedrockSettings.en,

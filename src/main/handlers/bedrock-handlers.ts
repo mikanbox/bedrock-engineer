@@ -84,5 +84,73 @@ export const bedrockHandlers = {
     const result = await bedrock.invokeFlow(invokeFlowParams)
     bedrockLogger.info('Flow invoked successfully')
     return result
+  },
+
+  'bedrock:translateText': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Translating text', {
+      sourceLanguage: params.sourceLanguage,
+      targetLanguage: params.targetLanguage,
+      textLength: params.text?.length || 0,
+      hasCacheKey: !!params.cacheKey
+    })
+
+    const result = await bedrock.translateText({
+      text: params.text,
+      sourceLanguage: params.sourceLanguage,
+      targetLanguage: params.targetLanguage,
+      cacheKey: params.cacheKey
+    })
+
+    bedrockLogger.info('Text translated successfully', {
+      sourceLanguage: result.sourceLanguage,
+      targetLanguage: result.targetLanguage,
+      originalLength: result.originalText.length,
+      translatedLength: result.translatedText.length
+    })
+    return result
+  },
+
+  'bedrock:translateBatch': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Batch translating texts', {
+      count: params.texts?.length || 0
+    })
+
+    const result = await bedrock.translateBatch(params.texts)
+    bedrockLogger.info('Batch translation completed', {
+      successCount: result.length
+    })
+    return result
+  },
+
+  'bedrock:getTranslationCache': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Getting cached translation', {
+      sourceLanguage: params.sourceLanguage,
+      targetLanguage: params.targetLanguage,
+      textLength: params.text?.length || 0
+    })
+
+    const result = await bedrock.getCachedTranslation(
+      params.text,
+      params.sourceLanguage,
+      params.targetLanguage
+    )
+
+    bedrockLogger.debug('Cache lookup completed', {
+      found: !!result
+    })
+    return result
+  },
+
+  'bedrock:clearTranslationCache': async (_event: IpcMainInvokeEvent) => {
+    bedrockLogger.debug('Clearing translation cache')
+    await bedrock.clearTranslationCache()
+    bedrockLogger.info('Translation cache cleared')
+    return { success: true }
+  },
+
+  'bedrock:getTranslationCacheStats': async (_event: IpcMainInvokeEvent) => {
+    const stats = await bedrock.getTranslationCacheStats()
+    bedrockLogger.debug('Translation cache stats', stats)
+    return stats
   }
 } as const

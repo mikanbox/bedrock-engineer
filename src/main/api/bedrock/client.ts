@@ -1,6 +1,7 @@
 import { BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime'
 import { BedrockClient } from '@aws-sdk/client-bedrock'
 import { BedrockAgentRuntimeClient } from '@aws-sdk/client-bedrock-agent-runtime'
+import { TranslateClient } from '@aws-sdk/client-translate'
 import { fromIni } from '@aws-sdk/credential-providers'
 import { NovaSonicBidirectionalStreamClient } from '../sonic/client'
 import type { AWSCredentials } from './types'
@@ -64,5 +65,21 @@ export function createNovaSonicClient(awsCredentials: AWSCredentials) {
       maxConcurrentStreams: 10
     },
     clientConfig
+  })
+}
+
+export function createTranslateClient(awsCredentials: AWSCredentials) {
+  const { region, useProfile, profile, ...credentials } = awsCredentials
+
+  if (useProfile) {
+    return new TranslateClient({
+      region,
+      profile
+    })
+  }
+
+  return new TranslateClient({
+    region,
+    credentials
   })
 }
