@@ -203,6 +203,10 @@ export interface SettingsContextType {
   // Ignore Files Settings
   ignoreFiles: string[]
   setIgnoreFiles: (files: string[]) => void
+
+  // Voice Settings
+  selectedVoiceId: string
+  setSelectedVoiceId: (voiceId: string) => void
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
@@ -324,6 +328,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     'node_modules',
     '.github'
   ])
+
+  // Voice Settings
+  const [selectedVoiceId, setStateSelectedVoiceId] = useState<string>('amy')
 
   // Initialize all settings
   useEffect(() => {
@@ -556,6 +563,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // 設定を保存
     window.store.set('agentChatConfig', agentChatConfig)
+
+    // Load Voice Settings
+    const storedVoiceId = window.store.get('selectedVoiceId') as string
+    if (storedVoiceId && typeof storedVoiceId === 'string') {
+      setStateSelectedVoiceId(storedVoiceId)
+    }
   }, [])
 
   useEffect(() => {
@@ -1185,7 +1198,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // 現在のエージェントの有効なツールを取得
     const agentTools = getAgentTools(selectedAgentId)
-    const systemPromptContext = getEnvironmentContext(agentTools)
+    // エージェント固有の環境コンテキスト設定を取得
+    const systemPromptContext = getEnvironmentContext(
+      agentTools,
+      currentAgent?.environmentContextSettings
+    )
 
     return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
       projectPath,
@@ -1360,8 +1377,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // カテゴリーに基づいてデフォルトツール設定を返す関数
   const getDefaultToolsForCategory = useCallback(
-    (category: string): ToolState[] => {
-      const allWindowTools = tools.map((tool) => ({ ...tool, enabled: true })) as ToolState[]
+    (category: string, enableByDefault: boolean = true): ToolState[] => {
+      const allWindowTools = tools.map((tool) => ({
+        ...tool,
+        enabled: enableByDefault
+      })) as ToolState[]
       return getToolsForCategory(category as AgentCategory, allWindowTools)
     },
     [tools]
@@ -1370,6 +1390,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setPlanMode = useCallback((enabled: boolean) => {
     setStatePlanMode(enabled)
     window.store.set('planMode', enabled)
+  }, [])
+
+  const setSelectedVoiceId = useCallback((voiceId: string) => {
+    setStateSelectedVoiceId(voiceId)
+    window.store.set('selectedVoiceId', voiceId)
   }, [])
 
   const value = {
@@ -1506,7 +1531,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Ignore Files Settings
     ignoreFiles,
-    setIgnoreFiles
+    setIgnoreFiles,
+
+    // Voice Settings
+    selectedVoiceId,
+    setSelectedVoiceId
   }
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>

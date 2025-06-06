@@ -291,7 +291,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 
       // 非画像ファイルのパスをテキストエリアに追加
       if (nonImageFiles.length > 0) {
-        const filePaths = nonImageFiles.map((file) => file.path || file.name).join('\n')
+        const filePaths = nonImageFiles.map((file) => file.name).join('\n')
 
         // 現在のカーソル位置またはテキスト末尾に挿入
         if (textareaRef.current) {

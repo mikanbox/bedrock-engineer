@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, Menu, MenuItem } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.ico?asset'
-import api from './api'
+import { server } from './api'
 import Store from 'electron-store'
 import getRandomPort from '../preload/lib/random-port'
 import { store } from '../preload/store'
@@ -211,7 +211,7 @@ async function createWindow(): Promise<void> {
   const port = await getRandomPort()
   store.set('apiEndpoint', `http://localhost:${port}`)
 
-  api.listen(port, () => {
+  server.listen(port, () => {
     apiLogger.info('API server started', {
       endpoint: `http://localhost:${port}`
     })
@@ -238,7 +238,7 @@ registerGlobalErrorHandlers()
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set userDataPath in store
   store.set('userDataPath', userDataPath)
 

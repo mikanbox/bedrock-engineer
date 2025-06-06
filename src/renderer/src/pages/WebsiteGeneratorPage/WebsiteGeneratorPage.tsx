@@ -265,7 +265,7 @@ function WebsiteGeneratorPageContents(props: WebsiteGeneratorPageContentsProps) 
   )
 
   return (
-    <div className={'flex flex-col h-[calc(100vh-11rem)] overflow-y-auto'}>
+    <div className={'flex flex-col p-3 h-[calc(100vh-11rem)] overflow-y-auto'}>
       {/* Modals */}
       <SystemPromptModal
         isOpen={showSystemPromptModal}

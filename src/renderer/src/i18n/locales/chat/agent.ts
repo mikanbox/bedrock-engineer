@@ -98,7 +98,11 @@ export const agent = {
     shared: 'Shared',
     saveAsShared: 'Save as Shared File',
     agentSavedAsShared: 'Agent saved as a shared file successfully',
-    failedToSaveShared: 'Failed to save agent as shared file'
+    failedToSaveShared: 'Failed to save agent as shared file',
+    autoAddedEnvironmentContext: 'Auto-Added Environment Context',
+    userInput: 'User Input',
+    generateVoiceChatPrompt: 'Voice Chat',
+    generateVoiceChatPromptTooltip: 'Generate system prompt optimized for voice chat'
   },
   ja: {
     additionalInstruction: 'システムプロンプト生成のための追加の指示を入力する',
@@ -195,6 +199,10 @@ export const agent = {
     saveAsShared: '共有ファイルとして保存',
     agentSavedAsShared:
       'エージェントが共有ファイルとして正常に保存されました。現在の作業ディレクトリの .bedrock-engineer/agents/ を確認してください。',
-    failedToSaveShared: '共有ファイルとして保存できませんでした'
+    failedToSaveShared: '共有ファイルとして保存できませんでした',
+    autoAddedEnvironmentContext: '自動追加された環境コンテキスト',
+    userInput: 'ユーザー入力',
+    generateVoiceChatPrompt: 'ボイスチャット',
+    generateVoiceChatPromptTooltip: 'ボイスチャット用に最適化されたシステムプロンプトを生成'
   }
 }

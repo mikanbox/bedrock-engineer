@@ -94,6 +94,70 @@ DynamoDB または SNS を使用する場合は、Lambda を使用せず、AWS �
 その後、注文ごとに SQS キューにメッセージを送信します。`
 }
 
+const SpeakPage = {
+  'Nova Sonic Chat': 'Nova Sonic チャット',
+  'Voice conversation with AI': 'AIとの音声会話',
+  'Voice Conversation': '音声会話',
+  'Start speaking to begin the conversation': '話しかけて会話を開始してください',
+  'Ready to chat': 'チャット準備完了',
+  'Click "Start Speaking" to begin your voice conversation':
+    '「話し始める」をクリックして音声会話を開始してください',
+  'Conversation in progress...': '会話中...',
+  'Conversation paused': '会話一時停止',
+  'Scroll to bottom': '最下部にスクロール',
+  'System Prompt': 'システムプロンプト',
+  'Enter system prompt for the AI assistant...':
+    'AIアシスタント用のシステムプロンプトを入力してください...',
+  'Disconnect to edit the system prompt': 'システムプロンプトを編集するには切断してください',
+  'This prompt will be sent when you connect to start the conversation':
+    'このプロンプトは接続時に会話を開始するために送信されます',
+  'Connection error. Please try reconnecting.': '接続エラーです。再接続してください。',
+  'Reload Page': 'ページを再読み込み',
+  Disconnected: '切断済み',
+  'Connecting...': '接続中...',
+  Connected: '接続済み',
+  Ready: '準備完了',
+  'Recording...': '録音中...',
+  'Processing...': '処理中...',
+  Error: 'エラー',
+  Connect: '接続',
+  Disconnect: '切断',
+  'Start Speaking': '話し始める',
+  'Stop Speaking': '話を止める',
+  Recording: '録音中',
+  Processing: '処理中',
+  Listening: '聞き取り中',
+  Thinking: '考え中',
+  'Listening...': '聞き取り中...',
+  'Thinking...': '考え中...',
+  'Edit System Prompt': 'システムプロンプト編集',
+  // Voice Selection
+  'Select Voice': '音声を選択してください',
+  'Start New Chat': '新しいチャットを始める',
+  Cancel: 'キャンセルする',
+  // Voice Descriptions
+  'voice.tiffany.description': '温かく親しみやすい',
+  'voice.tiffany.characteristics': '親近感があり共感的で、居心地の良い会話を作り出します',
+  'voice.amy.description': '冷静で落ち着いている',
+  'voice.amy.characteristics': '思慮深く慎重で、明確でバランスの取れた回答を提供します',
+  'voice.matthew.description': '自信に満ち、威厳的',
+  'voice.matthew.characteristics': '知識豊富で専門的、頼りがいのある印象を与えます',
+  // Sample Text
+  'Try talking like this': 'こんな風に話しかけてみましょう',
+  'sample.noScenarios': 'サンプル会話がありません',
+  'Nova Sonic currently supports English only': 'Nova Sonicは現在英語のみをサポートしています',
+  // Permission Help Modal
+  'permissionHelp.title': '重複した許可ダイヤログの解決',
+  'permissionHelp.description': 'macOSでの重複した許可ダイヤログを解決するための情報',
+  'permissionHelp.commandTitle': '解決コマンド',
+  'permissionHelp.commandDescription':
+    'OSの許可ダイヤログ（マイクロフォンアクセスなど）が重複して表示される場合、アプリケーションをビルド・インストールした後に以下のコマンドを実行してアドホック署名を追加することで、この問題を解決できます：',
+  'permissionHelp.noteTitle': '注意',
+  'permissionHelp.noteDescription':
+    'このコマンドは、アプリケーションにアドホックコード署名を適用し、システムの許可ダイヤログが重複して表示される問題を防ぎます。',
+  'permissionHelp.tooltip': '許可ダイヤログが繰り返し表示される？'
+}
+
 const WebsiteGeneratorPage = {
   addRecommend: 'おすすめの追加機能を考え中',
   ecSiteTitle: '観葉植物のECサイト',
@@ -237,7 +301,20 @@ const AgentFormTabs = {
   'Connection Failed': '接続失敗',
   'tools available': 'ツールが利用可能',
   'Startup time': '起動時間',
-  Solution: '解決策'
+  Solution: '解決策',
+  // Environment Context Settings
+  'Environment Context Settings': '環境コンテキスト設定',
+  'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.':
+    'システムプロンプトに含める環境コンテキストセクションを選択してください。基本コンテキスト（プロジェクトパス、日付）は常に含まれます。',
+  'Project Rule': 'プロジェクトルール',
+  'Includes instructions to load project-specific rules from .bedrock-engineer/rules folder':
+    'カスタムのコーディング規約、アーキテクチャガイドライン、特定の開発プラクティスがあるプロジェクトで作業する際に有効にしてください。AIが.bedrock-engineer/rulesフォルダからルールを自動的に読み込み、プロジェクトの規約に従って一貫性を保ちます。',
+  'Visual Expression Rules': '視覚表現ルール',
+  'Includes instructions for creating diagrams, images, and mathematical formulas':
+    'AIに図表（フローチャート、アーキテクチャ図）の作成、画像生成、数式の記述をさせたい場合に有効にしてください。ドキュメント作成、技術説明、データ可視化、教育コンテンツの作成に役立ちます。',
+  'TODO List Instruction': 'TODOリスト指示',
+  'Includes instructions to create TODO lists for long-running tasks':
+    '複雑で複数ステップからなるプロジェクトで、AIに大きなタスクを管理可能なアクションアイテムに分解してもらいたい場合に有効にしてください。プロジェクト計画、機能開発、リファクタリング、複数セッションにわたる作業で特に有用です。'
 }
 
 const ja = {
@@ -245,6 +322,7 @@ const ja = {
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.ja,
+  ...SpeakPage,
   ...WebsiteGeneratorPage,
   ...iamPolicy.ja,
   ...notificationSettings.ja,

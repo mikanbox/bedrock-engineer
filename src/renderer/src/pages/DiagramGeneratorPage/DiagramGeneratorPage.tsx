@@ -156,7 +156,7 @@ export default function DiagramGeneratorPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-11rem)] overflow-y-auto">
+    <div className="flex flex-col p-3 h-[calc(100vh-11rem)] overflow-y-auto">
       <div className="flex pb-2 justify-between">
         <span className="font-bold flex flex-col gap-2 w-full">
           <div className="flex justify-between">

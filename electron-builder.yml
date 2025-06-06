@@ -12,8 +12,10 @@ files:
 asarUnpack:
   - resources/**
 extraResources:
-  - from: "src/renderer/src/assets/directory-agents"
-    to: "directory-agents"
+  - from: 'src/renderer/src/assets/directory-agents'
+    to: 'directory-agents'
+  - from: 'public/worklets'
+    to: 'worklets'
 win:
   executableName: Bedrock Engineer
 nsis:
@@ -22,6 +24,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  identity: '-'
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -29,7 +32,12 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  target:
+    - dmg
+    - pkg
 dmg:
+  artifactName: ${name}-${version}.${ext}
+pkg:
   artifactName: ${name}-${version}.${ext}
 linux:
   target:

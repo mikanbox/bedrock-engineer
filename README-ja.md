@@ -19,9 +19,11 @@ Bedrock Engineer はネイティブアプリです。アプリをダウンロー
 
 MacOS:
 
-[<img src="https://img.shields.io/badge/Download_FOR_MAC-Latest%20Release-blue?style=for-the-badge&logo=apple" alt="Download Latest Release" height="40">](https://github.com/aws-samples/bedrock-engineer/releases/latest/download/bedrock-engineer-1.12.0.dmg)
+[<img src="https://img.shields.io/badge/Download_FOR_MAC_(DMG)-Latest%20Release-blue?style=for-the-badge&logo=apple" alt="Download Latest Release" height="40">](https://github.com/aws-samples/bedrock-engineer/releases/latest/download/bedrock-engineer-1.13.0.dmg)
 
-MacOS に最適化されていますが、Windows, Linux OS でもビルドして使用できます。不具合があるばあい、issue に起票ください。
+[<img src="https://img.shields.io/badge/Download_FOR_MAC_(PKG)-Latest%20Release-blue?style=for-the-badge&logo=apple" alt="Download Latest Release" height="40">](https://github.com/aws-samples/bedrock-engineer/releases/latest/download/bedrock-engineer-1.13.0.pkg)
+
+MacOS に最適化されていますが、Windows, Linux OS でもビルドして使用できます。不具合がある場合、issue に起票ください。
 
 <details>
 <summary>Tips for Installation</summary>
@@ -195,6 +197,35 @@ Agent Directoryは、優れたコントリビューターによって作成さ�
 3. プルリクエストまたはGitHub Issueでエージェントを提出
 
 Agent Directoryに貢献することで、Bedrock Engineerの機能を向上させる専門的なAIエージェントの貴重なリソース構築に協力できます。
+
+## Nova Sonic Voice Chat
+
+Amazon Nova Sonicを活用したリアルタイム音声会話機能です。AIエージェントと自然な音声でやり取りできます。
+
+![voice-chat-page](./assets/voice-chat-page.png)
+
+### 主な機能
+
+- 🎤 **リアルタイム音声入力**: マイクを使ってAIと自然な会話
+- 🗣️ **複数音声選択**: 3種類の音声特性から選択可能
+  - Tiffany: 温かく親しみやすい
+  - Amy: 冷静で落ち着いている
+  - Matthew: 自信に満ち、威厳的
+- 🤖 **エージェントカスタマイズ**: Agent Chatと同様にカスタムエージェントが利用可能
+- 🛠️ **ツール実行**: エージェントが音声会話中にツールを実行
+- 🌐 **多言語対応**: 現在は英語のみサポート、将来的に他言語対応予定
+
+Nova Sonic Voice Chatを使用することで、従来のテキストベースのやり取りとは異なる、より自然で直感的なAIとの対話体験を提供します。音声によるコミュニケーションにより、効率的で親しみやすいAIアシスタント体験が可能になります。
+
+### 重複した許可ダイヤログの解決
+
+OS の許可ダイヤログ（マイクロフォンアクセスなど）が重複して表示される場合、アプリケーションをビルド・インストールした後に以下のコマンドを実行してアドホック署名を追加することで、この問題を解決できます：
+
+```bash
+sudo codesign --force --deep --sign - "/Applications/Bedrock Engineer.app"
+```
+
+このコマンドは、アプリケーションにアドホックコード署名を適用し、システムの許可ダイヤログが重複して表示される問題を防ぎます。
 
 ## Website Generator
 

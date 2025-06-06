@@ -66,7 +66,7 @@ const Layout: React.FC = () => {
         </div>
         <CmdK />
 
-        <div className="flex-1 p-3 bg-gray-100 overflow-x-auto dark:bg-gray-900">
+        <div className="flex-1 bg-gray-100 overflow-x-auto dark:bg-gray-900">
           <Outlet />
         </div>
       </div>

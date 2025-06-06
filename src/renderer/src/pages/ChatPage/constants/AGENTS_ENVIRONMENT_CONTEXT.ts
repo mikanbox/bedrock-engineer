@@ -1,4 +1,4 @@
-import { ToolState } from '@/types/agent-chat'
+import { ToolState, EnvironmentContextSettings } from '@/types/agent-chat'
 import { isMcpTool, getOriginalMcpToolName } from '@/types/tools'
 
 export const BASIC_ENVIRONMENT_CONTEXT = `**<context>**
@@ -29,6 +29,9 @@ const PROJECT_RULE = `
 
 const VISUAL_EXPRESSION_RULES = `
 **<visual expression rule>**
+
+If you are acting as a voice chat, please ignore this illustration rule.
+
 - Create Mermaid.js diagrams for visual explanations (maximum 2 per response unless specified)
 - Ask user permission before generating images with Stable Diffusion
 - Display images using Markdown syntax: \`![image-name](url)\`
@@ -97,16 +100,39 @@ No tools are currently enabled for this agent.
 /**
  * 環境コンテキストを生成する関数
  * ツールの配列ではなくToolStateの配列を受け取るように変更
+ * エージェント固有の環境コンテキスト設定に基づいて条件分岐
  */
-export const getEnvironmentContext = (enabledTools: ToolState[] = []) => {
-  return `${BASIC_ENVIRONMENT_CONTEXT}
+export const getEnvironmentContext = (
+  enabledTools: ToolState[] = [],
+  contextSettings?: EnvironmentContextSettings
+) => {
+  // デフォルト設定（すべて有効）
+  const defaultSettings: EnvironmentContextSettings = {
+    todoListInstruction: true,
+    projectRule: true,
+    visualExpressionRules: true
+  }
 
-${PROJECT_RULE}
+  // 設定が指定されていない場合はデフォルト設定を使用
+  const settings = contextSettings || defaultSettings
 
-${VISUAL_EXPRESSION_RULES}
+  let context = BASIC_ENVIRONMENT_CONTEXT
 
-${TODO_LIST_INSTRUCTION}
+  // 各コンテキストを設定に基づいて追加
+  if (settings.projectRule) {
+    context += `\n${PROJECT_RULE}`
+  }
 
-${TOOL_RULES(enabledTools)}
-`
+  if (settings.visualExpressionRules) {
+    context += `\n${VISUAL_EXPRESSION_RULES}`
+  }
+
+  if (settings.todoListInstruction) {
+    context += `\n${TODO_LIST_INSTRUCTION}`
+  }
+
+  // ツールルールは常に追加
+  context += `\n${TOOL_RULES(enabledTools)}`
+
+  return context
 }

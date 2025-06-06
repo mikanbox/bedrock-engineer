@@ -3,7 +3,8 @@ import {
   KnowledgeBase,
   ToolState,
   AgentCategory,
-  FlowConfig
+  FlowConfig,
+  EnvironmentContextSettings
 } from '@/types/agent-chat'
 import { CommandConfig } from '../../modals/useToolSettingModal'
 import { BedrockAgent } from '@/types/agent'
@@ -30,10 +31,14 @@ export interface SystemPromptSectionProps {
   name: string
   description: string
   additionalInstruction?: string
+  environmentContextSettings?: EnvironmentContextSettings
   onChange: (value: string) => void
   onAdditionalInstructionChange?: (value: string) => void
+  onEnvironmentContextSettingsChange?: (settings: EnvironmentContextSettings) => void
   onAutoGenerate: () => void
+  onVoiceChatGenerate: () => void
   isGenerating: boolean
+  isGeneratingVoiceChat: boolean
   projectPath: string
   allowedCommands: CommandConfig[]
   knowledgeBases: KnowledgeBase[]
