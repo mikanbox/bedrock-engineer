@@ -45,42 +45,26 @@ If a configuration file error occurs when starting the application, please check
 
 `/Users/{{username}}/Library/Application Support/bedrock-engineer/config.json`
 
-### Resolving Duplicate Permission Dialogs
-
-If you experience duplicate OS permission dialogs (such as microphone access), you can resolve this issue by running the following command after building and installing the application to add an ad-hoc signature:
-
-````bash
-sudo codesign --force --deep --sign - "/Applications/Bedrock Engineer.app"
-```
-
-This command applies an ad-hoc code signature to the application, which helps prevent duplicate system permission dialogs.
-
 </details>
 
 ### Build
 
 First, install the npm modules:
 
-````
-
+```bash
 npm install
-
 ```
 
 Then, build application package
 
-```
-
+```bash
 npm run build:mac
-
 ```
 
 or
 
-```
-
+```bash
 npm run build:win
-
 ```
 
 or
@@ -214,6 +198,35 @@ Become a contributor and share your custom agents with the community:
 
 By contributing to the Agent Directory, you help build a valuable resource of specialized AI agents that enhance the capabilities of Bedrock Engineer for everyone.
 
+## Nova Sonic Voice Chat
+
+Real-time voice conversation feature powered by Amazon Nova Sonic. Engage in natural voice interactions with AI agents.
+
+![voice-chat-page](./assets/voice-chat-page.png)
+
+### Key Features
+
+- 🎤 **Real-time Voice Input**: Natural conversation with AI using your microphone
+- 🗣️ **Multiple Voice Selection**: Choose from 3 voice characteristics
+  - Tiffany: Warm and friendly
+  - Amy: Calm and composed
+  - Matthew: Confident and authoritative
+- 🤖 **Agent Customization**: Custom agents available just like Agent Chat
+- 🛠️ **Tool Execution**: Agents can execute tools during voice conversations
+- 🌐 **Multi-language Support**: Currently supports English only, with plans for other languages
+
+Nova Sonic Voice Chat provides a more natural and intuitive AI interaction experience, different from traditional text-based exchanges. Voice communication enables efficient and approachable AI assistant experiences.
+
+### Resolving Duplicate Permission Dialogs
+
+If you experience duplicate OS permission dialogs (such as microphone access), you can resolve this issue by running the following command after building and installing the application to add an ad-hoc signature:
+
+```bash
+sudo codesign --force --deep --sign - "/Applications/Bedrock Engineer.app"
+```
+
+This command applies an ad-hoc code signature to the application, which helps prevent duplicate system permission dialogs.
+
 ## Website Generator
 
 Generate and preview website source code in real-time. Currently supports the following libraries, and you can interactively generate code by providing additional instructions:
@@ -283,4 +296,15 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 This library is licensed under the MIT-0 License. See the LICENSE file.
 
 This software uses [Lottie Files](https://lottiefiles.com/free-animation/robot-futuristic-ai-animated-xyiArJ2DEF).
+
+```
+
+```
+
+```
+
+```
+
+```
+
 ```
