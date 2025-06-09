@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ChatHistory, ChatMessage } from '../lib/ChatHistoryManager'
 import { ThinkingState, ToolExecutionState } from '../hooks/useSpeakChat'
 import { ThinkingIndicator } from './ThinkingIndicator'
 import { ToolResultDisplay } from './ToolResultDisplay'
+import TranslatedMessage from './TranslatedMessage'
+import { useTranslation as useTranslationHook } from '../hooks/useTranslation'
+import { useSettings } from '@renderer/contexts/SettingsContext'
 import { LiaUserCircleSolid } from 'react-icons/lia'
 import AILogo from '@renderer/assets/images/icons/ai.svg'
 
@@ -18,6 +21,10 @@ export interface ChatDisplayProps {
 interface MessageItemProps {
   message: ChatMessage
   isLast: boolean
+  translationEnabled?: boolean
+  onTranslate?: (text: string) => Promise<void>
+  onRetryTranslation?: (text: string) => Promise<void>
+  getTranslationState?: (text: string) => any
 }
 
 // Constants
@@ -121,20 +128,59 @@ const MessageContent: React.FC<{
   <div className={`text-sm leading-relaxed ${styles.text}`}>{content || 'No content'}</div>
 )
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, isLast }) => {
-  const role = getMessageRole(message.role)
-  const styles = getMessageStyles(role)
-  const isUser = role === MessageRole.USER
+const MessageItem = React.memo<MessageItemProps>(
+  ({
+    message,
+    isLast,
+    translationEnabled = false,
+    onTranslate,
+    onRetryTranslation,
+    getTranslationState
+  }) => {
+    const role = getMessageRole(message.role)
+    const styles = getMessageStyles(role)
+    const isUser = role === MessageRole.USER
+    const isAssistant = role === MessageRole.ASSISTANT
 
-  return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} ${isLast ? 'mb-2' : 'mb-4'}`}>
-      <div className={`max-w-[80%] ${styles.container}`}>
-        <MessageHeader role={role} styles={styles} endOfResponse={message.endOfResponse} />
-        <MessageContent content={message.message} styles={styles} />
+    // アシスタントメッセージで翻訳が有効な場合、翻訳を自動開始
+    // メッセージが完了した時点でのみ翻訳を開始し、重複実行を防ぐ
+    useEffect(() => {
+      if (isAssistant && translationEnabled && onTranslate && message.endOfResponse) {
+        const messageText = message.message.trim()
+        if (messageText) {
+          // 既に翻訳中または翻訳済みでない場合のみ実行
+          const currentState = getTranslationState ? getTranslationState(messageText) : undefined
+          if (!currentState || (!currentState.isTranslating && !currentState.translatedText)) {
+            onTranslate(messageText)
+          }
+        }
+      }
+    }, [isAssistant, translationEnabled, onTranslate, message.endOfResponse])
+
+    const translationState = getTranslationState ? getTranslationState(message.message) : undefined
+
+    return (
+      <div
+        className={`flex ${isUser ? 'justify-end' : 'justify-start'} ${isLast ? 'mb-2' : 'mb-4'}`}
+      >
+        <div className={`max-w-[80%] ${styles.container}`}>
+          <MessageHeader role={role} styles={styles} endOfResponse={message.endOfResponse} />
+          <MessageContent content={message.message} styles={styles} />
+
+          {/* 翻訳表示（アシスタントメッセージのみ） */}
+          {isAssistant && translationEnabled && (
+            <TranslatedMessage
+              translationState={translationState}
+              onRetry={() => onRetryTranslation?.(message.message)}
+            />
+          )}
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+)
+
+MessageItem.displayName = 'MessageItem'
 
 const EmptyState: React.FC<{ audioControls?: React.ReactNode }> = ({ audioControls }) => (
   <div className="flex items-center justify-center h-full">
@@ -176,6 +222,16 @@ export const ChatDisplay: React.FC<ChatDisplayProps> = ({
   const hasThinking =
     thinkingState.waitingForUserTranscription || thinkingState.waitingForAssistantResponse
 
+  // 翻訳設定を取得
+  const { translationEnabled, translationTargetLanguage } = useSettings()
+
+  // 翻訳機能を初期化
+  const { translateText, getTranslation, retryTranslation } = useTranslationHook({
+    targetLanguage: translationTargetLanguage,
+    sourceLanguage: 'auto',
+    debounceMs: 1000 // メッセージ完了後なのでデバウンスを長めに
+  })
+
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Chat Messages */}
@@ -184,7 +240,15 @@ export const ChatDisplay: React.FC<ChatDisplayProps> = ({
 
         {/* Render messages */}
         {chat.history.map((message, index) => (
-          <MessageItem key={index} message={message} isLast={index === chat.history.length - 1} />
+          <MessageItem
+            key={index}
+            message={message}
+            isLast={index === chat.history.length - 1}
+            translationEnabled={translationEnabled}
+            onTranslate={translateText}
+            onRetryTranslation={retryTranslation}
+            getTranslationState={getTranslation}
+          />
         ))}
 
         {/* Thinking indicators */}

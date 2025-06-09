@@ -2,6 +2,13 @@ export interface ChatMessage {
   role: string
   message: string
   endOfResponse?: boolean
+  translation?: {
+    translatedText: string
+    sourceLanguage: string
+    targetLanguage: string
+    isTranslating?: boolean
+    error?: string | null
+  }
 }
 
 export interface ChatHistory {

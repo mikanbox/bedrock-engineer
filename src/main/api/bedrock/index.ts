@@ -4,6 +4,11 @@ import { AgentService } from './services/agentService'
 import { ImageService } from './services/imageService'
 import { ImageRecognitionService } from './services/imageRecognitionService'
 import { FlowService, InvokeFlowInput, InvokeFlowResult } from './services/flowService'
+import {
+  TranslateService,
+  TranslateTextOptions,
+  TranslationResult
+} from './services/translateService'
 import type { ServiceContext } from './types'
 import type { GenerateImageRequest, GeneratedImage } from './types/image'
 import { GuardrailService } from './services/guardrailService'
@@ -17,6 +22,7 @@ export class BedrockService {
   private imageRecognitionService: ImageRecognitionService
   private guardrailService: GuardrailService
   private flowService: FlowService
+  private translateService: TranslateService
 
   constructor(context: ServiceContext) {
     this.converseService = new ConverseService(context)
@@ -26,6 +32,7 @@ export class BedrockService {
     this.imageRecognitionService = new ImageRecognitionService(context)
     this.guardrailService = new GuardrailService(context)
     this.flowService = new FlowService(context)
+    this.translateService = new TranslateService(context.store.get('aws'))
   }
 
   async listModels() {
@@ -70,6 +77,36 @@ export class BedrockService {
 
   async invokeFlow(params: InvokeFlowInput): Promise<InvokeFlowResult> {
     return this.flowService.invokeFlow(params)
+  }
+
+  async translateText(options: TranslateTextOptions): Promise<TranslationResult> {
+    return this.translateService.translateText(options)
+  }
+
+  async translateBatch(
+    texts: Array<Omit<TranslateTextOptions, 'cacheKey'>>
+  ): Promise<TranslationResult[]> {
+    return this.translateService.translateBatch(texts)
+  }
+
+  getCachedTranslation(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string
+  ): TranslationResult | null {
+    return this.translateService.getCachedTranslation(text, sourceLanguage, targetLanguage)
+  }
+
+  clearTranslationCache(): void {
+    this.translateService.clearCache()
+  }
+
+  getTranslationCacheStats(): { size: number; maxSize: number; hitRate?: number } {
+    return this.translateService.getCacheStats()
+  }
+
+  async checkTranslationHealth(): Promise<boolean> {
+    return this.translateService.healthCheck()
   }
 }
 

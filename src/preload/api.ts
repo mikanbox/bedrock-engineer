@@ -31,6 +31,36 @@ export const api = {
     },
     getImageGenerationModelsForRegion: (region: BedrockSupportRegion) => {
       return getImageGenerationModelsForRegion(region)
+    },
+    translateText: async (params: {
+      text: string
+      sourceLanguage?: string
+      targetLanguage: string
+      cacheKey?: string
+    }) => {
+      return ipcRenderer.invoke('bedrock:translateText', params)
+    },
+    translateBatch: async (
+      texts: Array<{
+        text: string
+        sourceLanguage?: string
+        targetLanguage: string
+      }>
+    ) => {
+      return ipcRenderer.invoke('bedrock:translateBatch', { texts })
+    },
+    getCachedTranslation: async (params: {
+      text: string
+      sourceLanguage: string
+      targetLanguage: string
+    }) => {
+      return ipcRenderer.invoke('bedrock:getTranslationCache', params)
+    },
+    clearTranslationCache: async () => {
+      return ipcRenderer.invoke('bedrock:clearTranslationCache')
+    },
+    getTranslationCacheStats: async () => {
+      return ipcRenderer.invoke('bedrock:getTranslationCacheStats')
     }
   },
   contextMenu: {
