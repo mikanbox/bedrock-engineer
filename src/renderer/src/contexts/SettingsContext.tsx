@@ -58,6 +58,10 @@ export interface SettingsContextType {
   generateImageModel: string
   setGenerateImageModel: (modelId: string) => void
 
+  // generateVideo Tool Settings
+  generateVideoS3Uri: string
+  setGenerateVideoS3Uri: (s3Uri: string) => void
+
   // codeInterpreter Tool Settings
   codeInterpreterConfig: CodeInterpreterContainerConfig
   setCodeInterpreterConfig: (config: CodeInterpreterContainerConfig) => void
@@ -246,6 +250,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     'amazon.titan-image-generator-v2:0'
   )
 
+  // generateVideo Tool Settings
+  const [generateVideoS3Uri, setStateGenerateVideoS3Uri] = useState<string>('')
+
   // codeInterpreter Tool Settings
   const [codeInterpreterConfig, setStateCodeInterpreterConfig] =
     useState<CodeInterpreterContainerConfig>({
@@ -376,6 +383,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const generateImageSetting = window.store.get('generateImageTool')
     if (generateImageSetting?.modelId) {
       setStateGenerateImageModel(generateImageSetting.modelId)
+    }
+
+    // Load generateVideo Tool Settings (backward compatibility with generateVideoTool)
+    const generateVideoSetting = window.store.get('generateVideoTool')
+    if (generateVideoSetting?.s3Uri) {
+      setStateGenerateVideoS3Uri(generateVideoSetting.s3Uri)
     }
 
     // Load codeInterpreter Tool Settings
@@ -1129,6 +1142,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('generateImageTool', { modelId })
   }, [])
 
+  const setGenerateVideoS3Uri = useCallback((s3Uri: string) => {
+    setStateGenerateVideoS3Uri(s3Uri)
+    window.store.set('generateVideoTool', { s3Uri })
+  }, [])
+
   const setCodeInterpreterConfig = useCallback((config: CodeInterpreterContainerConfig) => {
     setStateCodeInterpreterConfig(config)
     window.store.set('codeInterpreterTool', config)
@@ -1455,6 +1473,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // generateImage Tool Settings
     generateImageModel,
     setGenerateImageModel,
+
+    // generateVideo Tool Settings
+    generateVideoS3Uri,
+    setGenerateVideoS3Uri,
 
     // codeInterpreter Tool Settings
     codeInterpreterConfig,

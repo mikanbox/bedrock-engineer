@@ -10,6 +10,9 @@ export type ToolName =
   | 'tavilySearch'
   | 'fetchWebsite'
   | 'generateImage'
+  | 'generateVideo'
+  | 'checkMovieStatus'
+  | 'downloadMovie'
   | 'retrieve'
   | 'invokeBedrockAgent'
   | 'executeCommand'
@@ -134,6 +137,25 @@ export type GenerateImageInput = {
   aspect_ratio?: AspectRatio
   seed?: number
   output_format?: 'png' | 'jpeg' | 'webp'
+}
+
+export type StartMovieGenerationInput = {
+  type: 'generateVideo'
+  prompt: string
+  durationSeconds: number
+  outputPath?: string
+  seed?: number
+}
+
+export type CheckMovieStatusInput = {
+  type: 'checkMovieStatus'
+  invocationArn: string
+}
+
+export type DownloadMovieInput = {
+  type: 'downloadMovie'
+  invocationArn: string
+  localPath?: string
 }
 
 export type RetrieveInput = {
@@ -261,6 +283,9 @@ export type ToolInput =
   | TavilySearchInput
   | FetchWebsiteInput
   | GenerateImageInput
+  | StartMovieGenerationInput
+  | CheckMovieStatusInput
+  | DownloadMovieInput
   | RecognizeImageInput
   | RetrieveInput
   | InvokeBedrockAgentInput
@@ -282,6 +307,10 @@ export type ToolInputTypeMap = {
   tavilySearch: TavilySearchInput
   fetchWebsite: FetchWebsiteInput
   generateImage: GenerateImageInput
+  generateMovie: StartMovieGenerationInput
+  generateVideo: StartMovieGenerationInput
+  checkMovieStatus: CheckMovieStatusInput
+  downloadMovie: DownloadMovieInput
   recognizeImage: RecognizeImageInput
   retrieve: RetrieveInput
   invokeBedrockAgent: InvokeBedrockAgentInput

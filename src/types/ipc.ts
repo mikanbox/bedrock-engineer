@@ -51,6 +51,192 @@ export interface IPCChannelDefinitions {
     }
     result: any // 適切な戻り値の型
   }
+  'bedrock:generateMovie': {
+    params: {
+      prompt: string
+      durationSeconds: number
+      outputPath?: string
+      seed?: number
+      s3Uri: string
+    }
+    result: {
+      invocationArn: string
+      status?: {
+        invocationArn: string
+        modelId: string
+        status: 'InProgress' | 'Completed' | 'Failed'
+        submitTime: Date
+        endTime?: Date
+        outputDataConfig?: {
+          s3OutputDataConfig: {
+            s3Uri: string
+          }
+        }
+        failureMessage?: string
+      }
+      localPath?: string
+      outputLocation?: string
+      error?: string
+    }
+  }
+  'bedrock:startMovieGeneration': {
+    params: {
+      prompt: string
+      durationSeconds: number
+      outputPath?: string
+      seed?: number
+      s3Uri: string
+    }
+    result: {
+      invocationArn: string
+      status?: {
+        invocationArn: string
+        modelId: string
+        status: 'InProgress' | 'Completed' | 'Failed'
+        submitTime: Date
+        endTime?: Date
+        outputDataConfig?: {
+          s3OutputDataConfig: {
+            s3Uri: string
+          }
+        }
+        failureMessage?: string
+      }
+    }
+  }
+  'bedrock:checkMovieStatus': {
+    params: {
+      invocationArn: string
+    }
+    result: {
+      invocationArn: string
+      modelId: string
+      status: 'InProgress' | 'Completed' | 'Failed'
+      submitTime: Date
+      endTime?: Date
+      outputDataConfig?: {
+        s3OutputDataConfig: {
+          s3Uri: string
+        }
+      }
+      failureMessage?: string
+    }
+  }
+  'bedrock:downloadMovie': {
+    params: {
+      s3Uri: string
+      localPath: string
+    }
+    result: {
+      downloadedPath: string
+      fileSize: number
+    }
+  }
+  'bedrock:startVideoGeneration': {
+    params: {
+      prompt: string
+      durationSeconds: number
+      outputPath?: string
+      seed?: number
+      s3Uri: string
+      inputImages?: string[]
+      prompts?: string[]
+    }
+    result: {
+      invocationArn: string
+      status?: {
+        invocationArn: string
+        modelId: string
+        status: 'InProgress' | 'Completed' | 'Failed'
+        submitTime: Date
+        endTime?: Date
+        outputDataConfig?: {
+          s3OutputDataConfig: {
+            s3Uri: string
+          }
+        }
+        failureMessage?: string
+      }
+    }
+  }
+  'bedrock:checkVideoStatus': {
+    params: {
+      invocationArn: string
+    }
+    result: {
+      invocationArn: string
+      modelId: string
+      status: 'InProgress' | 'Completed' | 'Failed'
+      submitTime: Date
+      endTime?: Date
+      outputDataConfig?: {
+        s3OutputDataConfig: {
+          s3Uri: string
+        }
+      }
+      failureMessage?: string
+    }
+  }
+  'bedrock:downloadVideo': {
+    params: {
+      s3Uri: string
+      localPath: string
+    }
+    result: {
+      downloadedPath: string
+      fileSize: number
+    }
+  }
+  'bedrock:translateText': {
+    params: {
+      text: string
+      sourceLanguage: string
+      targetLanguage: string
+      cacheKey?: string
+    }
+    result: {
+      originalText: string
+      translatedText: string
+      sourceLanguage: string
+      targetLanguage: string
+    }
+  }
+  'bedrock:translateBatch': {
+    params: {
+      texts: Array<{
+        text: string
+        sourceLanguage: string
+        targetLanguage: string
+      }>
+    }
+    result: Array<{
+      originalText: string
+      translatedText: string
+      sourceLanguage: string
+      targetLanguage: string
+    }>
+  }
+  'bedrock:getTranslationCache': {
+    params: {
+      text: string
+      sourceLanguage: string
+      targetLanguage: string
+    }
+    result: {
+      originalText: string
+      translatedText: string
+      sourceLanguage: string
+      targetLanguage: string
+    } | null
+  }
+  'bedrock:clearTranslationCache': {
+    params: void
+    result: { success: boolean }
+  }
+  'bedrock:getTranslationCacheStats': {
+    params: void
+    result: { size: number; maxSize: number; hitRate?: number }
+  }
 
   // ファイル操作関連
   'open-file': {

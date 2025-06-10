@@ -51,6 +51,8 @@ export const agentToolsSettings = {
       'The recognizeImage tool uses AI vision capabilities to analyze and describe images. It helps the AI assistant understand image content and provide relevant responses based on what appears in the image.',
     'tool info.generateImage.description':
       'The generateImage tool uses AI image generation capabilities to create images from text descriptions. It helps the AI assistant generate visual content based on textual prompts and save them to specified locations.',
+    'tool info.generateVideo.description':
+      'The generateVideo tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
     'Image Generation Model': 'Image Generation Model',
     'Important Notes': 'Important Notes',
     'Model availability may vary by AWS region': 'Model availability may vary by AWS region',
@@ -169,6 +171,7 @@ export const agentToolsSettings = {
       tavilySearch: 'Search the web using Tavily API',
       fetchWebsite: 'Fetch content from a specified URL',
       generateImage: 'Generate an image using AI models',
+      generateVideo: 'Generate high-quality videos using Amazon Nova Reel',
       recognizeImage: 'Analyze and describe images using AI vision capabilities',
       retrieve: 'Retrieve information from a knowledge base',
       invokeBedrockAgent: 'Invoke an Amazon Bedrock Agent',
@@ -228,6 +231,8 @@ export const agentToolsSettings = {
       'recognizeImageツールはAIのビジョン機能を使用して画像を分析・説明します。AIアシスタントが画像の内容を理解し、画像に表示されているものに基づいて関連する回答を提供するのに役立ちます。',
     'tool info.generateImage.description':
       'generateImageツールはAIの画像生成機能を使用してテキストの説明から画像を作成します。AIアシスタントがテキストプロンプトに基づいて視覚的なコンテンツを生成し、指定された場所に保存するのに役立ちます。',
+    'tool info.generateVideo.description':
+      'generateVideoツールはAmazon Nova Reelを使用してテキストの説明から高品質な動画を作成します。動画は非同期で生成され、出力保存にはS3設定が必要です。',
     'Image Generation Model': '画像生成モデル',
     'Important Notes': '重要な注意事項',
     'Model availability may vary by AWS region':
@@ -345,6 +350,7 @@ export const agentToolsSettings = {
       tavilySearch: 'Tavily APIを使用してWeb検索',
       fetchWebsite: '指定したURLからコンテンツを取得',
       generateImage: 'AIモデルを使用して画像を生成',
+      generateVideo: 'Amazon Nova Reelを使用して高品質な動画を生成',
       recognizeImage: 'AIのビジョン機能を使用して画像を分析・説明',
       retrieve: 'ナレッジベースから情報を取得',
       invokeBedrockAgent: 'Amazon Bedrock Agentを呼び出し',
