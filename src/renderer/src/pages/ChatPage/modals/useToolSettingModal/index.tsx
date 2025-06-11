@@ -16,11 +16,9 @@ import { CodeInterpreterSettingForm } from './CodeInterpreterSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-// ローカルで型定義
 import { ToolState } from '@/types/agent-chat'
 import { TOOL_CATEGORIES } from '../../components/AgentForm/ToolsSection/utils/toolCategories'
 import ToolSpecJsonModal from './ToolSpecJsonModal'
-// import { tools } from '@/types/tools' // 移行済み: 新しいAPIを使用
 import { CodeBracketIcon } from '@heroicons/react/24/outline'
 
 export interface CommandConfig {

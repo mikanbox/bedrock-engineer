@@ -173,9 +173,9 @@ export const tools = {
       },
       generateVideo: {
         description:
-          'The generateMovie tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
+          'The generateVideo tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
         group:
-          'When you enable this tool, the following related tools will also be automatically enabled: checkMovieStatus (to monitor video generation progress) and downloadMovie (to download completed videos). These tools work together to provide a complete video generation workflow.'
+          'When you enable this tool, the following related tools will also be automatically enabled: checkVideoStatus (to monitor video generation progress) and downloadVideo (to download completed videos). These tools work together to provide a complete video generation workflow.'
       }
     },
     'tool usage': {

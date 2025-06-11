@@ -22,7 +22,7 @@ interface McpToolInput {
  * Result type for McpToolAdapter
  */
 interface McpToolResult extends ToolResult {
-  name: 'mcp'
+  name: 'mcp_adapter'
   result: any
 }
 
@@ -30,7 +30,7 @@ interface McpToolResult extends ToolResult {
  * Adapter for MCP (Model Context Protocol) tools
  */
 export class McpToolAdapter extends BaseTool<McpToolInput, McpToolResult> {
-  readonly name = 'mcp'
+  readonly name = 'mcp_adapter' as const
   readonly description = 'Execute tools provided by MCP servers'
 
   /**
@@ -149,7 +149,7 @@ export class McpToolAdapter extends BaseTool<McpToolInput, McpToolResult> {
 
       return {
         success: true,
-        name: 'mcp',
+        name: 'mcp_adapter',
         message: result.message || `Executed MCP tool: ${toolName}`,
         result: result.result
       }
