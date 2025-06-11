@@ -66,6 +66,12 @@ type StoreScheme = {
     modelId: string
   }
 
+  /** 動画生成ツールの設定 */
+  generateVideoTool?: {
+    /** S3出力先URI */
+    s3Uri: string
+  }
+
   /** コードインタープリタツールの設定 */
   codeInterpreterTool?: CodeInterpreterContainerConfig
 

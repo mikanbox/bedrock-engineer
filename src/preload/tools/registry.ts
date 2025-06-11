@@ -17,6 +17,9 @@ import { CopyFileTool } from './handlers/filesystem/CopyFileTool'
 import { TavilySearchTool } from './handlers/web/TavilySearchTool'
 import { FetchWebsiteTool } from './handlers/web/FetchWebsiteTool'
 import { GenerateImageTool } from './handlers/bedrock/GenerateImageTool'
+import { GenerateVideoTool } from './handlers/bedrock/GenerateVideoTool'
+import { CheckVideoStatusTool } from './handlers/bedrock/CheckVideoStatusTool'
+import { DownloadVideoTool } from './handlers/bedrock/DownloadVideoTool'
 import { RecognizeImageTool } from './handlers/bedrock/RecognizeImageTool'
 import { RetrieveTool } from './handlers/bedrock/RetrieveTool'
 import { InvokeBedrockAgentTool } from './handlers/bedrock/InvokeBedrockAgentTool'
@@ -360,6 +363,18 @@ export class ToolMetadataCollector {
       specs.push({ toolSpec: GenerateImageTool.toolSpec })
     }
 
+    if (GenerateVideoTool.toolSpec) {
+      specs.push({ toolSpec: GenerateVideoTool.toolSpec })
+    }
+
+    if (CheckVideoStatusTool.toolSpec) {
+      specs.push({ toolSpec: CheckVideoStatusTool.toolSpec })
+    }
+
+    if (DownloadVideoTool.toolSpec) {
+      specs.push({ toolSpec: DownloadVideoTool.toolSpec })
+    }
+
     if (RecognizeImageTool.toolSpec) {
       specs.push({ toolSpec: RecognizeImageTool.toolSpec })
     }
@@ -446,6 +461,18 @@ export class ToolMetadataCollector {
     // Phase 3: Bedrock Tools
     if (GenerateImageTool.systemPromptDescription) {
       descriptions.generateImage = GenerateImageTool.systemPromptDescription
+    }
+
+    if (GenerateVideoTool.systemPromptDescription) {
+      descriptions.generateVideo = GenerateVideoTool.systemPromptDescription
+    }
+
+    if (CheckVideoStatusTool.systemPromptDescription) {
+      descriptions.checkVideoStatus = CheckVideoStatusTool.systemPromptDescription
+    }
+
+    if (DownloadVideoTool.systemPromptDescription) {
+      descriptions.downloadVideo = DownloadVideoTool.systemPromptDescription
     }
 
     if (RecognizeImageTool.systemPromptDescription) {

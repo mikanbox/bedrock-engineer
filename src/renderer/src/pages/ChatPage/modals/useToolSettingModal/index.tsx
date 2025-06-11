@@ -10,16 +10,15 @@ import { TavilySearchSettingForm } from './TavilySearchSettingForm'
 import { ThinkToolSettingForm } from './ThinkToolSettingForm'
 import { RecognizeImageSettingForm } from './RecognizeImageSettingForm'
 import { GenerateImageSettingForm } from './GenerateImageSettingForm'
+import { GenerateVideoSettingForm } from './GenerateVideoSettingForm'
 import { FlowSettingForm } from './FlowSettingForm'
 import { CodeInterpreterSettingForm } from './CodeInterpreterSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-// ローカルで型定義
 import { ToolState } from '@/types/agent-chat'
 import { TOOL_CATEGORIES } from '../../components/AgentForm/ToolsSection/utils/toolCategories'
 import ToolSpecJsonModal from './ToolSpecJsonModal'
-// import { tools } from '@/types/tools' // 移行済み: 新しいAPIを使用
 import { CodeBracketIcon } from '@heroicons/react/24/outline'
 
 export interface CommandConfig {
@@ -34,6 +33,9 @@ export const AVAILABLE_SHELLS = [
   { value: '/bin/sh', label: 'Shell' }
 ]
 
+// 動画生成ツールのグループ（連動ON/OFF）
+const VIDEO_TOOLS_GROUP = ['generateVideo', 'checkVideoStatus', 'downloadVideo']
+
 // 詳細設定が必要なツール
 const TOOLS_WITH_SETTINGS = [
   'executeCommand',
@@ -42,6 +44,7 @@ const TOOLS_WITH_SETTINGS = [
   'tavilySearch',
   'recognizeImage',
   'generateImage',
+  'generateVideo',
   'invokeFlow',
   'codeInterpreter'
 ]
@@ -211,32 +214,88 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
 
     // 現在のツールを探す
     const existingToolIndex = agentTools.findIndex((tool) => tool.toolSpec?.name === toolName)
+    const isVideoTool = VIDEO_TOOLS_GROUP.includes(toolName)
 
     let updatedTools: ToolState[]
 
     if (existingToolIndex !== -1) {
-      // ツールが存在する場合は状態を切り替え
-      updatedTools = agentTools.map((tool) => {
-        if (tool.toolSpec?.name === toolName) {
-          return { ...tool, enabled: !tool.enabled }
-        }
-        return tool
-      })
+      // ツールが存在する場合
+      const currentTool = agentTools[existingToolIndex]
+      const newEnabled = !currentTool.enabled
+
+      if (isVideoTool) {
+        // 動画生成ツールの場合は、グループ全体を連動させる
+        updatedTools = agentTools.map((tool) => {
+          if (VIDEO_TOOLS_GROUP.includes(tool.toolSpec?.name || '')) {
+            return { ...tool, enabled: newEnabled }
+          }
+          return tool
+        })
+
+        // 不足している動画生成ツールがあれば追加
+        const standardToolSpecs = window.api?.tools?.getToolSpecs() || []
+        const existingVideoToolNames = updatedTools
+          .filter((tool) => VIDEO_TOOLS_GROUP.includes(tool.toolSpec?.name || ''))
+          .map((tool) => tool.toolSpec?.name)
+
+        VIDEO_TOOLS_GROUP.forEach((videoToolName) => {
+          if (!existingVideoToolNames.includes(videoToolName)) {
+            const toolSpec = standardToolSpecs.find((spec) => spec.toolSpec?.name === videoToolName)
+            if (toolSpec?.toolSpec) {
+              const newTool: ToolState = {
+                toolSpec: toolSpec.toolSpec,
+                enabled: newEnabled
+              }
+              updatedTools.push(newTool)
+            }
+          }
+        })
+      } else {
+        // 通常のツールの場合は単独で切り替え
+        updatedTools = agentTools.map((tool) => {
+          if (tool.toolSpec?.name === toolName) {
+            return { ...tool, enabled: newEnabled }
+          }
+          return tool
+        })
+      }
     } else {
       // ツールが存在しない場合は新しく追加
       const standardToolSpecs = window.api?.tools?.getToolSpecs() || []
-      const toolSpec = standardToolSpecs.find((spec) => spec.toolSpec?.name === toolName)
 
-      if (toolSpec?.toolSpec) {
-        const newTool: ToolState = {
-          toolSpec: toolSpec.toolSpec,
-          enabled: true
-        }
-        updatedTools = [...agentTools, newTool]
+      if (isVideoTool) {
+        // 動画生成ツールの場合は、グループ全体を追加
+        updatedTools = [...agentTools]
+        VIDEO_TOOLS_GROUP.forEach((videoToolName) => {
+          const existingTool = updatedTools.find((tool) => tool.toolSpec?.name === videoToolName)
+          if (!existingTool) {
+            const toolSpec = standardToolSpecs.find((spec) => spec.toolSpec?.name === videoToolName)
+            if (toolSpec?.toolSpec) {
+              const newTool: ToolState = {
+                toolSpec: toolSpec.toolSpec,
+                enabled: true
+              }
+              updatedTools.push(newTool)
+            }
+          } else {
+            // 既存のツールがある場合は有効にする
+            existingTool.enabled = true
+          }
+        })
       } else {
-        // ToolSpecが見つからない場合はエラー
-        console.error(`ToolSpec not found for tool: ${toolName}`)
-        return
+        // 通常のツールの場合
+        const toolSpec = standardToolSpecs.find((spec) => spec.toolSpec?.name === toolName)
+        if (toolSpec?.toolSpec) {
+          const newTool: ToolState = {
+            toolSpec: toolSpec.toolSpec,
+            enabled: true
+          }
+          updatedTools = [...agentTools, newTool]
+        } else {
+          // ToolSpecが見つからない場合はエラー
+          console.error(`ToolSpec not found for tool: ${toolName}`)
+          return
+        }
       }
     }
 
@@ -472,6 +531,9 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                     )}
                     {selectedTool === 'recognizeImage' && <RecognizeImageSettingForm />}
                     {selectedTool === 'generateImage' && <GenerateImageSettingForm />}
+                    {(selectedTool === 'generateVideo' ||
+                      selectedTool === 'checkVideoStatus' ||
+                      selectedTool === 'downloadVideo') && <GenerateVideoSettingForm />}
                     {selectedTool === 'think' && <ThinkToolSettingForm />}
                     {selectedTool === 'invokeFlow' && selectedAgentId && (
                       <FlowSettingForm

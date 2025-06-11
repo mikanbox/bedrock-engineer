@@ -9,8 +9,10 @@ import {
   TranslateTextOptions,
   TranslationResult
 } from './services/translateService'
+import { VideoService } from './services/movieService'
 import type { ServiceContext } from './types'
 import type { GenerateImageRequest, GeneratedImage } from './types/image'
+import type { GenerateMovieRequest, GeneratedMovie } from './types/movie'
 import { GuardrailService } from './services/guardrailService'
 import { ApplyGuardrailRequest } from '@aws-sdk/client-bedrock-runtime'
 
@@ -23,6 +25,7 @@ export class BedrockService {
   private guardrailService: GuardrailService
   private flowService: FlowService
   private translateService: TranslateService
+  private videoService: VideoService
 
   constructor(context: ServiceContext) {
     this.converseService = new ConverseService(context)
@@ -33,6 +36,7 @@ export class BedrockService {
     this.guardrailService = new GuardrailService(context)
     this.flowService = new FlowService(context)
     this.translateService = new TranslateService(context.store.get('aws'))
+    this.videoService = new VideoService(context)
   }
 
   async listModels() {
@@ -108,8 +112,25 @@ export class BedrockService {
   async checkTranslationHealth(): Promise<boolean> {
     return this.translateService.healthCheck()
   }
+
+  async generateVideo(request: GenerateMovieRequest): Promise<GeneratedMovie> {
+    return this.videoService.generateVideo(request)
+  }
+
+  async startVideoGeneration(request: GenerateMovieRequest): Promise<GeneratedMovie> {
+    return this.videoService.startVideoGeneration(request)
+  }
+
+  async getVideoJobStatus(invocationArn: string) {
+    return this.videoService.getJobStatus(invocationArn)
+  }
+
+  async downloadVideoFromS3(s3Uri: string, localPath: string): Promise<string> {
+    return this.videoService.downloadVideoFromS3(s3Uri, localPath)
+  }
 }
 
 // Re-export types for convenience
 export * from './types'
 export * from './types/image'
+export * from './types/movie'

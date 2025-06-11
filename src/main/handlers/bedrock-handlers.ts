@@ -152,5 +152,95 @@ export const bedrockHandlers = {
     const stats = await bedrock.getTranslationCacheStats()
     bedrockLogger.debug('Translation cache stats', stats)
     return stats
+  },
+
+  'bedrock:generateVideo': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Generating video with Nova Reel', {
+      promptLength: params.prompt?.length,
+      durationSeconds: params.durationSeconds,
+      s3Uri: params.s3Uri,
+      hasSeed: !!params.seed
+    })
+
+    const result = await bedrock.generateVideo({
+      prompt: params.prompt,
+      durationSeconds: params.durationSeconds,
+      outputPath: params.outputPath,
+      seed: params.seed,
+      s3Uri: params.s3Uri
+    })
+
+    bedrockLogger.info('Video generation completed', {
+      invocationArn: result.invocationArn,
+      status: result.status?.status,
+      hasLocalPath: !!result.localPath
+    })
+    return result
+  },
+
+  'bedrock:startVideoGeneration': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Starting video generation with Nova Reel', {
+      promptLength: params.prompt?.length,
+      durationSeconds: params.durationSeconds,
+      s3Uri: params.s3Uri,
+      hasSeed: !!params.seed,
+      hasInputImages: !!params.inputImages,
+      imageCount: params.inputImages?.length || 0,
+      hasPrompts: !!params.prompts,
+      promptCount: params.prompts?.length || 0
+    })
+
+    const result = await bedrock.startVideoGeneration({
+      prompt: params.prompt,
+      durationSeconds: params.durationSeconds,
+      outputPath: params.outputPath,
+      seed: params.seed,
+      s3Uri: params.s3Uri,
+      inputImages: params.inputImages,
+      prompts: params.prompts
+    })
+
+    bedrockLogger.info('Video generation started', {
+      invocationArn: result.invocationArn,
+      status: result.status?.status
+    })
+    return result
+  },
+
+  'bedrock:checkVideoStatus': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Checking video generation status', {
+      invocationArn: params.invocationArn
+    })
+
+    const result = await bedrock.getVideoJobStatus(params.invocationArn)
+
+    bedrockLogger.debug('Video status checked', {
+      invocationArn: params.invocationArn,
+      status: result.status
+    })
+    return result
+  },
+
+  'bedrock:downloadVideo': async (_event: IpcMainInvokeEvent, params: any) => {
+    bedrockLogger.debug('Downloading video from S3', {
+      s3Uri: params.s3Uri,
+      localPath: params.localPath
+    })
+
+    const downloadedPath = await bedrock.downloadVideoFromS3(params.s3Uri, params.localPath)
+
+    // Get file size for response
+    const fs = await import('fs/promises')
+    const stats = await fs.stat(downloadedPath)
+
+    bedrockLogger.info('Video downloaded successfully', {
+      downloadedPath,
+      fileSize: stats.size
+    })
+
+    return {
+      downloadedPath,
+      fileSize: stats.size
+    }
   }
 } as const

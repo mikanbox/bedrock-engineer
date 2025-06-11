@@ -1,6 +1,7 @@
 import { AspectRatio, ImageGeneratorModel } from '../main/api/bedrock'
 
-export type ToolName =
+// 組み込みツール名の明確な定義
+export type BuiltInToolName =
   | 'createFolder'
   | 'readFiles'
   | 'writeToFile'
@@ -10,6 +11,9 @@ export type ToolName =
   | 'tavilySearch'
   | 'fetchWebsite'
   | 'generateImage'
+  | 'generateVideo'
+  | 'checkVideoStatus'
+  | 'downloadVideo'
   | 'retrieve'
   | 'invokeBedrockAgent'
   | 'executeCommand'
@@ -18,25 +22,55 @@ export type ToolName =
   | 'recognizeImage'
   | 'invokeFlow'
   | 'codeInterpreter'
-  | string // MCPツール名を許容するために文字列型も追加
+  | 'mcp_adapter'
 
-/**
- * MCPツール関連のユーティリティ関数
- *
- * 注意: AWS APIの制約により、ツール名には [a-zA-Z0-9_-]+ の文字のみ許可されています。
- * そのため、MCPツールには "mcp:" ではなく "mcp_" プレフィックスを使用します。
- */
-// MCPツール名であるかを判定する関数
-export const isMcpTool = (name: string): boolean => {
+// MCPツール名の型安全な定義
+export type McpToolName = `mcp_${string}`
+
+// 統合されたToolName型
+export type ToolName = BuiltInToolName | McpToolName
+
+// 組み込みツールの定数配列（型ガード用）
+const BUILT_IN_TOOLS: readonly BuiltInToolName[] = [
+  'createFolder',
+  'readFiles',
+  'writeToFile',
+  'listFiles',
+  'moveFile',
+  'copyFile',
+  'tavilySearch',
+  'fetchWebsite',
+  'generateImage',
+  'generateVideo',
+  'checkVideoStatus',
+  'downloadVideo',
+  'retrieve',
+  'invokeBedrockAgent',
+  'executeCommand',
+  'applyDiffEdit',
+  'think',
+  'recognizeImage',
+  'invokeFlow',
+  'codeInterpreter',
+  'mcp_adapter'
+] as const
+
+// 組み込みツール名であるかを判定する型ガード
+export const isBuiltInTool = (name: string): name is BuiltInToolName => {
+  return BUILT_IN_TOOLS.includes(name as BuiltInToolName)
+}
+
+// MCPツール名であるかを判定する型ガード
+export const isMcpTool = (name: string): name is McpToolName => {
   return name.startsWith('mcp_')
 }
 
 // MCPツール名を標準化する関数（通常のツール名をMCP識別子付きにする）
-export const normalizeMcpToolName = (name: string): string => {
+export const normalizeMcpToolName = (name: string): McpToolName => {
   if (isMcpTool(name)) {
     return name
   }
-  return `mcp_${name}`
+  return `mcp_${name}` as McpToolName
 }
 
 // MCP識別子を除いた素のツール名を取得する関数
@@ -45,6 +79,11 @@ export const getOriginalMcpToolName = (name: string): string => {
     return name.substring(4) // 'mcp_'の長さ(4)以降の文字列を返す
   }
   return name
+}
+
+// ToolName全体の型ガード
+export const isValidToolName = (name: string): name is ToolName => {
+  return isBuiltInTool(name) || isMcpTool(name)
 }
 
 export interface ToolResult<T = any> {
@@ -134,6 +173,25 @@ export type GenerateImageInput = {
   aspect_ratio?: AspectRatio
   seed?: number
   output_format?: 'png' | 'jpeg' | 'webp'
+}
+
+export type StartMovieGenerationInput = {
+  type: 'generateVideo'
+  prompt: string
+  durationSeconds: number
+  outputPath?: string
+  seed?: number
+}
+
+export type CheckVideoStatusInput = {
+  type: 'checkVideoStatus'
+  invocationArn: string
+}
+
+export type DownloadVideoInput = {
+  type: 'downloadVideo'
+  invocationArn: string
+  localPath?: string
 }
 
 export type RetrieveInput = {
@@ -261,6 +319,9 @@ export type ToolInput =
   | TavilySearchInput
   | FetchWebsiteInput
   | GenerateImageInput
+  | StartMovieGenerationInput
+  | CheckVideoStatusInput
+  | DownloadVideoInput
   | RecognizeImageInput
   | RetrieveInput
   | InvokeBedrockAgentInput
@@ -282,6 +343,9 @@ export type ToolInputTypeMap = {
   tavilySearch: TavilySearchInput
   fetchWebsite: FetchWebsiteInput
   generateImage: GenerateImageInput
+  generateVideo: StartMovieGenerationInput
+  checkVideoStatus: CheckVideoStatusInput
+  downloadVideo: DownloadVideoInput
   recognizeImage: RecognizeImageInput
   retrieve: RetrieveInput
   invokeBedrockAgent: InvokeBedrockAgentInput

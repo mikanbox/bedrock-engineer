@@ -3,7 +3,7 @@
  */
 
 import { Tool } from '@aws-sdk/client-bedrock-runtime'
-import { ToolInput, ToolResult } from '../../../types/tools'
+import { ToolInput, ToolResult, ToolName } from '../../../types/tools'
 import { ITool, ToolDependencies, ToolLogger, StoreManager, ValidationResult } from './types'
 import { wrapError, ValidationError } from './errors'
 
@@ -16,7 +16,7 @@ export abstract class BaseTool<TInput extends ToolInput = ToolInput, TResult = T
   /**
    * Tool name - must be unique
    */
-  abstract readonly name: string
+  abstract readonly name: ToolName
 
   /**
    * Tool description

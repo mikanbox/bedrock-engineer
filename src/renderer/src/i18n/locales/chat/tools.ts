@@ -29,6 +29,7 @@ export const tools = {
       'Tavily Search allows the AI assistant to search the web for current information, providing better responses to queries about recent events, technical documentation, or other information that may not be in its training data.',
     Save: 'Save',
     Cancel: 'Cancel',
+    'Tool Group': 'Tool Group',
     'Agent ID': 'Agent ID',
     'Alias ID': 'Alias ID',
     'Command Shell': 'Command Shell',
@@ -130,7 +131,10 @@ export const tools = {
       applyDiffEdit: 'Apply partial updates to existing files with granular control',
       think: 'Enable AI to perform complex step-by-step reasoning',
       invokeFlow: 'Invoke Amazon Bedrock Flow',
-      codeInterpreter: 'Execute Python code in a secure Docker environment'
+      codeInterpreter: 'Execute Python code in a secure Docker environment',
+      generateVideo: 'Generate high-quality videos from text descriptions using Amazon Nova Reel',
+      checkVideoStatus: 'Check the status of video generation jobs',
+      downloadVideo: 'Download generated videos from S3 to local storage'
     },
     'tool info': {
       retrieve: {
@@ -166,6 +170,12 @@ export const tools = {
         'example title': 'Example Usage',
         'example description':
           'Common useful patterns include "ls *" (list directories), "npm *" (run npm commands), "aws *" (AWS CLI commands), or "curl *" (make HTTP requests). The AI will only be allowed to run commands that match these patterns.'
+      },
+      generateVideo: {
+        description:
+          'The generateVideo tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
+        group:
+          'When you enable this tool, the following related tools will also be automatically enabled: checkVideoStatus (to monitor video generation progress) and downloadVideo (to download completed videos). These tools work together to provide a complete video generation workflow.'
       }
     },
     'tool usage': {
@@ -336,6 +346,7 @@ export const tools = {
       'Tavily SearchはAIアシスタントがWeb上の最新情報を検索できるようにし、最近のイベント、技術文書、またはトレーニングデータに含まれていない可能性のある情報に関する質問に対して、より良い回答を提供します。',
     Save: '保存',
     Cancel: 'キャンセル',
+    'Tool Group': 'ツールグループ',
     'Agent ID': 'エージェントID',
     'Alias ID': 'エイリアスID',
     'Command Shell': 'コマンドシェル',
@@ -434,7 +445,10 @@ export const tools = {
       applyDiffEdit: 'ファイルに対して部分的な更新を適用',
       think: 'AIが複雑なステップバイステップの思考を実行',
       invokeFlow: 'Amazon Bedrock Flow を実行',
-      codeInterpreter: '安全なDocker環境でPythonコードを実行'
+      codeInterpreter: '安全なDocker環境でPythonコードを実行',
+      generateVideo: 'Amazon Nova Reelを使用してテキスト説明から高品質な動画を生成',
+      checkVideoStatus: '動画生成ジョブのステータスを確認',
+      downloadVideo: '生成された動画をS3からローカルストレージにダウンロード'
     },
     'tool info': {
       retrieve: {
@@ -470,6 +484,12 @@ export const tools = {
         'example title': '使用例',
         'example description':
           '一般的に役立つパターンには「ls *」（ディレクトリ一覧表示）、「npm *」（npmコマンド実行）、「aws *」（AWS CLIコマンド）、「curl *」（HTTPリクエスト作成）などがあります。AIはこれらのパターンにマッチするコマンドのみを実行できます。'
+      },
+      generateVideo: {
+        description:
+          'generateVideo ツールは Amazon Nova Reel を使用してテキスト説明から高品質な動画を作成します。動画は非同期で生成され、出力保存にはS3設定が必要です。',
+        group:
+          'このツールを有効にすると、関連する以下のツールも自動的に有効になります：checkVideoStatus（動画生成の進行状況を監視）とdownloadVideo（完成した動画をダウンロード）。これらのツールは連携して完全な動画生成ワークフローを提供します。'
       }
     },
     'tool usage': {

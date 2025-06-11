@@ -5,6 +5,22 @@ import { TranslateClient } from '@aws-sdk/client-translate'
 import { fromIni } from '@aws-sdk/credential-providers'
 import { NovaSonicBidirectionalStreamClient } from '../sonic/client'
 import type { AWSCredentials } from './types'
+import { S3Client } from '@aws-sdk/client-s3'
+
+export function createS3Client(awsCredentials: AWSCredentials) {
+  const { region, useProfile, profile, ...credentials } = awsCredentials
+  if (useProfile) {
+    return new S3Client({
+      region,
+      profile
+    })
+  }
+
+  return new S3Client({
+    region,
+    credentials
+  })
+}
 
 export function createRuntimeClient(awsCredentials: AWSCredentials) {
   const { region, useProfile, profile, ...credentials } = awsCredentials
