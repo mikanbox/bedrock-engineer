@@ -242,7 +242,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // recognizeImage Tool Settings
   const [recognizeImageModel, setStateRecognizeImageModel] = useState<string>(
-    'anthropic.claude-3-sonnet-20240229-v1:0'
+    'anthropic.claude-3-5-sonnet-20241022-v2:0'
   )
 
   // generateImage Tool Settings

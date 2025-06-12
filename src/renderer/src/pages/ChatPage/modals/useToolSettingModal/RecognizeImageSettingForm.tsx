@@ -9,12 +9,11 @@ export const RecognizeImageSettingForm: React.FC = () => {
   const { recognizeImageModel, setRecognizeImageModel, availableModels } = useSettings()
 
   // Claude関連モデルをフィルタリング
-  const supportedModels = useMemo(() => {
+  const visionCapableModels = useMemo(() => {
     return availableModels
       .filter(
         (model) =>
-          model.modelId.includes('anthropic.claude') &&
-          !model.modelId.includes('anthropic.claude-3-5-haiku')
+          model.modelId.includes('anthropic.claude') || model.modelId.includes('amazon.nova')
       )
       .sort((a, b) => a.modelName.localeCompare(b.modelName))
   }, [availableModels])
@@ -46,7 +45,7 @@ export const RecognizeImageSettingForm: React.FC = () => {
             onChange={handleModelChange}
             className="mt-2 w-full"
           >
-            {supportedModels.map((model: LLM) => (
+            {visionCapableModels.map((model: LLM) => (
               <option key={model.modelId} value={model.modelId}>
                 {model.modelName}
               </option>

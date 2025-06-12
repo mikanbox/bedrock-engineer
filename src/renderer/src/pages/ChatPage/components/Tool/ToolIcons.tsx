@@ -18,7 +18,8 @@ import {
   FaCode,
   FaPlay,
   FaClock,
-  FaDownload
+  FaDownload,
+  FaDesktop
 } from 'react-icons/fa'
 import { BiFace } from 'react-icons/bi'
 import { MdDifference } from 'react-icons/md'
@@ -44,7 +45,8 @@ const standardToolIcons = {
   applyDiffEdit: <MdDifference className="text-cyan-500 size-6" />,
   think: <FaBrain className="text-amber-500 size-6" />,
   invokeFlow: <FaProjectDiagram className="text-blue-600 size-6" />,
-  codeInterpreter: <FaCode className="text-green-600 size-6" />
+  codeInterpreter: <FaCode className="text-green-600 size-6" />,
+  screenCapture: <FaDesktop className="text-slate-500 size-6" />
 }
 
 // MCPツール用のアイコン（すべてのMCPツールで共通）

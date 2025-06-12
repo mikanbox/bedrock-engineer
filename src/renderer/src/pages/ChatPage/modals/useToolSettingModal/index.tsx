@@ -13,6 +13,7 @@ import { GenerateImageSettingForm } from './GenerateImageSettingForm'
 import { GenerateVideoSettingForm } from './GenerateVideoSettingForm'
 import { FlowSettingForm } from './FlowSettingForm'
 import { CodeInterpreterSettingForm } from './CodeInterpreterSettingForm'
+import { ScreenCaptureSettingForm } from './ScreenCaptureSettingForm'
 import { Button, Modal, ToggleSwitch } from 'flowbite-react'
 import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -46,7 +47,8 @@ const TOOLS_WITH_SETTINGS = [
   'generateImage',
   'generateVideo',
   'invokeFlow',
-  'codeInterpreter'
+  'codeInterpreter',
+  'screenCapture'
 ]
 
 interface ToolSettingModalProps {
@@ -542,6 +544,7 @@ const ToolSettingModal = memo(({ isOpen, onClose }: ToolSettingModalProps) => {
                       />
                     )}
                     {selectedTool === 'codeInterpreter' && <CodeInterpreterSettingForm />}
+                    {selectedTool === 'screenCapture' && <ScreenCaptureSettingForm />}
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">

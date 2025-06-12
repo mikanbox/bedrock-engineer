@@ -137,6 +137,10 @@ export class RecognizeImageTool extends BaseTool<RecognizeImageInput, RecognizeI
     })
 
     try {
+      // Get the configured model ID from store (using recognizeImageTool setting)
+      const recognizeImageSetting = this.storeManager.get('recognizeImageTool')
+      const modelId = recognizeImageSetting?.modelId || 'anthropic.claude-3-5-sonnet-20241022-v2:0'
+
       // Promise.all で並列処理 (following legacy implementation)
       const results = await Promise.all(
         limitedPaths.map(async (imagePath) => {
@@ -152,7 +156,8 @@ export class RecognizeImageTool extends BaseTool<RecognizeImageInput, RecognizeI
             // 個別の画像認識処理 - call main process using type-safe IPC
             const description = await ipc('bedrock:recognizeImage', {
               imagePaths: [imagePath], // Single image per call
-              prompt
+              prompt,
+              modelId
             })
 
             this.logger.debug(`Successfully recognized image: ${this.sanitizePath(imagePath)}`, {
@@ -192,7 +197,7 @@ export class RecognizeImageTool extends BaseTool<RecognizeImageInput, RecognizeI
         message: `Analyzed ${successCount} of ${limitedPaths.length} images successfully`,
         result: {
           images: results,
-          modelUsed: 'claude-3-sonnet' // Default model used
+          modelUsed: modelId
         }
       }
     } catch (error) {
