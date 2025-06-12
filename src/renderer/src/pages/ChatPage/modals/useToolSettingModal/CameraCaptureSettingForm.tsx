@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Label, Select, Button } from 'flowbite-react'
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { Label, Select, Button, ToggleSwitch } from 'flowbite-react'
+import { ArrowPathIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useSettings } from '@renderer/contexts/SettingsContext'
 import { CameraConfig } from '@/types/agent-chat'
 import { CameraDeviceInfo, enumerateCameraDevices } from '@renderer/lib/camera-utils'
@@ -27,6 +27,15 @@ export const CameraCaptureSettingForm: React.FC = () => {
   const [allowedCameras, setAllowedCameras] = useState<CameraConfig[]>([])
   const [isLoadingCameras, setIsLoadingCameras] = useState(false)
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
+
+  // プレビューウィンドウの状態
+  const [previewEnabled, setPreviewEnabled] = useState(false)
+  const [previewSize, setPreviewSize] = useState<'small' | 'medium' | 'large'>('medium')
+  const [previewOpacity, setPreviewOpacity] = useState(0.9)
+  const [previewPosition, setPreviewPosition] = useState<
+    'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+  >('bottom-right')
+  const [previewStatus, setPreviewStatus] = useState<{ isActive: boolean }>({ isActive: false })
 
   // Vision-capable モデルをフィルタリング（Claude と Nova シリーズ）
   const visionCapableModels = useMemo(() => {
@@ -94,10 +103,92 @@ export const CameraCaptureSettingForm: React.FC = () => {
     updateAgentAllowedCameras(selectedAgentId, updatedCameras)
   }
 
-  // 初回読み込み時にカメラ一覧を取得
+  // プレビューウィンドウの状態を取得
+  const fetchPreviewStatus = useCallback(async () => {
+    if (window.api?.camera?.getPreviewStatus) {
+      try {
+        const status = await window.api.camera.getPreviewStatus()
+        setPreviewStatus(status)
+        setPreviewEnabled(status.isActive)
+
+        if (status.options) {
+          setPreviewSize(status.options.size || 'medium')
+          setPreviewOpacity(status.options.opacity || 0.9)
+          setPreviewPosition(status.options.position || 'bottom-right')
+        }
+      } catch (error) {
+        console.error('Failed to get preview status:', error)
+      }
+    }
+  }, [])
+
+  // プレビューウィンドウの表示/非表示を切り替え
+  const handlePreviewToggle = useCallback(
+    async (enabled: boolean) => {
+      if (!window.api?.camera) return
+
+      try {
+        if (enabled) {
+          // 選択された複数カメラのIDを取得
+          const selectedCameraIds = allowedCameras
+            .filter((camera) => camera.enabled)
+            .map((camera) => camera.id)
+
+          // カメラが選択されていない場合はデフォルトカメラを使用
+          const cameraIds = selectedCameraIds.length > 0 ? selectedCameraIds : ['default']
+
+          const result = await window.api.camera.showPreviewWindow({
+            size: previewSize,
+            opacity: previewOpacity,
+            position: previewPosition,
+            cameraIds: cameraIds,
+            layout: cameraIds.length > 1 ? 'cascade' : 'single'
+          })
+          if (result.success) {
+            setPreviewEnabled(true)
+            setPreviewStatus({ isActive: true })
+          }
+        } else {
+          const result = await window.api.camera.hidePreviewWindow()
+          if (result.success) {
+            setPreviewEnabled(false)
+            setPreviewStatus({ isActive: false })
+          }
+        }
+      } catch (error) {
+        console.error('Failed to toggle preview window:', error)
+      }
+    },
+    [previewSize, previewOpacity, previewPosition, allowedCameras]
+  )
+
+  // プレビューウィンドウの設定を更新
+  const handlePreviewSettingsUpdate = useCallback(async () => {
+    if (!window.api?.camera || !previewStatus.isActive) return
+
+    try {
+      await window.api.camera.updatePreviewSettings({
+        size: previewSize,
+        opacity: previewOpacity,
+        position: previewPosition
+      })
+    } catch (error) {
+      console.error('Failed to update preview settings:', error)
+    }
+  }, [previewSize, previewOpacity, previewPosition, previewStatus.isActive])
+
+  // プレビュー設定が変更された時に自動更新
+  useEffect(() => {
+    if (previewStatus.isActive) {
+      handlePreviewSettingsUpdate()
+    }
+  }, [previewSize, previewOpacity, previewPosition, handlePreviewSettingsUpdate])
+
+  // 初回読み込み時にカメラ一覧とプレビュー状態を取得
   useEffect(() => {
     fetchAvailableCameras()
-  }, [])
+    fetchPreviewStatus()
+  }, [fetchAvailableCameras, fetchPreviewStatus])
 
   return (
     <div className="prose dark:prose-invert max-w-none w-full">
@@ -317,6 +408,131 @@ export const CameraCaptureSettingForm: React.FC = () => {
             <li>• {t('Camera permissions are checked each time before capture')}</li>
             <li>• {t('Use the refresh button to update the list of available cameras')}</li>
             <li>• {t('Live preview may not be available for all camera devices')}</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* カメラプレビューウィンドウ設定 */}
+      <div className="flex flex-col gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md mb-6 w-full">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-sm mb-2 dark:text-gray-200">
+            {t('Camera Preview Window')}
+          </h4>
+          <div className="flex items-center gap-3">
+            {previewStatus.isActive ? (
+              <EyeIcon className="w-4 h-4 text-green-500" />
+            ) : (
+              <EyeSlashIcon className="w-4 h-4 text-gray-400" />
+            )}
+            <ToggleSwitch checked={previewEnabled} onChange={handlePreviewToggle} label="" />
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          {t(
+            'Display a live camera preview window on your screen. This allows you to see what the camera captures in real-time without taking photos.'
+          )}
+        </p>
+
+        {/* プレビューウィンドウが有効な場合の設定 */}
+        {previewEnabled && (
+          <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-600">
+            {/* ウィンドウサイズ設定 */}
+            <div className="w-full">
+              <Label htmlFor="previewSize" value={t('Preview Window Size')} />
+              <Select
+                id="previewSize"
+                value={previewSize}
+                onChange={(e) => setPreviewSize(e.target.value as 'small' | 'medium' | 'large')}
+                className="mt-2 w-full"
+              >
+                <option value="small">{t('Small (200×150)')}</option>
+                <option value="medium">{t('Medium (320×240)')}</option>
+                <option value="large">{t('Large (480×360)')}</option>
+              </Select>
+            </div>
+
+            {/* ウィンドウ位置設定 */}
+            <div className="w-full">
+              <Label htmlFor="previewPosition" value={t('Preview Window Position')} />
+              <Select
+                id="previewPosition"
+                value={previewPosition}
+                onChange={(e) =>
+                  setPreviewPosition(
+                    e.target.value as 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+                  )
+                }
+                className="mt-2 w-full"
+              >
+                <option value="bottom-right">{t('Bottom Right')}</option>
+                <option value="bottom-left">{t('Bottom Left')}</option>
+                <option value="top-right">{t('Top Right')}</option>
+                <option value="top-left">{t('Top Left')}</option>
+              </Select>
+            </div>
+
+            {/* 透明度設定 */}
+            <div className="w-full">
+              <Label htmlFor="previewOpacity" value={t('Window Opacity')} />
+              <div className="flex items-center gap-4 mt-2">
+                <input
+                  type="range"
+                  id="previewOpacity"
+                  min="0.3"
+                  max="1.0"
+                  step="0.1"
+                  value={previewOpacity}
+                  onChange={(e) => setPreviewOpacity(parseFloat(e.target.value))}
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-300 min-w-[4rem]">
+                  {Math.round(previewOpacity * 100)}%
+                </span>
+              </div>
+            </div>
+
+            {/* プレビューウィンドウの状態表示 */}
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 dark:border dark:border-blue-700 rounded-md">
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${previewStatus.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
+                ></div>
+                <span className="text-sm font-medium dark:text-blue-300">
+                  {previewStatus.isActive
+                    ? t('Preview Window Active')
+                    : t('Preview Window Inactive')}
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-300">
+                {previewStatus.isActive
+                  ? t('The camera preview window is currently displayed on your screen.')
+                  : t('Enable the toggle above to show the camera preview window.')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* プレビューウィンドウについての情報 */}
+        <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 dark:border dark:border-purple-700 rounded-md">
+          <h5 className="font-medium mb-2 dark:text-purple-300">{t('Preview Window Features')}</h5>
+          <ul className="text-sm text-gray-700 dark:text-gray-200 space-y-1">
+            <li>• {t('Always on top - stays visible above other windows')}</li>
+            <li>• {t('Draggable - can be moved around the screen')}</li>
+            <li>• {t('Live camera feed - shows real-time video from your camera')}</li>
+            <li>• {t('Hover controls - settings and close buttons appear on mouse hover')}</li>
+            <li>• {t('Automatic positioning - remembers your preferred screen location')}</li>
+          </ul>
+        </div>
+
+        {/* 注意事項 */}
+        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 dark:border dark:border-amber-700 rounded-md">
+          <h5 className="font-medium mb-2 dark:text-amber-300">{t('Important Notes')}</h5>
+          <ul className="text-sm text-gray-700 dark:text-gray-200 space-y-1">
+            <li>• {t('Preview window requires camera permission')}</li>
+            <li>• {t('Only one preview window can be active at a time')}</li>
+            <li>• {t('Settings changes apply immediately to active preview')}</li>
+            <li>• {t('Close the preview window to free up camera resources')}</li>
           </ul>
         </div>
       </div>

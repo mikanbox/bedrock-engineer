@@ -109,6 +109,28 @@ export const api = {
       outputPath?: string
     }) => {
       return ipcRenderer.invoke('camera:save-captured-image', request)
+    },
+    showPreviewWindow: async (options?: {
+      size?: 'small' | 'medium' | 'large'
+      opacity?: number
+      position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+      cameraIds?: string[]
+      layout?: 'cascade' | 'grid' | 'single'
+    }) => {
+      return ipcRenderer.invoke('camera:show-preview-window', options)
+    },
+    hidePreviewWindow: async () => {
+      return ipcRenderer.invoke('camera:hide-preview-window')
+    },
+    updatePreviewSettings: async (options: {
+      size?: 'small' | 'medium' | 'large'
+      opacity?: number
+      position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+    }) => {
+      return ipcRenderer.invoke('camera:update-preview-settings', options)
+    },
+    getPreviewStatus: async () => {
+      return ipcRenderer.invoke('camera:get-preview-status')
     }
   },
   tools: {
