@@ -4,7 +4,8 @@ import {
   KnowledgeBase,
   McpServerConfig,
   SendMsgKey,
-  ToolState
+  ToolState,
+  WindowConfig
 } from 'src/types/agent-chat'
 import { ToolName } from 'src/types/tools'
 import { listModels } from '@renderer/lib/api'
@@ -175,6 +176,10 @@ export interface SettingsContextType {
   // エージェント固有の許可コマンド設定
   getAgentAllowedCommands: (agentId: string) => CommandConfig[]
   updateAgentAllowedCommands: (agentId: string, commands: CommandConfig[]) => void
+
+  // エージェント固有の許可ウィンドウ設定
+  getAgentAllowedWindows: (agentId: string) => WindowConfig[]
+  updateAgentAllowedWindows: (agentId: string, windows: WindowConfig[]) => void
 
   // エージェント固有のBedrock Agents設定
   getAgentBedrockAgents: (agentId: string) => BedrockAgent[]
@@ -1205,6 +1210,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [allAgents]
   )
 
+  // エージェント固有の許可ウィンドウを取得する関数
+  const getAgentAllowedWindows = useCallback(
+    (agentId: string): WindowConfig[] => {
+      // 現在選択されているエージェントを見つける
+      const agent = allAgents.find((a) => a.id === agentId)
+
+      // エージェント固有の許可ウィンドウ設定がある場合はそれを返す
+      // それ以外は空配列を返す
+      return (agent && agent.allowedWindows) || []
+    },
+    [allAgents]
+  )
+
   // エージェント固有のBedrock Agentsを取得する関数
   const getAgentBedrockAgents = useCallback(
     (agentId: string): BedrockAgent[] => {
@@ -1246,6 +1264,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
       projectPath,
       allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
+      allowedWindows: allAgents.find((a) => a.id === selectedAgentId)?.allowedWindows || [],
       knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
       bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || [],
       flows: allAgents.find((a) => a.id === selectedAgentId)?.flows || []
@@ -1287,6 +1306,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // カスタムエージェントの場合のみ更新可能
       const updatedAgents = customAgents.map((agent) =>
         agent.id === agentId ? { ...agent, allowedCommands: commands } : agent
+      )
+
+      setCustomAgents(updatedAgents)
+      window.store.set('customAgents', updatedAgents)
+    },
+    [customAgents]
+  )
+
+  // エージェントの許可ウィンドウ設定を更新する関数
+  const updateAgentAllowedWindows = useCallback(
+    (agentId: string, windows: WindowConfig[]) => {
+      // カスタムエージェントの場合のみ更新可能
+      const updatedAgents = customAgents.map((agent) =>
+        agent.id === agentId ? { ...agent, allowedWindows: windows } : agent
       )
 
       setCustomAgents(updatedAgents)
@@ -1571,6 +1604,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // エージェント固有の設定
     getAgentAllowedCommands,
     updateAgentAllowedCommands,
+    getAgentAllowedWindows,
+    updateAgentAllowedWindows,
     getAgentBedrockAgents,
     updateAgentBedrockAgents,
     getAgentKnowledgeBases,

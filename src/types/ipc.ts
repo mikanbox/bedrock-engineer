@@ -227,6 +227,7 @@ export interface IPCChannelDefinitions {
       format?: 'png' | 'jpeg'
       quality?: number
       outputPath?: string
+      windowTarget?: string
     }
     result: {
       success: boolean
@@ -239,6 +240,16 @@ export interface IPCChannelDefinitions {
         timestamp: string
       }
     }
+  }
+  'screen:list-available-windows': {
+    params: void
+    result: Array<{
+      id: string
+      name: string
+      enabled: boolean
+      thumbnail: string
+      dimensions: { width: number; height: number }
+    }>
   }
   'screen:check-permissions': {
     params: void

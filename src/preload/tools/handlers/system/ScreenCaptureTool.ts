@@ -60,6 +60,11 @@ export class ScreenCaptureTool extends BaseTool<ScreenCaptureInput, ScreenCaptur
             type: 'string',
             description:
               'Optional prompt for image recognition analysis. If provided, the captured image will be automatically analyzed with AI using the configured model.'
+          },
+          windowTarget: {
+            type: 'string',
+            description:
+              'Optional target window by name or application (partial match supported). Examples: "Chrome", "Terminal", "Visual Studio Code"'
           }
         }
       }
@@ -70,7 +75,7 @@ export class ScreenCaptureTool extends BaseTool<ScreenCaptureInput, ScreenCaptur
    * System prompt description
    */
   static readonly systemPromptDescription =
-    'Capture screen for AI analysis.\nUseful for debugging, UI analysis, and creating documentation.'
+    'Capture screen for AI analysis.\nUseful for debugging, UI analysis, and creating documentation.\nAvailable windows for screen capture:{{allowedWindows}}'
 
   /**
    * Validate input parameters
@@ -103,7 +108,8 @@ export class ScreenCaptureTool extends BaseTool<ScreenCaptureInput, ScreenCaptur
 
       // Execute screen capture (always PNG format)
       const captureResult = await ipc('screen:capture', {
-        format: 'png'
+        format: 'png',
+        windowTarget: input.windowTarget
       })
 
       if (!captureResult.success) {

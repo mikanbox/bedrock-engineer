@@ -12,6 +12,7 @@ interface ScreenCaptureOptions {
   format?: 'png' | 'jpeg'
   quality?: number
   outputPath?: string
+  windowTarget?: string
 }
 
 interface ScreenCaptureResult {
@@ -32,6 +33,14 @@ interface PermissionCheckResult {
   message: string
 }
 
+interface WindowInfo {
+  id: string
+  name: string
+  enabled: boolean
+  thumbnail: string // base64画像データ
+  dimensions: { width: number; height: number } // 実際のウィンドウサイズ
+}
+
 export const screenHandlers = {
   'screen:capture': async (
     _event: IpcMainInvokeEvent,
@@ -40,22 +49,51 @@ export const screenHandlers = {
     try {
       log.info('Starting screen capture', {
         format: options.format || 'png',
-        quality: options.quality
+        quality: options.quality,
+        hasWindowTarget: !!options.windowTarget
       })
 
-      // デスクトップキャプチャソースを取得
-      const sources = await desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: { width: 1920, height: 1080 }
-      })
+      let image: Electron.NativeImage
 
-      if (sources.length === 0) {
-        throw new Error('No screen sources available')
+      // ウィンドウ指定がある場合
+      if (options.windowTarget) {
+        // ウィンドウソースを取得
+        const windowSources = await desktopCapturer.getSources({
+          types: ['window'],
+          thumbnailSize: { width: 1920, height: 1080 }
+        })
+
+        if (windowSources.length === 0) {
+          throw new Error('No window sources available')
+        }
+
+        // 指定されたウィンドウを検索
+        const targetWindow = windowSources.find((source) =>
+          source.name.toLowerCase().includes(options.windowTarget!.toLowerCase())
+        )
+
+        if (!targetWindow) {
+          const availableWindows = windowSources.map((s) => s.name).join(', ')
+          throw new Error(`Target window not found. Available windows: ${availableWindows}`)
+        }
+
+        image = targetWindow.thumbnail
+        log.info('Capturing specific window', { windowName: targetWindow.name })
+      } else {
+        // 全画面キャプチャ
+        const sources = await desktopCapturer.getSources({
+          types: ['screen'],
+          thumbnailSize: { width: 1920, height: 1080 }
+        })
+
+        if (sources.length === 0) {
+          throw new Error('No screen sources available')
+        }
+
+        // プライマリスクリーンを使用
+        const primarySource = sources[0]
+        image = primarySource.thumbnail
       }
-
-      // プライマリスクリーンを使用
-      const primarySource = sources[0]
-      const image = primarySource.thumbnail
 
       // 出力パスの決定
       const timestamp = Date.now()
@@ -101,6 +139,45 @@ export const screenHandlers = {
         error: error instanceof Error ? error.message : String(error)
       })
       throw error
+    }
+  },
+
+  'screen:list-available-windows': async (_event: IpcMainInvokeEvent): Promise<WindowInfo[]> => {
+    try {
+      log.debug('Listing available windows')
+
+      const windowSources = await desktopCapturer.getSources({
+        types: ['window'],
+        thumbnailSize: { width: 300, height: 200 } // プレビュー用の適切なサイズ
+      })
+
+      const windowInfos: WindowInfo[] = windowSources.map((source, _index) => {
+        // サムネイル画像をbase64形式で取得
+        const thumbnailBuffer = source.thumbnail.toPNG()
+        const thumbnailBase64 = `data:image/png;base64,${thumbnailBuffer.toString('base64')}`
+
+        // サムネイルのサイズを取得
+        const thumbnailSize = source.thumbnail.getSize()
+
+        return {
+          id: source.id,
+          name: source.name,
+          enabled: false, // Default to disabled
+          thumbnail: thumbnailBase64,
+          dimensions: {
+            width: thumbnailSize.width,
+            height: thumbnailSize.height
+          }
+        }
+      })
+
+      log.info('Found available windows with thumbnails', { count: windowInfos.length })
+      return windowInfos
+    } catch (error) {
+      log.error('Failed to list available windows', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      return []
     }
   },
 

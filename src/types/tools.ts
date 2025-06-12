@@ -256,6 +256,7 @@ export type RecognizeImageInput = {
 export type ScreenCaptureInput = {
   type: 'screenCapture'
   recognizePrompt?: string // 画像認識用のプロンプト（空の場合はキャプチャのみ）
+  windowTarget?: string // ウィンドウ名またはアプリケーション名による指定（部分一致）
 }
 
 // codeInterpreter ツールの入力型（操作別にディスクリミネーテッドユニオン化）

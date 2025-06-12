@@ -8,6 +8,13 @@ export interface CommandConfig {
   description: string
 }
 
+// ウィンドウ設定の型定義
+export interface WindowConfig {
+  id: string // ウィンドウの一意識別子
+  name: string // ウィンドウタイトル
+  enabled: boolean // 許可/非許可
+}
+
 export type AgentChatConfig = {
   ignoreFiles?: string[]
   contextLength?: number
@@ -214,6 +221,7 @@ export type CustomAgent = Agent & {
   tools?: ToolName[] // エージェント固有のツール名リスト
   category?: AgentCategory // エージェントのカテゴリ
   allowedCommands?: CommandConfig[] // エージェント固有の許可コマンド
+  allowedWindows?: WindowConfig[] // エージェント固有の許可ウィンドウ
   bedrockAgents?: BedrockAgent[] // エージェント固有のBedrock Agents
   knowledgeBases?: KnowledgeBase[] // エージェント固有のKnowledge Base
   flows?: FlowConfig[] // エージェント固有のFlow設定
