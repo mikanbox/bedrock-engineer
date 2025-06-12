@@ -52,6 +52,82 @@ export const tools = {
     'Code Interpreter': 'Code Interpreter',
     'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.':
       'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.',
+    // Screen Capture Settings
+    'Screen Capture Settings': 'Screen Capture Settings',
+    'Default Image Format': 'Default Image Format',
+    'PNG provides better quality but larger files, JPEG is compressed but smaller':
+      'PNG provides better quality but larger files, JPEG is compressed but smaller',
+    'JPEG Quality (1-100)': 'JPEG Quality (1-100)',
+    'Higher values provide better quality but larger file sizes. Recommended: 70-90':
+      'Higher values provide better quality but larger file sizes. Recommended: 70-90',
+    'Enable AI Image Analysis': 'Enable AI Image Analysis',
+    'Automatically analyze captured screenshots with AI to extract text and describe visual content':
+      'Automatically analyze captured screenshots with AI to extract text and describe visual content',
+    'Custom Analysis Prompt (Optional)': 'Custom Analysis Prompt (Optional)',
+    'e.g., "Focus on error messages and UI elements" or leave empty for default analysis':
+      'e.g., "Focus on error messages and UI elements" or leave empty for default analysis',
+    'Customize how AI analyzes your screenshots. Leave empty to use default comprehensive analysis.':
+      'Customize how AI analyzes your screenshots. Leave empty to use default comprehensive analysis.',
+    'AI Analysis Features': 'AI Analysis Features',
+    'Extract and transcribe all visible text content':
+      'Extract and transcribe all visible text content',
+    'Identify UI elements, buttons, and interface components':
+      'Identify UI elements, buttons, and interface components',
+    'Detect and describe error messages or alerts': 'Detect and describe error messages or alerts',
+    'Provide contextual descriptions for debugging assistance':
+      'Provide contextual descriptions for debugging assistance',
+    'Generate detailed visual documentation automatically':
+      'Generate detailed visual documentation automatically',
+    'Generate documentation with automatic screen captures and descriptions':
+      'Generate documentation with automatic screen captures and descriptions',
+    'Analyze application layouts and suggest improvements with AI insights':
+      'Analyze application layouts and suggest improvements with AI insights',
+    'Create visual bug reports with contextual AI-generated descriptions':
+      'Create visual bug reports with contextual AI-generated descriptions',
+    "Extract text content from applications that don't support text selection":
+      "Extract text content from applications that don't support text selection",
+    'Image analysis is performed using your configured AI model settings':
+      'Image analysis is performed using your configured AI model settings',
+    // New Screen Capture Settings
+    'AI Image Analysis Settings': 'AI Image Analysis Settings',
+    'AI Model for Image Analysis': 'AI Model for Image Analysis',
+    'How to Use': 'How to Use',
+    'Screen capture only': 'Screen capture only',
+    'Use without any prompt to capture screen image only':
+      'Use without any prompt to capture screen image only',
+    'Screen capture + AI analysis': 'Screen capture + AI analysis',
+    'Provide a recognition prompt to automatically analyze the captured image':
+      'Provide a recognition prompt to automatically analyze the captured image',
+    'Example prompts': 'Example prompts',
+    '"Describe this error screen", "Extract all text from this image", "Analyze the UI layout"':
+      '"Describe this error screen", "Extract all text from this image", "Analyze the UI layout"',
+    'Screenshots are automatically saved as PNG format for optimal quality':
+      'Screenshots are automatically saved as PNG format for optimal quality',
+    'Temporary files are automatically cleaned up after processing':
+      'Temporary files are automatically cleaned up after processing',
+    'Convert screenshots into searchable text content for documentation':
+      'Convert screenshots into searchable text content for documentation',
+    'Analyze competitor interfaces and provide detailed descriptions':
+      'Analyze competitor interfaces and provide detailed descriptions',
+    'AI analysis is performed using your configured AWS Bedrock models':
+      'AI analysis is performed using your configured AWS Bedrock models',
+    'Captured images are temporarily stored and automatically cleaned up':
+      'Captured images are temporarily stored and automatically cleaned up',
+    'Only enable screen capture when necessary for your workflow':
+      'Only enable screen capture when necessary for your workflow',
+    'Consider the privacy implications when capturing screens with personal data':
+      'Consider the privacy implications when capturing screens with personal data',
+    'Performance Notes': 'Performance Notes',
+    'Screen capture is typically very fast (< 1 second)':
+      'Screen capture is typically very fast (< 1 second)',
+    'AI analysis may take 5-15 seconds depending on image complexity':
+      'AI analysis may take 5-15 seconds depending on image complexity',
+    'Claude 3.5 Haiku is faster but less detailed than Claude 3.5 Sonnet':
+      'Claude 3.5 Haiku is faster but less detailed than Claude 3.5 Sonnet',
+    'Large or high-resolution screens may take longer to analyze':
+      'Large or high-resolution screens may take longer to analyze',
+    'Network latency affects AI analysis response time':
+      'Network latency affects AI analysis response time',
     'Code Interpreter Status': 'Code Interpreter Status',
     'Enable or disable the code interpreter functionality':
       'Enable or disable the code interpreter functionality',
@@ -101,6 +177,15 @@ export const tools = {
       'Solve complex equations, numerical simulations',
     'File Processing:': 'File Processing:',
     'Generate reports, process text files': 'Generate reports, process text files',
+    // Screen Capture Result Display
+    'Screen Capture': 'Screen Capture',
+    Resolution: 'Resolution',
+    'File Size': 'File Size',
+    Format: 'Format',
+    Timestamp: 'Timestamp',
+    'AI Analysis': 'AI Analysis',
+    'Analysis Prompt': 'Analysis Prompt',
+    'Analyzed with': 'Analyzed with',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'File System',
@@ -134,7 +219,8 @@ export const tools = {
       codeInterpreter: 'Execute Python code in a secure Docker environment',
       generateVideo: 'Generate high-quality videos from text descriptions using Amazon Nova Reel',
       checkVideoStatus: 'Check the status of video generation jobs',
-      downloadVideo: 'Download generated videos from S3 to local storage'
+      downloadVideo: 'Download generated videos from S3 to local storage',
+      screenCapture: 'Capture the current screen for AI analysis and debugging'
     },
     'tool info': {
       retrieve: {
@@ -176,6 +262,10 @@ export const tools = {
           'The generateVideo tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
         group:
           'When you enable this tool, the following related tools will also be automatically enabled: checkVideoStatus (to monitor video generation progress) and downloadVideo (to download completed videos). These tools work together to provide a complete video generation workflow.'
+      },
+      screenCapture: {
+        description:
+          'The screenCapture tool captures the current screen and saves it as an image file. When a recognition prompt is provided, the captured image will be automatically analyzed with AI to extract text content, identify UI elements, and provide detailed visual descriptions for debugging and documentation purposes.'
       }
     },
     'tool usage': {
@@ -369,6 +459,82 @@ export const tools = {
     'Code Interpreter': 'コードインタープリタ',
     'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.':
       'データ分析、計算、コード実行のために、AIが安全なDocker環境でPythonコードを実行できるようにします。',
+    // Screen Capture Settings
+    'Screen Capture Settings': 'スクリーンキャプチャ設定',
+    'Default Image Format': 'デフォルト画像形式',
+    'PNG provides better quality but larger files, JPEG is compressed but smaller':
+      'PNGは高品質ですがファイルサイズが大きく、JPEGは圧縮されてファイルサイズが小さくなります',
+    'JPEG Quality (1-100)': 'JPEG品質 (1-100)',
+    'Higher values provide better quality but larger file sizes. Recommended: 70-90':
+      '高い値ほど品質が良くなりますが、ファイルサイズも大きくなります。推奨値: 70-90',
+    'Enable AI Image Analysis': 'AI画像分析を有効にする',
+    'Automatically analyze captured screenshots with AI to extract text and describe visual content':
+      'キャプチャしたスクリーンショットをAIで自動的に分析してテキストを抽出し、視覚的コンテンツを説明します',
+    'Custom Analysis Prompt (Optional)': 'カスタム分析プロンプト（オプション）',
+    'e.g., "Focus on error messages and UI elements" or leave empty for default analysis':
+      '例：「エラーメッセージとUI要素に焦点を当てる」または空白でデフォルト分析',
+    'Customize how AI analyzes your screenshots. Leave empty to use default comprehensive analysis.':
+      'AIがスクリーンショットを分析する方法をカスタマイズします。空白にするとデフォルトの包括的分析を使用します。',
+    'AI Analysis Features': 'AI分析機能',
+    'Extract and transcribe all visible text content':
+      '表示されているすべてのテキストコンテンツを抽出・転写',
+    'Identify UI elements, buttons, and interface components':
+      'UI要素、ボタン、インターフェースコンポーネントを識別',
+    'Detect and describe error messages or alerts': 'エラーメッセージやアラートを検出・説明',
+    'Provide contextual descriptions for debugging assistance':
+      'デバッグ支援のための文脈的説明を提供',
+    'Generate detailed visual documentation automatically': '詳細な視覚的ドキュメントを自動生成',
+    'Generate documentation with automatic screen captures and descriptions':
+      'スクリーンキャプチャと説明を自動で含むドキュメントを生成',
+    'Analyze application layouts and suggest improvements with AI insights':
+      'アプリケーションレイアウトを分析してAIの洞察による改善提案',
+    'Create visual bug reports with contextual AI-generated descriptions':
+      '文脈的なAI生成説明付きの視覚的バグレポートを作成',
+    "Extract text content from applications that don't support text selection":
+      'テキスト選択をサポートしないアプリケーションからテキストコンテンツを抽出',
+    'Image analysis is performed using your configured AI model settings':
+      '画像分析は設定されたAIモデル設定を使用して実行されます',
+    // New Screen Capture Settings (Japanese)
+    'AI Image Analysis Settings': 'AI画像分析設定',
+    'AI Model for Image Analysis': '画像分析用AIモデル',
+    'How to Use': '使用方法',
+    'Screen capture only': 'スクリーンキャプチャのみ',
+    'Use without any prompt to capture screen image only':
+      'プロンプトなしで画面キャプチャのみを実行',
+    'Screen capture + AI analysis': 'スクリーンキャプチャ + AI分析',
+    'Provide a recognition prompt to automatically analyze the captured image':
+      '認識プロンプトを提供してキャプチャした画像を自動分析',
+    'Example prompts': 'プロンプト例',
+    '"Describe this error screen", "Extract all text from this image", "Analyze the UI layout"':
+      '「このエラー画面を説明して」「この画像からすべてのテキストを抽出」「UIレイアウトを分析」',
+    'Screenshots are automatically saved as PNG format for optimal quality':
+      'スクリーンショットは最適な品質でPNG形式で自動保存されます',
+    'Temporary files are automatically cleaned up after processing':
+      '処理後に一時ファイルは自動的にクリーンアップされます',
+    'Convert screenshots into searchable text content for documentation':
+      'スクリーンショットを検索可能なテキストコンテンツに変換してドキュメント化',
+    'Analyze competitor interfaces and provide detailed descriptions':
+      '競合他社のインターフェースを分析して詳細な説明を提供',
+    'AI analysis is performed using your configured AWS Bedrock models':
+      'AI分析は設定されたAWS Bedrockモデルを使用して実行されます',
+    'Captured images are temporarily stored and automatically cleaned up':
+      'キャプチャした画像は一時的に保存され、自動的にクリーンアップされます',
+    'Only enable screen capture when necessary for your workflow':
+      'ワークフローに必要な場合のみスクリーンキャプチャを有効にしてください',
+    'Consider the privacy implications when capturing screens with personal data':
+      '個人データを含む画面をキャプチャする際はプライバシーへの影響を考慮してください',
+    'Platform Requirements': 'プラットフォーム要件',
+    'Performance Notes': 'パフォーマンス情報',
+    'Screen capture is typically very fast (< 1 second)':
+      'スクリーンキャプチャは通常非常に高速です（1秒未満）',
+    'AI analysis may take 5-15 seconds depending on image complexity':
+      'AI分析は画像の複雑さに応じて5〜15秒かかる場合があります',
+    'Claude 3.5 Haiku is faster but less detailed than Claude 3.5 Sonnet':
+      'Claude 3.5 HaikuはClaude 3.5 Sonnetより高速ですが詳細度は劣ります',
+    'Large or high-resolution screens may take longer to analyze':
+      '大画面や高解像度画面の分析には時間がかかる場合があります',
+    'Network latency affects AI analysis response time':
+      'ネットワーク遅延がAI分析の応答時間に影響します',
     'Code Interpreter Status': 'コードインタープリタ状態',
     'Enable or disable the code interpreter functionality':
       'コードインタープリタ機能を有効または無効にします',
@@ -414,6 +580,15 @@ export const tools = {
     'Solve complex equations, numerical simulations': '複雑な方程式の解決、数値シミュレーション',
     'File Processing:': 'ファイル処理：',
     'Generate reports, process text files': 'レポート生成、テキストファイル処理',
+    // Screen Capture Result Display (Japanese)
+    'Screen Capture': 'スクリーンキャプチャ',
+    Resolution: '解像度',
+    'File Size': 'ファイルサイズ',
+    Format: '形式',
+    Timestamp: 'タイムスタンプ',
+    'AI Analysis': 'AI分析',
+    'Analysis Prompt': '分析プロンプト',
+    'Analyzed with': '分析に使用したモデル',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'ファイルシステム',
@@ -448,7 +623,8 @@ export const tools = {
       codeInterpreter: '安全なDocker環境でPythonコードを実行',
       generateVideo: 'Amazon Nova Reelを使用してテキスト説明から高品質な動画を生成',
       checkVideoStatus: '動画生成ジョブのステータスを確認',
-      downloadVideo: '生成された動画をS3からローカルストレージにダウンロード'
+      downloadVideo: '生成された動画をS3からローカルストレージにダウンロード',
+      screenCapture: 'AI分析とデバッグのために現在の画面をキャプチャ'
     },
     'tool info': {
       retrieve: {
@@ -490,6 +666,10 @@ export const tools = {
           'generateVideo ツールは Amazon Nova Reel を使用してテキスト説明から高品質な動画を作成します。動画は非同期で生成され、出力保存にはS3設定が必要です。',
         group:
           'このツールを有効にすると、関連する以下のツールも自動的に有効になります：checkVideoStatus（動画生成の進行状況を監視）とdownloadVideo（完成した動画をダウンロード）。これらのツールは連携して完全な動画生成ワークフローを提供します。'
+      },
+      screenCapture: {
+        description:
+          'screenCaptureツールは現在の画面をキャプチャして画像ファイルとして保存します。認識プロンプトが提供されると、キャプチャした画像はAIによって自動的に分析され、テキストコンテンツの抽出、UI要素の識別、デバッグとドキュメント作成のための詳細な視覚的説明が提供されます。'
       }
     },
     'tool usage': {

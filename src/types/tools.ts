@@ -23,6 +23,7 @@ export type BuiltInToolName =
   | 'invokeFlow'
   | 'codeInterpreter'
   | 'mcp_adapter'
+  | 'screenCapture'
 
 // MCPツール名の型安全な定義
 export type McpToolName = `mcp_${string}`
@@ -52,7 +53,8 @@ const BUILT_IN_TOOLS: readonly BuiltInToolName[] = [
   'recognizeImage',
   'invokeFlow',
   'codeInterpreter',
-  'mcp_adapter'
+  'mcp_adapter',
+  'screenCapture'
 ] as const
 
 // 組み込みツール名であるかを判定する型ガード
@@ -250,6 +252,13 @@ export type RecognizeImageInput = {
   prompt?: string
 }
 
+// screenCapture ツールの入力型
+export type ScreenCaptureInput = {
+  type: 'screenCapture'
+  recognizePrompt?: string // 画像認識用のプロンプト（空の場合はキャプチャのみ）
+  windowTarget?: string // ウィンドウ名またはアプリケーション名による指定（部分一致）
+}
+
 // codeInterpreter ツールの入力型（操作別にディスクリミネーテッドユニオン化）
 export type CodeInterpreterInput =
   | CodeInterpreterExecuteInput
@@ -328,6 +337,7 @@ export type ToolInput =
   | ExecuteCommandInput
   | ApplyDiffEditInput
   | ThinkInput
+  | ScreenCaptureInput
   | InvokeFlowInput
   | CodeInterpreterInput
   | McpToolInput // MCPツール入力を追加
@@ -352,6 +362,7 @@ export type ToolInputTypeMap = {
   executeCommand: ExecuteCommandInput
   applyDiffEdit: ApplyDiffEditInput
   think: ThinkInput
+  screenCapture: ScreenCaptureInput
   invokeFlow: InvokeFlowInput
   codeInterpreter: CodeInterpreterInput
   [key: string]: any // MCPツールに対応するためのインデックスシグネチャ

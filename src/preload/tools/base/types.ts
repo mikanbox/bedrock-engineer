@@ -66,6 +66,7 @@ export type ToolCategory =
   | 'thinking'
   | 'mcp'
   | 'interpreter'
+  | 'system'
 
 /**
  * Tool execution context

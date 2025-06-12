@@ -93,6 +93,11 @@ export const api = {
       return ipcRenderer.invoke('check-docker-availability')
     }
   },
+  screen: {
+    listAvailableWindows: async () => {
+      return ipcRenderer.invoke('screen:list-available-windows')
+    }
+  },
   tools: {
     getToolSpecs: () => {
       return ToolMetadataCollector.getToolSpecs()

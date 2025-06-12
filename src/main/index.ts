@@ -19,6 +19,7 @@ import { fileHandlers } from './handlers/file-handlers'
 import { windowHandlers } from './handlers/window-handlers'
 import { agentHandlers } from './handlers/agent-handlers'
 import { utilHandlers } from './handlers/util-handlers'
+import { screenHandlers } from './handlers/screen-handlers'
 // 動的インポートを使用してfix-pathパッケージを読み込む
 import('fix-path')
   .then((fixPathModule) => {
@@ -265,6 +266,7 @@ app.whenReady().then(async () => {
   registerIpcHandlers(windowHandlers, { loggerCategory: 'window:ipc' })
   registerIpcHandlers(agentHandlers, { loggerCategory: 'agents:ipc' })
   registerIpcHandlers(utilHandlers, { loggerCategory: 'utils:ipc' })
+  registerIpcHandlers(screenHandlers, { loggerCategory: 'screen:ipc' })
 
   // ログハンドラーの登録
   registerLogHandler()

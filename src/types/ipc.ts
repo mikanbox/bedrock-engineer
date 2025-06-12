@@ -220,6 +220,45 @@ export interface IPCChannelDefinitions {
     }
     result: void
   }
+
+  // 画面キャプチャ関連
+  'screen:capture': {
+    params: {
+      format?: 'png' | 'jpeg'
+      quality?: number
+      outputPath?: string
+      windowTarget?: string
+    }
+    result: {
+      success: boolean
+      filePath: string
+      metadata: {
+        width: number
+        height: number
+        format: string
+        fileSize: number
+        timestamp: string
+      }
+    }
+  }
+  'screen:list-available-windows': {
+    params: void
+    result: Array<{
+      id: string
+      name: string
+      enabled: boolean
+      thumbnail: string
+      dimensions: { width: number; height: number }
+    }>
+  }
+  'screen:check-permissions': {
+    params: void
+    result: {
+      hasPermission: boolean
+      platform: string
+      message: string
+    }
+  }
 }
 
 // 型ヘルパー

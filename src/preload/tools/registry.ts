@@ -27,6 +27,7 @@ import { InvokeFlowTool } from './handlers/bedrock/InvokeFlowTool'
 import { ExecuteCommandTool } from './handlers/command/ExecuteCommandTool'
 import { ThinkTool } from './handlers/thinking/ThinkTool'
 import { CodeInterpreterTool } from './handlers/interpreter/CodeInterpreterTool'
+import { ScreenCaptureTool } from './handlers/system/ScreenCaptureTool'
 
 /**
  * Registry for managing tools
@@ -52,7 +53,8 @@ export class ToolRegistry {
       'command',
       'thinking',
       'mcp',
-      'interpreter'
+      'interpreter',
+      'system'
     ]
     categories.forEach((category) => {
       this.categories.set(category, new Set())
@@ -405,6 +407,11 @@ export class ToolMetadataCollector {
       specs.push({ toolSpec: CodeInterpreterTool.toolSpec })
     }
 
+    // Phase 6: System Tools
+    if (ScreenCaptureTool.toolSpec) {
+      specs.push({ toolSpec: ScreenCaptureTool.toolSpec })
+    }
+
     return specs
   }
 
@@ -503,6 +510,11 @@ export class ToolMetadataCollector {
     // Phase 5: Interpreter Tools
     if (CodeInterpreterTool.systemPromptDescription) {
       descriptions.codeInterpreter = CodeInterpreterTool.systemPromptDescription
+    }
+
+    // Phase 6: System Tools
+    if (ScreenCaptureTool.systemPromptDescription) {
+      descriptions.screenCapture = ScreenCaptureTool.systemPromptDescription
     }
 
     return descriptions

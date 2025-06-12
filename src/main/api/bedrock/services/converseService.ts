@@ -36,17 +36,6 @@ export class ConverseService {
       // リクエストパラメータの準備
       const { commandParams } = await this.prepareCommandParameters(props)
       const runtimeClient = createRuntimeClient(this.context.store.get('aws'))
-      const awsConfig = this.context.store.get('aws')
-
-      // APIリクエスト前にログ出力
-      converseLogger.debug('Sending converse request', {
-        modelId: props.modelId,
-        region: awsConfig.region,
-        messageCount: props.messages.length,
-        commandParams
-      })
-
-      // APIリクエストを送信
       const command = new ConverseCommand(commandParams)
       return await runtimeClient.send(command)
     } catch (error: any) {
