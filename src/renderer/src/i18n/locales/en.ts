@@ -319,6 +319,12 @@ const AgentFormTabs = {
     'Enable for complex, multi-step projects where you want the AI to break down large tasks into manageable action items. Particularly helpful for project planning, feature development, refactoring, and any work that spans multiple sessions.'
 }
 
+const CodeBlock = {
+  Source: 'Source',
+  Preview: 'Preview',
+  'Toggle View': 'Toggle View'
+}
+
 const en = {
   ...HomePage,
   ...SettingPage,
@@ -327,6 +333,7 @@ const en = {
   ...SpeakPage,
   ...WebsiteGeneratorPage,
   ...Translation,
+  ...CodeBlock,
   ...iamPolicy.en,
   ...notificationSettings.en,
   ...bedrockSettings.en,

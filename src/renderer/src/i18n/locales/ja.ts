@@ -343,6 +343,12 @@ const AgentFormTabs = {
     '複雑で複数ステップからなるプロジェクトで、AIに大きなタスクを管理可能なアクションアイテムに分解してもらいたい場合に有効にしてください。プロジェクト計画、機能開発、リファクタリング、複数セッションにわたる作業で特に有用です。'
 }
 
+const CodeBlock = {
+  Source: 'ソース',
+  Preview: 'プレビュー',
+  'Toggle View': 'ビューを切り替え'
+}
+
 const ja = {
   ...HomePage,
   ...SettingPage,
@@ -351,6 +357,7 @@ const ja = {
   ...SpeakPage,
   ...WebsiteGeneratorPage,
   ...Translation,
+  ...CodeBlock,
   ...iamPolicy.ja,
   ...notificationSettings.ja,
   ...bedrockSettings.ja,
