@@ -177,6 +177,15 @@ export const tools = {
       'Solve complex equations, numerical simulations',
     'File Processing:': 'File Processing:',
     'Generate reports, process text files': 'Generate reports, process text files',
+    // Screen Capture Result Display
+    'Screen Capture': 'Screen Capture',
+    Resolution: 'Resolution',
+    'File Size': 'File Size',
+    Format: 'Format',
+    Timestamp: 'Timestamp',
+    'AI Analysis': 'AI Analysis',
+    'Analysis Prompt': 'Analysis Prompt',
+    'Analyzed with': 'Analyzed with',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'File System',
@@ -253,6 +262,10 @@ export const tools = {
           'The generateVideo tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
         group:
           'When you enable this tool, the following related tools will also be automatically enabled: checkVideoStatus (to monitor video generation progress) and downloadVideo (to download completed videos). These tools work together to provide a complete video generation workflow.'
+      },
+      screenCapture: {
+        description:
+          'The screenCapture tool captures the current screen and saves it as an image file. When a recognition prompt is provided, the captured image will be automatically analyzed with AI to extract text content, identify UI elements, and provide detailed visual descriptions for debugging and documentation purposes.'
       }
     },
     'tool usage': {
@@ -510,6 +523,7 @@ export const tools = {
       'ワークフローに必要な場合のみスクリーンキャプチャを有効にしてください',
     'Consider the privacy implications when capturing screens with personal data':
       '個人データを含む画面をキャプチャする際はプライバシーへの影響を考慮してください',
+    'Platform Requirements': 'プラットフォーム要件',
     'Performance Notes': 'パフォーマンス情報',
     'Screen capture is typically very fast (< 1 second)':
       'スクリーンキャプチャは通常非常に高速です（1秒未満）',
@@ -566,6 +580,15 @@ export const tools = {
     'Solve complex equations, numerical simulations': '複雑な方程式の解決、数値シミュレーション',
     'File Processing:': 'ファイル処理：',
     'Generate reports, process text files': 'レポート生成、テキストファイル処理',
+    // Screen Capture Result Display (Japanese)
+    'Screen Capture': 'スクリーンキャプチャ',
+    Resolution: '解像度',
+    'File Size': 'ファイルサイズ',
+    Format: '形式',
+    Timestamp: 'タイムスタンプ',
+    'AI Analysis': 'AI分析',
+    'Analysis Prompt': '分析プロンプト',
+    'Analyzed with': '分析に使用したモデル',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'ファイルシステム',
@@ -643,6 +666,10 @@ export const tools = {
           'generateVideo ツールは Amazon Nova Reel を使用してテキスト説明から高品質な動画を作成します。動画は非同期で生成され、出力保存にはS3設定が必要です。',
         group:
           'このツールを有効にすると、関連する以下のツールも自動的に有効になります：checkVideoStatus（動画生成の進行状況を監視）とdownloadVideo（完成した動画をダウンロード）。これらのツールは連携して完全な動画生成ワークフローを提供します。'
+      },
+      screenCapture: {
+        description:
+          'screenCaptureツールは現在の画面をキャプチャして画像ファイルとして保存します。認識プロンプトが提供されると、キャプチャした画像はAIによって自動的に分析され、テキストコンテンツの抽出、UI要素の識別、デバッグとドキュメント作成のための詳細な視覚的説明が提供されます。'
       }
     },
     'tool usage': {

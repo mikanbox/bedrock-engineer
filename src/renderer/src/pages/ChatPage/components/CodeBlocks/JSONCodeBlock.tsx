@@ -7,6 +7,7 @@ import { GenerateImageResult } from './GenerateImage/GenerateImageResult'
 import { BedrockAgentResult } from './BedrockAgent/BedrockAgentResult'
 import { RecognizeImageResult } from './RecognizeImage/RecognizeImageResult'
 import { CodeInterpreterResult } from './CodeInterpreter/CodeInterpreterResult'
+import { ScreenCaptureResult } from './ScreenCapture/ScreenCaptureResult'
 import { AsyncTaskCard, AsyncTaskInfo } from '../CodeInterpreter/AsyncTaskCard'
 
 interface RetrieveResponse {
@@ -121,6 +122,10 @@ export const JSONCodeBlock: React.FC<{ json: any }> = ({ json }) => {
 
   if (json.name === 'recognizeImage') {
     return <RecognizeImageResult response={json} />
+  }
+
+  if (json.name === 'screenCapture') {
+    return <ScreenCaptureResult response={json} />
   }
 
   if (json.name === 'codeInterpreter') {
