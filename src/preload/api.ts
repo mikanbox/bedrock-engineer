@@ -98,6 +98,19 @@ export const api = {
       return ipcRenderer.invoke('screen:list-available-windows')
     }
   },
+  camera: {
+    saveCapturedImage: async (request: {
+      base64Data: string
+      deviceId: string
+      deviceName: string
+      width: number
+      height: number
+      format: string
+      outputPath?: string
+    }) => {
+      return ipcRenderer.invoke('camera:save-captured-image', request)
+    }
+  },
   tools: {
     getToolSpecs: () => {
       return ToolMetadataCollector.getToolSpecs()
