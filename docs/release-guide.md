@@ -1,6 +1,6 @@
 # リリース手順ガイド
 
-このドキュメントでは、Bedrock Engineerのリリース方法について説明します。
+このドキュメントでは、Bedrock Engineerのリリース方法について説明します。このリリースフローではリリース用ブランチとPRによる承認プロセスを使用します。
 
 ## リリース手順
 
@@ -14,47 +14,81 @@
      }
      ```
 
-2. **変更をコミット**:
+2. **リリースブランチの作成**:
    ```bash
+   # 最新のmainブランチから開始
+   git checkout main
+   git pull
+   
+   # リリースブランチを作成
+   git checkout -b release/X.Y.Z
+   
+   # バージョン更新をコミット
    git add package.json
-   git commit -m "chore: bump version to vX.Y.Z"
+   git commit -m "chore: バージョンをX.Y.Zに更新"
+   
+   # リリースブランチをプッシュ
+   git push origin release/X.Y.Z
    ```
 
-3. **タグを作成してプッシュ**:
-   ```bash
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
-
-4. **リリース処理の監視**:
-   - GitHub Actionsの進行状況を[Actionsタブ](https://github.com/aws-samples/bedrock-engineer/actions)で確認します。
+3. **ビルドとドラフトリリース作成の監視**:
+   - リリースブランチのプッシュにより、GitHub Actionsの`Build Draft Release`ワークフローが自動的に起動します
+   - GitHub Actionsの進行状況を[Actionsタブ](https://github.com/aws-samples/bedrock-engineer/actions)で確認します
    - ワークフローが正常に完了すると、以下の処理が自動的に行われます:
      1. Mac版とWindows版のビルドが実行される
-     2. ビルド成果物が添付されたリリースが作成・公開される
-     3. リリースノートが自動生成される
+     2. ビルド成果物が添付されたドラフトリリースが作成される
 
-5. **リリース確認**:
-   - [Releasesページ](https://github.com/aws-samples/bedrock-engineer/releases)で公開されたリリースを確認します
-   - 添付されたインストーラーファイル（.dmg、.pkg、.exe）が含まれていることを確認します
+4. **リリース確認とPR作成**:
+   - ドラフトリリースにアクセスし、ビルド成果物（.dmg、.pkg、.exe）と内容を確認します
+   - リリースノートを確認します
+   - 問題がなければ、手動でPRを作成します：
+     ```bash
+     # リリースブランチから作成
+     gh pr create \
+       --title "リリース X.Y.Z" \
+       --body "## リリース v X.Y.Z の準備ができました
+       
+       このPRがマージされるとリリース v X.Y.Z が公開されます。
+       
+       ### ドラフトリリース
+       [リリースページで確認](URLをここに貼り付け)
+       
+       ビルド成果物の動作確認済み:
+       - [ ] Mac版
+       - [ ] Windows版
+       " \
+       --base main \
+       --head release/X.Y.Z
+     ```
+
+5. **リリース公開**:
+   - PRがマージされると、自動的に`Publish Release`ワークフローが実行され、ドラフトリリースが公開されます
+   - [Releasesページ](https://github.com/aws-samples/bedrock-engineer/releases)で公開されたリリースを確認できます
 
 ## トラブルシューティング
 
 ### ビルドに失敗した場合:
 
 1. GitHub Actionsのログを確認して問題を特定します
-2. 問題を修正し、必要に応じてタグを削除して再度プッシュします：
+2. リリースブランチを修正し、再度プッシュします
+3. 問題が解決しない場合は、リリースブランチを削除して最初からやり直すこともできます
+
+### リリースドラフトに問題があり、PRをマージしたくない場合:
+
+1. PRをクローズします（マージせずに）
+2. 必要に応じてドラフトリリースを削除:
    ```bash
-   git tag -d vX.Y.Z
-   git push --delete origin vX.Y.Z
-   # 修正後
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
+   gh release delete vX.Y.Z
    ```
+3. 問題を修正し、リリースブランチを更新してプッシュします
 
-### リリースに成果物が添付されていない場合:
+### マージ後のリリース公開に失敗した場合:
 
-1. ワークフローのログを確認し、アーティファクトが正しくビルドされているか確認
-2. 問題を修正し、新しいバージョンでタグをプッシュするか、既存タグを削除して再プッシュ
+1. GitHub Actionsのログを確認して問題を特定します
+2. 必要に応じて手動でリリースを公開:
+   ```bash
+   gh release edit vX.Y.Z --draft=false
+   ```
 
 ## バージョニング規則
 
