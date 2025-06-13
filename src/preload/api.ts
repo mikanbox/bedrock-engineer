@@ -122,6 +122,9 @@ export const api = {
     hidePreviewWindow: async () => {
       return ipcRenderer.invoke('camera:hide-preview-window')
     },
+    closePreviewWindow: async (deviceId: string) => {
+      return ipcRenderer.invoke('camera:close-preview-window', deviceId)
+    },
     updatePreviewSettings: async (options: {
       size?: 'small' | 'medium' | 'large'
       opacity?: number

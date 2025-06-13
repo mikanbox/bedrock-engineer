@@ -129,13 +129,26 @@ export const CameraCaptureSettingForm: React.FC = () => {
 
       try {
         if (enabled) {
+          // 現在利用可能なカメラデバイスを再取得
+          await fetchAvailableCameras()
+
           // 選択された複数カメラのIDを取得
           const selectedCameraIds = allowedCameras
             .filter((camera) => camera.enabled)
             .map((camera) => camera.id)
 
-          // カメラが選択されていない場合はデフォルトカメラを使用
-          const cameraIds = selectedCameraIds.length > 0 ? selectedCameraIds : ['default']
+          // 実際に利用可能なカメラとマッチング
+          const availableCameraIds = availableCameras.map((camera) => camera.id)
+          const validCameraIds = selectedCameraIds.filter(
+            (id) => availableCameraIds.includes(id) || id === 'default'
+          )
+
+          // 有効なカメラが見つからない場合はデフォルトカメラを使用
+          const cameraIds = validCameraIds.length > 0 ? validCameraIds : ['default']
+
+          console.log('Preview window - Available cameras:', availableCameraIds)
+          console.log('Preview window - Selected cameras:', selectedCameraIds)
+          console.log('Preview window - Valid cameras:', cameraIds)
 
           const result = await window.api.camera.showPreviewWindow({
             size: previewSize,
@@ -144,22 +157,38 @@ export const CameraCaptureSettingForm: React.FC = () => {
             cameraIds: cameraIds,
             layout: cameraIds.length > 1 ? 'cascade' : 'single'
           })
+
           if (result.success) {
             setPreviewEnabled(true)
             setPreviewStatus({ isActive: true })
+            console.log('Preview windows created successfully:', result.message)
+          } else {
+            console.error('Failed to create preview windows:', result.message)
+            setPreviewEnabled(false)
+            setPreviewStatus({ isActive: false })
           }
         } else {
           const result = await window.api.camera.hidePreviewWindow()
           if (result.success) {
             setPreviewEnabled(false)
             setPreviewStatus({ isActive: false })
+            console.log('Preview windows closed successfully:', result.message)
           }
         }
       } catch (error) {
         console.error('Failed to toggle preview window:', error)
+        setPreviewEnabled(false)
+        setPreviewStatus({ isActive: false })
       }
     },
-    [previewSize, previewOpacity, previewPosition, allowedCameras]
+    [
+      previewSize,
+      previewOpacity,
+      previewPosition,
+      allowedCameras,
+      availableCameras,
+      fetchAvailableCameras
+    ]
   )
 
   // プレビューウィンドウの設定を更新

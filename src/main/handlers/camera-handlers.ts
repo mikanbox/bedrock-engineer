@@ -162,10 +162,10 @@ async function createPreviewWindow(
     transparent: true,
     title: deviceName,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
+      nodeIntegration: true,
+      contextIsolation: false,
       preload: path.join(__dirname, '../preload/index.js'),
-      webSecurity: true,
+      webSecurity: false,
       additionalArguments: [`--camera-device-id=${deviceId}`, `--camera-device-name=${deviceName}`]
     }
   })
@@ -177,7 +177,14 @@ async function createPreviewWindow(
       `${process.env.ELECTRON_RENDERER_URL}/camera-preview.html?deviceId=${encodeURIComponent(deviceId)}&deviceName=${encodeURIComponent(deviceName)}`
     )
   } else {
-    await previewWindow.loadFile(path.join(__dirname, '../renderer/camera-preview.html'))
+    // プロダクションビルドではextraResourcesからファイルを読み込む
+    const cameraPreviewPath = path.join(process.resourcesPath, 'renderer', 'camera-preview.html')
+    await previewWindow.loadFile(cameraPreviewPath, {
+      query: {
+        deviceId: deviceId,
+        deviceName: deviceName
+      }
+    })
   }
 
   // ウィンドウが閉じられたときの処理
@@ -202,8 +209,8 @@ export const cameraHandlers = {
 
       const size = PREVIEW_SIZES[options.size || 'medium']
       const opacity = options.opacity || 0.9
-      const cameraIds = options.cameraIds || ['default']
-      const layout = options.layout || (cameraIds.length > 1 ? 'cascade' : 'single')
+      const requestedCameraIds = options.cameraIds || ['default']
+      const layout = options.layout || (requestedCameraIds.length > 1 ? 'cascade' : 'single')
 
       // 既存のプレビューウィンドウをクリア
       for (const [, window] of cameraPreviewWindows.entries()) {
@@ -213,21 +220,45 @@ export const cameraHandlers = {
       }
       cameraPreviewWindows.clear()
 
+      // 実際に利用可能なカメラIDのみフィルタリング
+      const availableCameraIds: string[] = []
+      for (const cameraId of requestedCameraIds) {
+        try {
+          // カメラデバイスの存在確認（簡易チェック）
+          if (cameraId === 'default' || cameraId.length > 0) {
+            availableCameraIds.push(cameraId)
+          }
+        } catch (deviceError) {
+          log.warn('Camera device not available, skipping', {
+            deviceId: cameraId,
+            error: deviceError instanceof Error ? deviceError.message : String(deviceError)
+          })
+        }
+      }
+
+      if (availableCameraIds.length === 0) {
+        // デフォルトカメラを使用
+        availableCameraIds.push('default')
+      }
+
       let positions: { x: number; y: number }[] = []
 
-      if (layout === 'grid' && cameraIds.length > 1) {
+      if (layout === 'grid' && availableCameraIds.length > 1) {
         // グリッド配置
-        positions = calculateGridPositions(size, cameraIds.length, options.position)
+        positions = calculateGridPositions(size, availableCameraIds.length, options.position)
       } else {
         // カスケード配置または単一ウィンドウ
-        positions = cameraIds.map((_, index) =>
+        positions = availableCameraIds.map((_, index) =>
           calculatePreviewPosition(size, options.position, index)
         )
       }
 
+      let successCount = 0
+      const errors: string[] = []
+
       // 各カメラのプレビューウィンドウを作成
-      for (let i = 0; i < cameraIds.length; i++) {
-        const deviceId = cameraIds[i]
+      for (let i = 0; i < availableCameraIds.length; i++) {
+        const deviceId = availableCameraIds[i]
         const deviceName = `Camera ${i + 1}`
         const position = positions[i]
 
@@ -243,6 +274,7 @@ export const cameraHandlers = {
           cameraPreviewWindows.set(deviceId, previewWindow)
           previewWindow.show()
 
+          successCount++
           log.info('Camera preview window created', {
             deviceId,
             deviceName,
@@ -250,23 +282,41 @@ export const cameraHandlers = {
             size: options.size || 'medium'
           })
         } catch (windowError) {
+          const errorMessage =
+            windowError instanceof Error ? windowError.message : String(windowError)
+          errors.push(`Camera ${deviceId}: ${errorMessage}`)
           log.error('Failed to create preview window for camera', {
             deviceId,
-            error: windowError instanceof Error ? windowError.message : String(windowError)
+            error: errorMessage
           })
         }
       }
 
-      log.info('Camera preview windows shown successfully', {
-        count: cameraPreviewWindows.size,
+      log.info('Camera preview windows process completed', {
+        requested: requestedCameraIds.length,
+        available: availableCameraIds.length,
+        successful: successCount,
+        errors: errors.length,
         layout,
         size: options.size || 'medium',
         opacity
       })
 
+      if (successCount === 0) {
+        return {
+          success: false,
+          message: `Failed to create any preview windows. Errors: ${errors.join('; ')}`
+        }
+      }
+
+      const message =
+        successCount === availableCameraIds.length
+          ? `${successCount} preview window(s) created successfully`
+          : `${successCount} of ${availableCameraIds.length} preview window(s) created (${errors.length} failed)`
+
       return {
         success: true,
-        message: `${cameraPreviewWindows.size} preview window(s) created`
+        message
       }
     } catch (error) {
       log.error('Failed to show camera preview windows', {
@@ -302,6 +352,41 @@ export const cameraHandlers = {
       }
     } catch (error) {
       log.error('Failed to hide camera preview windows', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      return { success: false, message: error instanceof Error ? error.message : String(error) }
+    }
+  },
+
+  /**
+   * 個別のカメラプレビューウィンドウを閉じる
+   */
+  'camera:close-preview-window': async (
+    _event: IpcMainInvokeEvent,
+    deviceId: string
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      log.info('Closing individual camera preview window', { deviceId })
+
+      const window = cameraPreviewWindows.get(deviceId)
+      if (!window || window.isDestroyed()) {
+        return {
+          success: false,
+          message: `Preview window for device ${deviceId} not found or already closed`
+        }
+      }
+
+      window.close()
+      cameraPreviewWindows.delete(deviceId)
+
+      log.info('Camera preview window closed successfully', { deviceId })
+      return {
+        success: true,
+        message: `Preview window for device ${deviceId} closed successfully`
+      }
+    } catch (error) {
+      log.error('Failed to close camera preview window', {
+        deviceId,
         error: error instanceof Error ? error.message : String(error)
       })
       return { success: false, message: error instanceof Error ? error.message : String(error) }

@@ -243,10 +243,32 @@
 
         setupEventListeners() {
           // 閉じるボタン
-          document.getElementById('closeBtn').addEventListener('click', () => {
+          document.getElementById('closeBtn').addEventListener('click', async () => {
             this.cleanup()
-            if (window.api?.camera?.hidePreviewWindow) {
-              window.api.camera.hidePreviewWindow()
+
+            // URLパラメータからdeviceIdを取得して個別ウィンドウクローズを実行
+            const urlParams = new URLSearchParams(window.location.search)
+            const deviceId = urlParams.get('deviceId') || 'default'
+
+            try {
+              // 直接ipcRendererを使用してIPCハンドラーと通信
+              const { ipcRenderer } = require('electron')
+
+              console.log('Attempting to close individual preview window:', deviceId)
+              const result = await ipcRenderer.invoke('camera:close-preview-window', deviceId)
+
+              if (result.success) {
+                console.log('Individual window close result:', result.message)
+                // ウィンドウが正常に閉じられるとclosedイベントが発火され、自動的に削除される
+              } else {
+                console.error('Failed to close individual window:', result.message)
+                // フォールバックとして全体を閉じる
+                await this.fallbackClose()
+              }
+            } catch (error) {
+              console.error('Error during individual window close:', error)
+              // エラー時のフォールバック
+              await this.fallbackClose()
             }
           })
 
@@ -458,6 +480,26 @@
             return 'Camera does not support the requested configuration.'
           } else {
             return error.message || 'Unknown camera error occurred.'
+          }
+        }
+
+        async fallbackClose() {
+          try {
+            console.log('Attempting fallback close using hidePreviewWindow')
+            const { ipcRenderer } = require('electron')
+            const result = await ipcRenderer.invoke('camera:hide-preview-window')
+
+            if (result.success) {
+              console.log('Fallback close successful:', result.message)
+            } else {
+              console.error('Fallback close failed:', result.message)
+              // 最後の手段として、ウィンドウを直接閉じる
+              window.close()
+            }
+          } catch (error) {
+            console.error('Fallback close error:', error)
+            // 最後の手段として、ウィンドウを直接閉じる
+            window.close()
           }
         }
 
