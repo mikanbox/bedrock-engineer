@@ -351,12 +351,32 @@ const CodeBlock = {
   'Camera Device': 'カメラデバイス'
 }
 
+const FileChanges = {
+  original: '元の内容',
+  updated: '更新後の内容',
+  added: '追加された内容',
+  removed: '削除された内容',
+  noChanges: '変更はありません',
+  fileDiff: 'ファイル差分',
+  copyOriginal: '元のテキストをコピー',
+  copyUpdated: '更新後のテキストをコピー',
+  originalTextCopied: '元のテキストをクリップボードにコピーしました',
+  updatedTextCopied: '更新後のテキストをクリップボードにコピーしました',
+  filePathCopied: 'ファイルパスをクリップボードにコピーしました',
+  failedToCopy: 'テキストのコピーに失敗しました',
+  lines: '行',
+  changed: '変更',
+  expand: '拡大',
+  collapse: '折りたたむ'
+}
+
 const ja = {
   ...HomePage,
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.ja,
   ...SpeakPage,
+  ...FileChanges,
   ...WebsiteGeneratorPage,
   ...Translation,
   ...CodeBlock,

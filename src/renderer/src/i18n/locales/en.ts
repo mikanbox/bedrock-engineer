@@ -327,12 +327,32 @@ const CodeBlock = {
   'Camera Device': 'Camera Device'
 }
 
+const FileChanges = {
+  original: 'Original',
+  updated: 'Updated',
+  added: 'Added',
+  removed: 'Removed',
+  noChanges: 'No changes detected',
+  fileDiff: 'File Diff',
+  copyOriginal: 'Copy Original',
+  copyUpdated: 'Copy Updated',
+  originalTextCopied: 'Original text copied to clipboard',
+  updatedTextCopied: 'Updated text copied to clipboard',
+  filePathCopied: 'File path copied to clipboard',
+  failedToCopy: 'Failed to copy text',
+  lines: 'lines',
+  changed: 'Changed',
+  expand: 'Expand',
+  collapse: 'Collapse'
+}
+
 const en = {
   ...HomePage,
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.en,
   ...SpeakPage,
+  ...FileChanges,
   ...WebsiteGeneratorPage,
   ...Translation,
   ...CodeBlock,
