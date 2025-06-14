@@ -1,7 +1,7 @@
 Language: [English](./README.md) / [Japanese](./README-ja.md)
 
 > [!IMPORTANT]
-> Starting with v1.6.0, it is now possible to set tools for each agent. Agent prompts created in versions prior to v1.6.0 can still be used, but please note that you will need to set the tools available to each agent.
+
 
 # 🧙 Bedrock Engineer
 
@@ -99,7 +99,7 @@ The autonomous AI agent capable of development assists your development process.
 - 🔄 Chat history management
 - 🌐 Multi-language support
 - 🛡️ Guardrail support
-- 💡 Light processing model for cost optimization (v1.10.0+)
+- 💡 Light processing model for cost optimization
 
 | ![agent-chat-diagram](./assets/agent-chat-diagram.png) | ![agent-chat-search](./assets/agent-chat-search.png) |
 | :----------------------------------------------------: | :--------------------------------------------------: |
