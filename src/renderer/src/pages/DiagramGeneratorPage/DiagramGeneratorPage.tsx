@@ -11,9 +11,22 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { WebLoader } from '../../components/WebLoader'
 import { DeepSearchButton } from '@renderer/components/DeepSearchButton'
-import { extractDrawioXml } from './utils/xmlParser'
+import {
+  extractDiagramContent,
+  filterXmlFromStreamingContent,
+  containsXmlTags,
+  isXmlComplete
+} from './utils/xmlParser'
+import {
+  calculateXmlProgress,
+  calculateTimeBasedProgress,
+  getProgressMessage
+} from './utils/progressCalculator'
 import { DIAGRAM_GENERATOR_SYSTEM_PROMPT } from '../ChatPage/constants/DEFAULT_AGENTS'
 import { LoaderWithReasoning } from './components/LoaderWithReasoning'
+import { DiagramExplanationView } from './components/DiagramExplanationView'
+import { MdOutlineArticle } from 'react-icons/md'
+import { Tooltip } from 'flowbite-react'
 
 export default function DiagramGeneratorPage() {
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -28,8 +41,21 @@ export default function DiagramGeneratorPage() {
   const [enableSearch, setEnableSearch] = useState(false)
 
   // 履歴管理用の状態
-  const [diagramHistory, setDiagramHistory] = useState<{ xml: string; prompt: string }[]>([])
+  const [diagramHistory, setDiagramHistory] = useState<
+    { xml: string; explanation: string; prompt: string }[]
+  >([])
+  // 説明文の表示・非表示を切り替えるためのフラグ
+  const [showExplanation, setShowExplanation] = useState(true)
+  // 説明文を保持する状態
+  const [diagramExplanation, setDiagramExplanation] = useState<string>('')
+  // ストリーミング中の説明文を保持する状態
+  const [streamingExplanation, setStreamingExplanation] = useState<string>('')
   const [selectedHistoryIndex, setSelectedHistoryIndex] = useState<number | null>(null)
+
+  // 進捗管理用の状態
+  const [generationStartTime, setGenerationStartTime] = useState<number>(0)
+  const [xmlProgress, setXmlProgress] = useState<number>(0)
+  const [progressMessage, setProgressMessage] = useState<string>('')
 
   const { recommendDiagrams, recommendLoading, getRecommendDiagrams } = useRecommendDiagrams()
 
@@ -92,12 +118,84 @@ export default function DiagramGeneratorPage() {
     setUserInput('')
     // 履歴から選択していた場合はリセット
     setSelectedHistoryIndex(null)
+    // 生成開始時間を記録
+    setGenerationStartTime(Date.now())
+    setXmlProgress(0)
+    setProgressMessage('')
+    // 既存のダイアグラムをクリアして即座にローダーを表示
+    setXml('')
+    setDiagramExplanation('')
   }
 
   // システムプロンプトを検索状態に応じて更新
   useEffect(() => {
     // systemPromptは関数から取得するため、enableSearchが変更されたときに再レンダリングされる
   }, [enableSearch])
+
+  // ストリーミング中の説明文を抽出・更新
+  useEffect(() => {
+    if (loading && messages.length > 0) {
+      const lastAssistantMessage = messages.filter((m) => m.role === 'assistant').pop()
+      if (lastAssistantMessage?.content) {
+        const currentText = lastAssistantMessage.content
+          .map((c) => ('text' in c ? c.text : ''))
+          .join('')
+
+        // ストリーミング中の部分的なテキストを設定
+        setStreamingExplanation(currentText)
+      }
+    } else if (!loading) {
+      // ローディングが終了したらストリーミング状態をクリア
+      setStreamingExplanation('')
+      setXmlProgress(0)
+      setProgressMessage('')
+    }
+  }, [messages, loading])
+
+  // XML生成状態を判定
+  const isXmlGenerating = useMemo(() => {
+    if (loading && streamingExplanation) {
+      return containsXmlTags(streamingExplanation) && !isXmlComplete(streamingExplanation)
+    }
+    return false
+  }, [loading, streamingExplanation])
+
+  // XML生成進捗の計算と更新
+  useEffect(() => {
+    if (loading && isXmlGenerating && streamingExplanation) {
+      // XMLの進捗を計算
+      const baseProgress = calculateXmlProgress(streamingExplanation)
+
+      // 時間ベースの補正を適用
+      const timeAdjustedProgress =
+        generationStartTime > 0
+          ? calculateTimeBasedProgress(generationStartTime, baseProgress)
+          : baseProgress
+
+      setXmlProgress(timeAdjustedProgress)
+      setProgressMessage(getProgressMessage(timeAdjustedProgress))
+    } else if (!loading) {
+      // 生成完了時は100%に設定
+      if (xmlProgress > 0) {
+        setXmlProgress(100)
+        setProgressMessage('ダイアグラム生成完了')
+
+        // 少し遅延してからリセット
+        setTimeout(() => {
+          setXmlProgress(0)
+          setProgressMessage('')
+        }, 1000)
+      }
+    }
+  }, [loading, isXmlGenerating, streamingExplanation, generationStartTime, xmlProgress])
+
+  // XMLタグを除去した説明文
+  const filteredExplanation = useMemo(() => {
+    if (loading && streamingExplanation) {
+      return filterXmlFromStreamingContent(streamingExplanation)
+    }
+    return streamingExplanation
+  }, [loading, streamingExplanation])
 
   // 最後のアシスタントメッセージから XML を取得して draw.io に設定
   useEffect(() => {
@@ -108,15 +206,19 @@ export default function DiagramGeneratorPage() {
       const rawContent = lastAssistantMessage.content
         .map((c) => ('text' in c ? c.text : ''))
         .join('')
-      // XMLパーサーを使用して有効なDrawIO XMLだけを抽出
-      const xml = extractDrawioXml(rawContent) || rawContent
 
-      if (xml) {
+      // XMLと説明文を分離するパーサーを使用
+      const { xml, explanation } = extractDiagramContent(rawContent)
+      const validXml = xml || rawContent
+
+      if (validXml) {
         try {
-          drawioRef.current.load({ xml })
-          setXml(xml)
+          drawioRef.current.load({ xml: validXml })
+          setXml(validXml)
+          // 説明文を設定
+          setDiagramExplanation(explanation)
           // Generate new recommendations based on the current diagram
-          getRecommendDiagrams(xml)
+          getRecommendDiagrams(validXml)
 
           // 履歴に追加
           if (lastUserMessage?.content) {
@@ -124,7 +226,7 @@ export default function DiagramGeneratorPage() {
               .map((c) => ('text' in c ? c.text : ''))
               .join('')
             setDiagramHistory((prev) => {
-              const newHistory = [...prev, { xml, prompt: userPrompt }]
+              const newHistory = [...prev, { xml: validXml, explanation, prompt: userPrompt }]
               // 最大10つまで保持
               return newHistory.slice(-10)
             })
@@ -146,6 +248,7 @@ export default function DiagramGeneratorPage() {
         try {
           drawioRef.current.load({ xml: historyItem.xml })
           setXml(historyItem.xml)
+          setDiagramExplanation(historyItem.explanation)
           setUserInput(historyItem.prompt)
           setSelectedHistoryIndex(index)
         } catch (error) {
@@ -153,6 +256,11 @@ export default function DiagramGeneratorPage() {
         }
       }
     }
+  }
+
+  // 説明文表示の切り替え
+  const toggleExplanationView = () => {
+    setShowExplanation(!showExplanation)
   }
 
   return (
@@ -186,27 +294,64 @@ export default function DiagramGeneratorPage() {
       </div>
 
       <div className="flex-1 rounded-lg">
-        {loading ? (
-          <div className="flex h-[95%] justify-center items-center flex-col">
-            <LoaderWithReasoning reasoningText={latestReasoningText}>
-              {executingTool === 'tavilySearch' ? <WebLoader /> : <Loader />}
-            </LoaderWithReasoning>
+        <div
+          className="w-full h-[95%] flex"
+          style={{
+            display: 'flex',
+            gap: '1rem',
+            backgroundColor: isDark
+              ? 'rgb(17 24 39 / var(--tw-bg-opacity))'
+              : 'rgb(243 244 246 / var(--tw-bg-opacity))',
+            border: 'none',
+            height: '100%'
+          }}
+        >
+          {/* 図の表示エリア - 左側 */}
+          <div
+            className={`border border-gray-200 rounded-lg ${showExplanation ? 'w-2/3' : 'w-full'}`}
+          >
+            {(loading && !xml) || isXmlGenerating ? (
+              <div className="flex h-full justify-center items-center flex-col">
+                <LoaderWithReasoning
+                  reasoningText={latestReasoningText}
+                  progress={isXmlGenerating ? xmlProgress : undefined}
+                  progressMessage={isXmlGenerating ? progressMessage : undefined}
+                  showProgress={isXmlGenerating}
+                >
+                  {executingTool === 'tavilySearch' ? <WebLoader /> : <Loader />}
+                </LoaderWithReasoning>
+              </div>
+            ) : (
+              <DrawIoEmbed
+                ref={drawioRef}
+                xml={xml}
+                configuration={{
+                  defaultLibraries: 'aws4;aws3;aws3d'
+                }}
+                urlParameters={{
+                  dark: isDark,
+                  lang: language
+                }}
+              />
+            )}
           </div>
-        ) : (
-          <div className="w-full h-[95%] border border-gray-200">
-            <DrawIoEmbed
-              ref={drawioRef}
-              xml={xml}
-              configuration={{
-                defaultLibraries: 'aws4;aws3;aws3d'
-              }}
-              urlParameters={{
-                dark: isDark,
-                lang: language
-              }}
-            />
-          </div>
-        )}
+
+          {/* 説明文の表示エリア - 右側 */}
+          {showExplanation && (
+            <div className="w-1/3">
+              <DiagramExplanationView
+                explanation={
+                  loading && filteredExplanation
+                    ? filteredExplanation
+                    : diagramExplanation || 'ダイアグラムの説明がここに表示されます。'
+                }
+                isStreaming={loading && filteredExplanation.length > 0}
+                isVisible={showExplanation}
+                onClose={toggleExplanationView}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-2 fixed bottom-0 left-[5rem] right-5 bottom-3">
@@ -226,6 +371,22 @@ export default function DiagramGeneratorPage() {
                 enableDeepSearch={enableSearch}
                 handleToggleDeepSearch={() => setEnableSearch(!enableSearch)}
               />
+
+              {/* 説明文表示切り替えボタン */}
+              <Tooltip
+                content={showExplanation ? '説明文を非表示' : '説明文を表示'}
+                placement="bottom"
+                animation="duration-500"
+              >
+                <button
+                  className={`cursor-pointer rounded-md py-1.5 px-2 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    showExplanation ? 'bg-gray-200 dark:bg-gray-700' : ''
+                  }`}
+                  onClick={toggleExplanationView}
+                >
+                  <MdOutlineArticle className="text-xl" />
+                </button>
+              </Tooltip>
             </div>
           </div>
 
