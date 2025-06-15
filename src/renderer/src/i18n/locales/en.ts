@@ -1,5 +1,6 @@
 import { chatPage } from './chat'
 import { awsDiagramGenerator } from './awsDiagramGenerator'
+import { stepFunctionGenerator } from './stepFunctionGenerator'
 import { websiteGenerator } from './websiteGenerator'
 import {
   iamPolicy,
@@ -366,6 +367,7 @@ const en = {
   ...tokenAnalyticsSettings.en,
   ...lightModelSettings.en,
   ...awsDiagramGenerator.en,
+  ...stepFunctionGenerator.en,
   ...websiteGenerator.en,
   ...thinkingMode.en,
   ...agentDirectory.en,
