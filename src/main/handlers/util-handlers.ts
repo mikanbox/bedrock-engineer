@@ -1,6 +1,9 @@
 import { IpcMainInvokeEvent, app } from 'electron'
 import { spawn } from 'child_process'
 import { log } from '../../common/logger'
+import { join } from 'path'
+import fs from 'fs'
+import { is } from '@electron-toolkit/utils'
 
 export const utilHandlers = {
   'get-app-path': async (_event: IpcMainInvokeEvent) => {
@@ -97,5 +100,48 @@ export const utilHandlers = {
         })
       }, 5000)
     })
+  },
+
+  'get-icon': async (_event: IpcMainInvokeEvent, iconType: 'aws' | 'resource', name: string) => {
+    let fileNamePatterns: string[] = []
+    
+    fileNamePatterns = [
+      `Aws_48_Light/Arch_AWS-${name}_48.svg`,
+      `Aws_48_Light/Arch_Amazon-${name}_48.svg`,
+      `Aws_48_Light/Arch_${name}_48.svg`,
+      `Res_48_Light/Res_${name}_48_Light.svg`,
+      `Res_48_Light/Res_AWS-${name}_48_Light.svg`,
+      `Res_48_Light/Res_Amazon-${name}_48_Light.svg`
+    ]
+    
+    let basePath: string;
+    if (is.dev) {
+      basePath = app.getAppPath();
+    } else {
+      // プロダクション環境ではリソースディレクトリから取得
+      // extraResourcesで指定したリソースはprocess.resourcesPathからアクセス可能
+      basePath = process.resourcesPath;
+    }
+
+    for (const fileName of fileNamePatterns) {
+      const iconPath = join(basePath, `icons/`, fileName)
+      log.info(`Loading`, { name, path: iconPath, pattern: fileName })
+
+      try {  
+        const imageBuffer = await fs.promises.readFile(iconPath, { encoding: null })
+        return `data:image/svg+xml;base64,${imageBuffer.toString('base64')}`
+      } catch (error) {
+        // 最後のパターンでも失敗した場合のみエラーログを出力
+        if (fileName === fileNamePatterns[fileNamePatterns.length - 1]) {
+          log.error(`Failed to get ${iconType} icon after trying all patterns`, { 
+            name,
+            triedPatterns: fileNamePatterns,
+            error: error instanceof Error ? error.message : String(error)
+          })
+        } 
+      }
+    }
+    
+    return null
   }
 } as const

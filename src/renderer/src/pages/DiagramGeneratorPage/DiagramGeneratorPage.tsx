@@ -21,7 +21,6 @@ import {
 import {
   calculateXmlProgress,
   calculateTimeBasedProgress,
-  calculateOverallProgress
   getProgressMessage
 } from './utils/progressCalculator'
 import {
@@ -37,6 +36,7 @@ import { useNavigate } from 'react-router'
 import { generateCDKPrompt } from './utils/awsDetector'
 import { DiagramModeSelector, DiagramMode } from './components/DiagramModeSelector'
 import { useSystemPromptModal } from '../ChatPage/modals/useSystemPromptModal'
+import { PowerPointExportButton } from './components/PowerPointExportButton'
 
 export default function DiagramGeneratorPage() {
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -559,7 +559,6 @@ export default function DiagramGeneratorPage() {
                   dark: isDark,
                   lang: language
                 }}
-                onExport={(data) => handleDrawioExport(data, setXml)} 
               />
             </div>
 
@@ -579,7 +578,6 @@ export default function DiagramGeneratorPage() {
                 </div>
               ) : null
             })()}
->>>>>>> main
           </div>
 
           {/* 説明文の表示エリア - 右側 */}
