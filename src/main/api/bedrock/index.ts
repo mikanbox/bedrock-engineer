@@ -3,8 +3,16 @@ import { ModelService } from './services/modelService'
 import { AgentService } from './services/agentService'
 import { ImageService } from './services/imageService'
 import { ImageRecognitionService } from './services/imageRecognitionService'
+import { FlowService, InvokeFlowInput, InvokeFlowResult } from './services/flowService'
+import {
+  TranslateService,
+  TranslateTextOptions,
+  TranslationResult
+} from './services/translateService'
+import { VideoService } from './services/movieService'
 import type { ServiceContext } from './types'
 import type { GenerateImageRequest, GeneratedImage } from './types/image'
+import type { GenerateMovieRequest, GeneratedMovie } from './types/movie'
 import { GuardrailService } from './services/guardrailService'
 import { ApplyGuardrailRequest } from '@aws-sdk/client-bedrock-runtime'
 
@@ -15,6 +23,9 @@ export class BedrockService {
   private imageService: ImageService
   private imageRecognitionService: ImageRecognitionService
   private guardrailService: GuardrailService
+  private flowService: FlowService
+  private translateService: TranslateService
+  private videoService: VideoService
 
   constructor(context: ServiceContext) {
     this.converseService = new ConverseService(context)
@@ -23,6 +34,9 @@ export class BedrockService {
     this.imageService = new ImageService(context)
     this.imageRecognitionService = new ImageRecognitionService(context)
     this.guardrailService = new GuardrailService(context)
+    this.flowService = new FlowService(context)
+    this.translateService = new TranslateService(context.store.get('aws'))
+    this.videoService = new VideoService(context)
   }
 
   async listModels() {
@@ -64,8 +78,59 @@ export class BedrockService {
   async applyGuardrail(props: ApplyGuardrailRequest) {
     return this.guardrailService.applyGuardrail(props)
   }
+
+  async invokeFlow(params: InvokeFlowInput): Promise<InvokeFlowResult> {
+    return this.flowService.invokeFlow(params)
+  }
+
+  async translateText(options: TranslateTextOptions): Promise<TranslationResult> {
+    return this.translateService.translateText(options)
+  }
+
+  async translateBatch(
+    texts: Array<Omit<TranslateTextOptions, 'cacheKey'>>
+  ): Promise<TranslationResult[]> {
+    return this.translateService.translateBatch(texts)
+  }
+
+  getCachedTranslation(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string
+  ): TranslationResult | null {
+    return this.translateService.getCachedTranslation(text, sourceLanguage, targetLanguage)
+  }
+
+  clearTranslationCache(): void {
+    this.translateService.clearCache()
+  }
+
+  getTranslationCacheStats(): { size: number; maxSize: number; hitRate?: number } {
+    return this.translateService.getCacheStats()
+  }
+
+  async checkTranslationHealth(): Promise<boolean> {
+    return this.translateService.healthCheck()
+  }
+
+  async generateVideo(request: GenerateMovieRequest): Promise<GeneratedMovie> {
+    return this.videoService.generateVideo(request)
+  }
+
+  async startVideoGeneration(request: GenerateMovieRequest): Promise<GeneratedMovie> {
+    return this.videoService.startVideoGeneration(request)
+  }
+
+  async getVideoJobStatus(invocationArn: string) {
+    return this.videoService.getJobStatus(invocationArn)
+  }
+
+  async downloadVideoFromS3(s3Uri: string, localPath: string): Promise<string> {
+    return this.videoService.downloadVideoFromS3(s3Uri, localPath)
+  }
 }
 
 // Re-export types for convenience
 export * from './types'
 export * from './types/image'
+export * from './types/movie'

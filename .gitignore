@@ -6,5 +6,6 @@ out
 .env
 
 ash_output/
+.bedrock-engineer/workspaces/
 
 test-outputs

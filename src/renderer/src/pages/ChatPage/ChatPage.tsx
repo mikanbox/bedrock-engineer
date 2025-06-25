@@ -16,10 +16,12 @@ import { AttachedImage } from './components/InputForm/TextArea'
 import { ChatHistory } from './components/ChatHistory'
 import { useSystemPromptModal } from './modals/useSystemPromptModal'
 import { useTokenAnalyticsModal } from './modals/useTokenAnalyticsModal'
+import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
+import { useLocation } from 'react-router'
 
 export default function ChatPage() {
-  // userInputの状態を削除（InputFormContainerが管理するため）
   const { t } = useTranslation()
+  const location = useLocation()
   const {
     currentLLM: llm,
     projectPath,
@@ -55,7 +57,7 @@ export default function ChatPage() {
     [handleSubmit]
   )
 
-  // ContentBlock単位での削除機能は不要になったため、handleUpdateMessageは削除
+  const { deleteMessage } = useChatHistory()
 
   const handleDeleteMessage = (index: number) => {
     // メッセージの配列のコピーを作成
@@ -69,7 +71,7 @@ export default function ChatPage() {
 
     // チャット履歴が有効な場合は、対応するメッセージを削除
     if (currentSessionId) {
-      window.chatHistory.deleteMessage(currentSessionId, index)
+      deleteMessage(currentSessionId, index)
     }
   }
 
@@ -129,14 +131,38 @@ export default function ChatPage() {
   }, [loading, messages.length])
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const DEFAULT_TEXTAREA_HEIGHT = 72 // Default height (3 lines * 24px)
+
+  const [textareaHeight, setTextareaHeight] = useState(DEFAULT_TEXTAREA_HEIGHT)
 
   const handleSessionSelect = (sessionId: string) => {
     setCurrentSessionId(sessionId)
   }
 
+  // URLパラメータからプロンプトとエージェントを自動設定
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const promptFromUrl = searchParams.get('prompt')
+    const agentFromUrl = searchParams.get('agent')
+
+    if (promptFromUrl && inputFormRef.current) {
+      // プロンプトをテキストエリアに設定
+      inputFormRef.current.setInputText(decodeURIComponent(promptFromUrl))
+
+      // 指定されたエージェントに切り替え
+      if (agentFromUrl && agents.find((a) => a.id === agentFromUrl)) {
+        setSelectedAgentId(agentFromUrl)
+      }
+
+      // URLパラメータをクリア（同じリンクを再度クリックした時の対応）
+      const newUrl = window.location.pathname + window.location.hash
+      window.history.replaceState({}, '', newUrl)
+    }
+  }, [location.search, agents, setSelectedAgentId])
+
   return (
     <React.Fragment>
-      <div className="flex h-[calc(100vh-11rem)]">
+      <div className="flex p-3 h-[calc(100vh-11rem)]">
         <div className="flex-1 flex flex-col">
           {/* ヘッダー - 固定 */}
           <div className="flex justify-between items-center">
@@ -214,7 +240,15 @@ export default function ChatPage() {
 
             {/* メッセージエリア - スクロール可能 */}
             <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-y-auto mb-2">
+              {/* Adjusts the bottom padding of the message area based on the height of the text area */}
+              <div
+                className="flex-1 overflow-y-auto mb-2"
+                style={{
+                  // Additional padding is applied only when the text area grows larger
+                  // This ensures that as the text area gets taller, the bottom padding of the message area increases by the same amount
+                  paddingBottom: `${textareaHeight - DEFAULT_TEXTAREA_HEIGHT * 2}px`
+                }}
+              >
                 {messages.length === 0 ? (
                   <div className="flex flex-col pt-12 h-full w-full justify-center items-center content-center align-center gap-1">
                     <div className="flex flex-row gap-3 items-center mb-2">
@@ -257,6 +291,7 @@ export default function ChatPage() {
                   onClearChat={handleClearChat}
                   onStopGeneration={stopGeneration}
                   hasMessages={messages.length > 0}
+                  onHeightChange={setTextareaHeight}
                 />
               </div>
             </div>

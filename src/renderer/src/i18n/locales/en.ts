@@ -1,5 +1,7 @@
 import { chatPage } from './chat'
 import { awsDiagramGenerator } from './awsDiagramGenerator'
+import { stepFunctionGenerator } from './stepFunctionGenerator'
+import { websiteGenerator } from './websiteGenerator'
 import {
   iamPolicy,
   notificationSettings,
@@ -7,10 +9,12 @@ import {
   agentSettings,
   agentToolsSettings,
   promptCacheSettings,
-  tokenAnalyticsSettings
+  tokenAnalyticsSettings,
+  lightModelSettings
 } from './settings'
 import { thinkingMode } from './thinkingMode'
 import { agentDirectory } from './agentDirectory'
+import { planActMode } from './planActMode'
 
 const HomePage = {
   'set your aws credential':
@@ -18,7 +22,37 @@ const HomePage = {
   'Welcome to Bedrock Engineer': 'Welcome to Bedrock Engineer',
   'This is AI assistant of software development tasks':
     'This is AI assistant of software development tasks',
+  'This is AI assistant for business analysis and planning':
+    'This is AI assistant for business analysis and planning',
+  'This is AI assistant for content creation and documentation':
+    'This is AI assistant for content creation and documentation',
+  'This is AI assistant for data analysis and visualization':
+    'This is AI assistant for data analysis and visualization',
+  'This is AI assistant for project management and organization':
+    'This is AI assistant for project management and organization',
+  'This is AI assistant that helps streamline your workflow':
+    'This is AI assistant that helps streamline your workflow',
+  'This is AI assistant for creative problem solving':
+    'This is AI assistant for creative problem solving',
+  'This is AI assistant for research and information gathering':
+    'This is AI assistant for research and information gathering',
   'Start by the menu on the left or': 'Start by the menu on the left or'
+}
+
+const Translation = {
+  title: 'Translation',
+  translating: 'Translating...',
+  error: 'Error',
+  retry: 'Retry',
+  formality: 'Formality',
+  profanity: 'Profanity Filter',
+  enableTranslation: 'Enable Translation',
+  targetLanguage: 'Target Language',
+  sourceLanguage: 'Source Language',
+  'auto-detect': 'Auto Detect',
+  clearCache: 'Clear Translation Cache',
+  cacheStats: 'Cache Statistics',
+  translationSettings: 'Translation Settings'
 }
 
 const SettingPage = {
@@ -69,6 +103,102 @@ const StepFunctionsGeneratorPage = {
 Each line has orders and shipping information.
 The distributed map processor repeats the batch of these rows and uses the Lambda function to detect the delayed order.
 After that, send a message to the SQS queue for each delayed order.`
+}
+
+const SpeakPage = {
+  'Nova Sonic Chat': 'Nova Sonic Chat',
+  'Voice conversation with AI': 'Voice conversation with AI',
+  'Voice Conversation': 'Voice Conversation',
+  'Start speaking to begin the conversation': 'Start speaking to begin the conversation',
+  'Ready to chat': 'Ready to chat',
+  'Click "Start Speaking" to begin your voice conversation':
+    'Click "Start Speaking" to begin your voice conversation',
+  'Conversation in progress...': 'Conversation in progress...',
+  'Conversation paused': 'Conversation paused',
+  'Scroll to bottom': 'Scroll to bottom',
+  'System Prompt': 'System Prompt',
+  'Enter system prompt for the AI assistant...': 'Enter system prompt for the AI assistant...',
+  'Disconnect to edit the system prompt': 'Disconnect to edit the system prompt',
+  'This prompt will be sent when you connect to start the conversation':
+    'This prompt will be sent when you connect to start the conversation',
+  'Connection error. Please try reconnecting.': 'Connection error. Please try reconnecting.',
+  'Reload Page': 'Reload Page',
+  Disconnected: 'Disconnected',
+  'Connecting...': 'Connecting...',
+  Connected: 'Connected',
+  Ready: 'Ready',
+  'Recording...': 'Recording...',
+  'Processing...': 'Processing...',
+  Error: 'Error',
+  Connect: 'Connect',
+  Disconnect: 'Disconnect',
+  'Start Speaking': 'Start Speaking',
+  'Stop Speaking': 'Stop Speaking',
+  Recording: 'Recording',
+  Processing: 'Processing',
+  Listening: 'Listening',
+  Thinking: 'Thinking',
+  'Listening...': 'Listening...',
+  'Thinking...': 'Thinking...',
+  'Edit System Prompt': 'Edit System Prompt',
+  // Voice Selection
+  'Select Voice': 'Select Voice',
+  'Start New Chat': 'Start New Chat',
+  Cancel: 'Cancel',
+  Voice: 'Voice',
+  // Translation Settings in Voice Modal
+  'Real-time Translation': 'Real-time Translation',
+  'Translate AI responses to your preferred language':
+    'Translate AI responses to your preferred language',
+  'Target Language': 'Target Language',
+  Selected: 'Selected',
+  'Translation Info': 'Translation Info',
+  'Only AI responses will be translated': 'Only AI responses will be translated',
+  'Translation appears below the original message':
+    'Translation appears below the original message',
+  'You can retry failed translations': 'You can retry failed translations',
+  // Voice Descriptions
+  'voice.tiffany.description': 'Warm and friendly',
+  'voice.tiffany.characteristics': 'Approachable and empathetic, creates comfortable conversations',
+  'voice.amy.description': 'Calm and composed',
+  'voice.amy.characteristics': 'Thoughtful and measured, provides clear and balanced responses',
+  'voice.matthew.description': 'Confident and authoritative',
+  'voice.matthew.characteristics': 'Knowledgeable, professional, and dependable impression',
+  // Sample Text
+  'Try talking like this': 'Try talking like this',
+  'sample.noScenarios': 'No sample conversations available',
+  'Nova Sonic currently supports English only': 'Nova Sonic currently supports English only',
+  // Permission Help Modal
+  'permissionHelp.title': 'Resolve Duplicate Permission Dialogs',
+  'permissionHelp.description': 'Information to resolve duplicate permission dialogs on macOS',
+  'permissionHelp.commandTitle': 'Resolution Command',
+  'permissionHelp.commandDescription':
+    'If OS permission dialogs (such as microphone access) are displayed duplicately, you can resolve this issue by running the following command after building and installing the application to add an ad-hoc signature:',
+  'permissionHelp.noteTitle': 'Note',
+  'permissionHelp.noteDescription':
+    'This command applies an ad-hoc code signature to the application and prevents the system permission dialogs from being displayed duplicately.',
+  'permissionHelp.tooltip': 'Help with permission dialogs',
+
+  // Voice Chat
+  'voiceChat.regionWarning.title': 'Voice Chat Not Available',
+  'voiceChat.regionWarning.message':
+    'Voice Chat (Nova Sonic) is not available in the current region ({{currentRegion}}). Please switch to a supported region: {{supportedRegions}}.',
+  'voiceChat.regionWarning.openSettings': 'Open Settings',
+  'voiceChat.error.regionNotSupported':
+    'Voice Chat is not available in the current region or there are permission issues. Please check your AWS region settings.',
+  'voiceChat.error.regionConnection':
+    'Failed to connect to Voice Chat service. This may be due to region compatibility issues.',
+  'voiceChat.error.openSettings': 'Open Settings',
+
+  // Settings
+  'settings.novaSonic.title': 'Voice Chat (Nova Sonic)',
+  'settings.novaSonic.checking': 'Checking availability...',
+  'settings.novaSonic.available': 'Available',
+  'settings.novaSonic.notAvailable': 'Not Available',
+  'settings.novaSonic.refresh': 'Refresh status',
+  'settings.novaSonic.currentRegion': 'Current region: {{region}}',
+  'settings.novaSonic.supportedRegions': 'Supported regions: {{regions}}',
+  'Voice Chat Status': 'Voice Chat Status'
 }
 
 const WebsiteGeneratorPage = {
@@ -179,6 +309,8 @@ const AgentFormTabs = {
   'Server Configuration (JSON)': 'Server Configuration (JSON)',
   'Add Server': 'Add Server',
   'Update Server': 'Update Server',
+  'Server updated successfully': 'Server updated successfully',
+  'Multiple servers updated successfully': 'Multiple servers updated successfully',
   'Registered MCP Servers': 'Registered MCP Servers',
   'No MCP servers registered yet': 'No MCP servers registered yet',
   'Required fields are missing or invalid. Check the JSON format.':
@@ -194,7 +326,47 @@ const AgentFormTabs = {
   'Invalid format: Must use claude_desktop_config.json format with mcpServers object':
     'Invalid format: Must use claude_desktop_config.json format with mcpServers object',
   'When editing, please include exactly one server in mcpServers':
-    'When editing, please include exactly one server in mcpServers'
+    'When editing, please include exactly one server in mcpServers',
+  // Environment Context Settings
+  'Environment Context Settings': 'Environment Context Settings',
+  'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.':
+    'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.',
+  'Project Rule': 'Project Rule',
+  'Includes instructions to load project-specific rules from .bedrock-engineer/rules folder':
+    'Enable when working on projects with custom coding standards, architectural guidelines, or specific development practices. The AI will automatically load and follow rules from your .bedrock-engineer/rules folder to maintain consistency with your project conventions.',
+  'Visual Expression Rules': 'Visual Expression Rules',
+  'Includes instructions for creating diagrams, images, and mathematical formulas':
+    'Enable when you need the AI to create diagrams (flowcharts, architecture diagrams), generate images, or write mathematical formulas. Useful for documentation, technical explanations, data visualization, and educational content creation.',
+  'TODO List Instruction': 'TODO List Instruction',
+  'Includes instructions to create TODO lists for long-running tasks':
+    'Enable for complex, multi-step projects where you want the AI to break down large tasks into manageable action items. Particularly helpful for project planning, feature development, refactoring, and any work that spans multiple sessions.'
+}
+
+const CodeBlock = {
+  Source: 'Source',
+  Preview: 'Preview',
+  'Toggle View': 'Toggle View',
+  'Camera Capture': 'Camera Capture',
+  'Camera Device': 'Camera Device'
+}
+
+const FileChanges = {
+  original: 'Original',
+  updated: 'Updated',
+  added: 'Added',
+  removed: 'Removed',
+  noChanges: 'No changes detected',
+  fileDiff: 'File Diff',
+  copyOriginal: 'Copy Original',
+  copyUpdated: 'Copy Updated',
+  originalTextCopied: 'Original text copied to clipboard',
+  updatedTextCopied: 'Updated text copied to clipboard',
+  filePathCopied: 'File path copied to clipboard',
+  failedToCopy: 'Failed to copy text',
+  lines: 'lines',
+  changed: 'Changed',
+  expand: 'Expand',
+  collapse: 'Collapse'
 }
 
 const en = {
@@ -202,7 +374,11 @@ const en = {
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.en,
+  ...SpeakPage,
+  ...FileChanges,
   ...WebsiteGeneratorPage,
+  ...Translation,
+  ...CodeBlock,
   ...iamPolicy.en,
   ...notificationSettings.en,
   ...bedrockSettings.en,
@@ -210,10 +386,14 @@ const en = {
   ...agentToolsSettings.en,
   ...promptCacheSettings.en,
   ...tokenAnalyticsSettings.en,
+  ...lightModelSettings.en,
   ...awsDiagramGenerator.en,
+  ...stepFunctionGenerator.en,
+  ...websiteGenerator.en,
   ...thinkingMode.en,
   ...agentDirectory.en,
-  ...AgentFormTabs
+  ...AgentFormTabs,
+  ...planActMode.en
 }
 
 export default en

@@ -13,7 +13,14 @@ import {
   FaTerminal,
   FaBrain,
   FaServer,
-  FaCamera
+  FaCamera,
+  FaVideo,
+  FaProjectDiagram,
+  FaCode,
+  FaPlay,
+  FaClock,
+  FaDownload,
+  FaDesktop
 } from 'react-icons/fa'
 import { BiFace } from 'react-icons/bi'
 import { MdDifference } from 'react-icons/md'
@@ -29,12 +36,19 @@ const standardToolIcons = {
   tavilySearch: <FaSearch className="text-red-500 size-6" />,
   fetchWebsite: <FaGlobe className="text-teal-500 size-6" />,
   generateImage: <FaImage className="text-pink-500 size-6" />,
+  generateVideo: <FaPlay className="text-red-500 size-6" />,
+  checkVideoStatus: <FaClock className="text-blue-500 size-6" />,
+  downloadVideo: <FaDownload className="text-green-500 size-6" />,
   recognizeImage: <FaCamera className="text-violet-500 size-6" />,
   retrieve: <FaDatabase className="text-green-500 size-6" />,
   invokeBedrockAgent: <BiFace className="text-purple-700 size-6" />,
   executeCommand: <FaTerminal className="text-gray-500 size-6" />,
   applyDiffEdit: <MdDifference className="text-cyan-500 size-6" />,
-  think: <FaBrain className="text-amber-500 size-6" />
+  think: <FaBrain className="text-amber-500 size-6" />,
+  invokeFlow: <FaProjectDiagram className="text-blue-600 size-6" />,
+  codeInterpreter: <FaCode className="text-green-600 size-6" />,
+  screenCapture: <FaDesktop className="text-slate-500 size-6" />,
+  cameraCapture: <FaVideo className="text-blue-500 size-6" />
 }
 
 // MCPツール用のアイコン（すべてのMCPツールで共通）

@@ -1,5 +1,10 @@
 export const agent = {
   en: {
+    additionalInstruction: 'Additional Instruction',
+    additionalInstructionInfo:
+      'Optional instructions to guide the system prompt generation. These will be included when auto-generating the system prompt.',
+    additionalInstructionPlaceholder:
+      'Enter additional instructions for system prompt generation...',
     active: 'Active',
     icon: 'Icon',
     iconDescription: "Select an icon that represents the agent's role",
@@ -47,6 +52,8 @@ export const agent = {
       'A list of Knowledge Base IDs and descriptions to use for the search',
     bedrockAgentsPlaceholder:
       'A list of Bedrock Agents identifier (agentId and aliasId) and description',
+    flowsPlaceholder:
+      'A list of Bedrock Flows identifier (flowIdentifier and flowAliasIdentifier) and description',
     scenariosDescription:
       'Register commonly used interaction patterns as scenarios. Enter the title and specific content of the scenario.',
     scenarioTitle: 'Scenario title',
@@ -91,9 +98,17 @@ export const agent = {
     shared: 'Shared',
     saveAsShared: 'Save as Shared File',
     agentSavedAsShared: 'Agent saved as a shared file successfully',
-    failedToSaveShared: 'Failed to save agent as shared file'
+    failedToSaveShared: 'Failed to save agent as shared file',
+    autoAddedEnvironmentContext: 'Auto-Added Environment Context',
+    userInput: 'User Input',
+    generateVoiceChatPrompt: 'Voice Chat',
+    generateVoiceChatPromptTooltip: 'Generate system prompt optimized for voice chat'
   },
   ja: {
+    additionalInstruction: 'システムプロンプト生成のための追加の指示を入力する',
+    additionalInstructionInfo:
+      'システムプロンプト生成をガイドするための指示を入力してください。システムプロンプト自動生成時に考慮されます。MCPサーバーやツールの設定状態も考慮した最適なプロンプトを提案します。MCPサーバーを利用する際には先に MCP サーバーの登録をした後で再度システムプロンプトの自動生成を実行してください。',
+    additionalInstructionPlaceholder: 'システムプロンプト生成のための追加指示を入力...',
     active: 'アクティブ',
     icon: 'アイコン',
     iconDescription: 'エージェントの役割を表すアイコンを選択してください',
@@ -138,6 +153,7 @@ export const agent = {
     allowedCommandsPlaceholder: '許可されたコマンド',
     knowledgeBasesPlaceholder: '検索に使用する Knowledge Base の ID と説明のリスト',
     bedrockAgentsPlaceholder: 'Bedrock Agent ID、Alias ID、説明のリスト',
+    flowsPlaceholder: 'Bedrock Flow Identifier、Flow Alias Identifier、説明のリスト',
     scenariosDescription:
       'よく使用するやり取りのパターンをシナリオとして登録できます。シナリオのタイトルと具体的な内容を入力してください。',
     scenarioTitle: 'シナリオのタイトル',
@@ -183,6 +199,10 @@ export const agent = {
     saveAsShared: '共有ファイルとして保存',
     agentSavedAsShared:
       'エージェントが共有ファイルとして正常に保存されました。現在の作業ディレクトリの .bedrock-engineer/agents/ を確認してください。',
-    failedToSaveShared: '共有ファイルとして保存できませんでした'
+    failedToSaveShared: '共有ファイルとして保存できませんでした',
+    autoAddedEnvironmentContext: '自動追加された環境コンテキスト',
+    userInput: 'ユーザー入力',
+    generateVoiceChatPrompt: 'ボイスチャット',
+    generateVoiceChatPromptTooltip: 'ボイスチャット用に最適化されたシステムプロンプトを生成'
   }
 }

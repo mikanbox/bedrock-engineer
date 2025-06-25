@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FiMoreHorizontal, FiEdit2, FiTrash2, FiZap } from 'react-icons/fi'
 import { RiArchiveStackLine } from 'react-icons/ri'
-import useSettings from '../../../../hooks/useSetting'
-import { Message } from '@aws-sdk/client-bedrock-runtime'
-import { converse } from '../../../../lib/api'
-import toast from 'react-hot-toast'
 import { SessionMetadata } from '@/types/chat/history'
+import { useChatHistory } from '@renderer/contexts/ChatHistoryContext'
+import { generateSessionTitle } from '../../utils/titleGenerator'
+import { useLightProcessingModel } from '@renderer/lib/modelSelection'
 
 interface ChatHistoryProps {
   onSessionSelect: (sessionId: string) => void
@@ -14,20 +13,18 @@ interface ChatHistoryProps {
 }
 
 export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, currentSessionId }) => {
-  const [sessions, setSessions] = useState<SessionMetadata[]>([])
   const [editingSessionId, setEditingSessionId] = useState<string>()
   const [editTitle, setEditTitle] = useState('')
   const [menuOpenSessionId, setMenuOpenSessionId] = useState<string>()
   const [isGlobalMenuOpen, setIsGlobalMenuOpen] = useState(false)
   const [isComposing, setIsComposing] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
-  const { currentLLM } = useSettings()
+  const { getLightModelId } = useLightProcessingModel()
   const { t } = useTranslation()
 
-  useEffect(() => {
-    const sessionMetadata = window.chatHistory.getAllSessionMetadata()
-    setSessions(sessionMetadata)
-  }, [])
+  // ChatHistoryContext から sessions と操作関数を取得
+  const { sessions, getSession, updateSessionTitle, deleteSession, deleteAllSessions } =
+    useChatHistory()
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -52,8 +49,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, curre
 
   const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    window.chatHistory.deleteSession(sessionId)
-    setSessions(window.chatHistory.getAllSessionMetadata())
+    deleteSession(sessionId)
     setMenuOpenSessionId(undefined)
   }
 
@@ -61,8 +57,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, curre
     e.stopPropagation()
     const confirmed = window.confirm(t('Are you sure you want to delete all chat sessions?'))
     if (confirmed) {
-      window.chatHistory.deleteAllSessions()
-      setSessions([])
+      deleteAllSessions()
       setIsGlobalMenuOpen(false)
     }
   }
@@ -77,8 +72,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, curre
   const saveTitle = (sessionId: string, e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation()
     if (editTitle.trim()) {
-      window.chatHistory.updateSessionTitle(sessionId, editTitle.trim())
-      setSessions(window.chatHistory.getAllSessionMetadata())
+      updateSessionTitle(sessionId, editTitle.trim())
     }
     setEditingSessionId(undefined)
   }
@@ -89,63 +83,25 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ onSessionSelect, curre
 
     try {
       // セッションの詳細を取得
-      const sessionDetails = window.chatHistory.getSession(session.id)
+      const sessionDetails = getSession(session.id)
       if (!sessionDetails) {
         throw new Error('Session not found')
       }
 
-      // チャット履歴から最新の会話内容を取得（直近5つのメッセージ）
-      const recentMessages = sessionDetails.messages || []
-      const messages: Message[] = recentMessages.map((m) => ({
-        role: m.role,
-        content: m.content
-      }))
+      // 軽量処理用モデルIDを取得
+      const lightModelId = getLightModelId()
 
-      const system = [
-        {
-          text:
-            'You are an assistant who summarizes the contents of the conversation and gives it a title.' +
-            'Generate a title according to the following conditions:\n' +
-            '- Up to 15 characters long\n' +
-            '- Do not use decorative words\n' +
-            '- Express the essence of the conversation succinctly\n' +
-            '- Output the title only (no explanation required)'
-        }
-      ]
+      // 軽量モデルでタイトルを生成
+      const newTitle = await generateSessionTitle(sessionDetails, lightModelId, t)
 
-      // messages の配列に含まれるテキスト要素を結合する（上限 1000 文字）
-      const joinedMsgs = messages
-        .map((m) => m.content?.map((v) => v.text).join('\n'))
-        .join('\n')
-        .slice(0, 1000)
-
-      // currentLLM を使用してタイトルを生成
-      const response = await converse({
-        modelId: currentLLM.modelId,
-        system,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                text: joinedMsgs
-              }
-            ]
-          }
-        ]
-      })
-
-      console.log({ response })
-      const newTitle = response.output.message.content[0].text
-
-      // タイトルを更新
-      window.chatHistory.updateSessionTitle(session.id, newTitle)
-      setSessions(window.chatHistory.getAllSessionMetadata())
-      setMenuOpenSessionId(undefined)
+      if (newTitle) {
+        // タイトルを更新
+        updateSessionTitle(session.id, newTitle)
+        setMenuOpenSessionId(undefined)
+      }
     } catch (error) {
       console.error('Failed to generate AI title:', error)
-      // エラーメッセージを表示
-      toast.error(t('Failed to generate title'))
+      // エラーメッセージは generateSessionTitle 内で既に表示されるため不要
     } finally {
       setIsGenerating(false)
     }

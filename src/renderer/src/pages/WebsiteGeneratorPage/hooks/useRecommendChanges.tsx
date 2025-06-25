@@ -1,5 +1,6 @@
 import useSetting from '@renderer/hooks/useSetting'
 import { converse } from '@renderer/lib/api'
+import { getLightProcessingModelId } from '@renderer/lib/modelSelection'
 import prompts from '@renderer/prompts/prompts'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -37,7 +38,7 @@ export const useRecommendChanges = () => {
   ]
   const [recommendChanges, setRecommendChanges] = useState(examplePrompts)
   const [recommendLoading, setRecommendLoading] = useState(false)
-  const { currentLLM: llm } = useSetting()
+  const { currentLLM: llm, lightProcessingModel } = useSetting()
 
   const getRecommendChanges = async (websiteCode: string) => {
     let retry = 0
@@ -46,9 +47,13 @@ export const useRecommendChanges = () => {
     }
     setRecommendLoading(true)
     const result = await converse({
-      modelId: llm.modelId,
+      modelId: getLightProcessingModelId(llm, lightProcessingModel),
       system: [{ text: t(prompts.WebsiteGenerator.recommend.system, { language }) }],
-      messages: [{ role: 'user', content: [{ text: websiteCode }] }]
+      messages: [{ role: 'user', content: [{ text: websiteCode }] }],
+      inferenceConfig: {
+        maxTokens: 4096,
+        temperature: 0.5
+      }
     })
 
     const recommendChanges = result.output.message?.content[0]?.text

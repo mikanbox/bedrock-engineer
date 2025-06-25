@@ -1,4 +1,4 @@
-import { FiHome, FiFeather, FiSettings } from 'react-icons/fi'
+import { FiHome, FiFeather, FiSettings, FiMic } from 'react-icons/fi'
 import { LuCombine } from 'react-icons/lu'
 import { HiOutlineChatAlt2 } from 'react-icons/hi'
 import { BsLayoutWtf } from 'react-icons/bs'
@@ -9,6 +9,7 @@ import WebsiteGeneratorPage from './pages/WebsiteGeneratorPage/WebsiteGeneratorP
 import ChatPage from './pages/ChatPage/ChatPage'
 import DiagramGeneratorPage from './pages/DiagramGeneratorPage/DiagramGeneratorPage'
 import { AgentDirectoryPage } from './pages/AgentDirectoryPage/AgentDirectoryPage'
+import SpeakPage from './pages/SpeakPage'
 import { LuBookDown } from 'react-icons/lu'
 
 export const routes = [
@@ -25,6 +26,13 @@ export const routes = [
     icon: HiOutlineChatAlt2,
     position: 'top',
     element: <ChatPage />
+  },
+  {
+    name: 'Voice Chat',
+    href: '/speak',
+    icon: FiMic,
+    position: 'top',
+    element: <SpeakPage />
   },
   {
     name: 'Agent Directory',

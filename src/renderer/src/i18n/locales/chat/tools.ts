@@ -1,5 +1,13 @@
 export const tools = {
   en: {
+    'file changes': {
+      fileChanges: 'File Changes',
+      original: 'Original',
+      updated: 'Updated',
+      added: 'Added',
+      removed: 'Removed',
+      noChanges: 'No changes detected'
+    },
     'Available Tools': 'Available Tools',
     'Choose the tools': 'Choose the tools you want to enable for the AI assistant',
     // Common UI text
@@ -29,6 +37,7 @@ export const tools = {
       'Tavily Search allows the AI assistant to search the web for current information, providing better responses to queries about recent events, technical documentation, or other information that may not be in its training data.',
     Save: 'Save',
     Cancel: 'Cancel',
+    'Tool Group': 'Tool Group',
     'Agent ID': 'Agent ID',
     'Alias ID': 'Alias ID',
     'Command Shell': 'Command Shell',
@@ -47,6 +56,144 @@ export const tools = {
     'Knowledge Base ID': 'Knowledge Base ID',
     'Registered Knowledge Bases': 'Registered Knowledge Bases',
     'No knowledge bases registered yet': 'No knowledge bases registered yet',
+    // Code Interpreter Settings
+    'Code Interpreter': 'Code Interpreter',
+    'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.':
+      'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.',
+    // Screen Capture Settings
+    'Screen Capture Settings': 'Screen Capture Settings',
+    'Default Image Format': 'Default Image Format',
+    'PNG provides better quality but larger files, JPEG is compressed but smaller':
+      'PNG provides better quality but larger files, JPEG is compressed but smaller',
+    'JPEG Quality (1-100)': 'JPEG Quality (1-100)',
+    'Higher values provide better quality but larger file sizes. Recommended: 70-90':
+      'Higher values provide better quality but larger file sizes. Recommended: 70-90',
+    'Enable AI Image Analysis': 'Enable AI Image Analysis',
+    'Automatically analyze captured screenshots with AI to extract text and describe visual content':
+      'Automatically analyze captured screenshots with AI to extract text and describe visual content',
+    'Custom Analysis Prompt (Optional)': 'Custom Analysis Prompt (Optional)',
+    'e.g., "Focus on error messages and UI elements" or leave empty for default analysis':
+      'e.g., "Focus on error messages and UI elements" or leave empty for default analysis',
+    'Customize how AI analyzes your screenshots. Leave empty to use default comprehensive analysis.':
+      'Customize how AI analyzes your screenshots. Leave empty to use default comprehensive analysis.',
+    'AI Analysis Features': 'AI Analysis Features',
+    'Extract and transcribe all visible text content':
+      'Extract and transcribe all visible text content',
+    'Identify UI elements, buttons, and interface components':
+      'Identify UI elements, buttons, and interface components',
+    'Detect and describe error messages or alerts': 'Detect and describe error messages or alerts',
+    'Provide contextual descriptions for debugging assistance':
+      'Provide contextual descriptions for debugging assistance',
+    'Generate detailed visual documentation automatically':
+      'Generate detailed visual documentation automatically',
+    'Generate documentation with automatic screen captures and descriptions':
+      'Generate documentation with automatic screen captures and descriptions',
+    'Analyze application layouts and suggest improvements with AI insights':
+      'Analyze application layouts and suggest improvements with AI insights',
+    'Create visual bug reports with contextual AI-generated descriptions':
+      'Create visual bug reports with contextual AI-generated descriptions',
+    "Extract text content from applications that don't support text selection":
+      "Extract text content from applications that don't support text selection",
+    'Image analysis is performed using your configured AI model settings':
+      'Image analysis is performed using your configured AI model settings',
+    // New Screen Capture Settings
+    'AI Image Analysis Settings': 'AI Image Analysis Settings',
+    'AI Model for Image Analysis': 'AI Model for Image Analysis',
+    'How to Use': 'How to Use',
+    'Screen capture only': 'Screen capture only',
+    'Use without any prompt to capture screen image only':
+      'Use without any prompt to capture screen image only',
+    'Screen capture + AI analysis': 'Screen capture + AI analysis',
+    'Provide a recognition prompt to automatically analyze the captured image':
+      'Provide a recognition prompt to automatically analyze the captured image',
+    'Example prompts': 'Example prompts',
+    '"Describe this error screen", "Extract all text from this image", "Analyze the UI layout"':
+      '"Describe this error screen", "Extract all text from this image", "Analyze the UI layout"',
+    'Screenshots are automatically saved as PNG format for optimal quality':
+      'Screenshots are automatically saved as PNG format for optimal quality',
+    'Temporary files are automatically cleaned up after processing':
+      'Temporary files are automatically cleaned up after processing',
+    'Convert screenshots into searchable text content for documentation':
+      'Convert screenshots into searchable text content for documentation',
+    'Analyze competitor interfaces and provide detailed descriptions':
+      'Analyze competitor interfaces and provide detailed descriptions',
+    'AI analysis is performed using your configured AWS Bedrock models':
+      'AI analysis is performed using your configured AWS Bedrock models',
+    'Captured images are temporarily stored and automatically cleaned up':
+      'Captured images are temporarily stored and automatically cleaned up',
+    'Only enable screen capture when necessary for your workflow':
+      'Only enable screen capture when necessary for your workflow',
+    'Consider the privacy implications when capturing screens with personal data':
+      'Consider the privacy implications when capturing screens with personal data',
+    'Performance Notes': 'Performance Notes',
+    'Screen capture is typically very fast (< 1 second)':
+      'Screen capture is typically very fast (< 1 second)',
+    'AI analysis may take 5-15 seconds depending on image complexity':
+      'AI analysis may take 5-15 seconds depending on image complexity',
+    'Claude 3.5 Haiku is faster but less detailed than Claude 3.5 Sonnet':
+      'Claude 3.5 Haiku is faster but less detailed than Claude 3.5 Sonnet',
+    'Large or high-resolution screens may take longer to analyze':
+      'Large or high-resolution screens may take longer to analyze',
+    'Network latency affects AI analysis response time':
+      'Network latency affects AI analysis response time',
+    'Code Interpreter Status': 'Code Interpreter Status',
+    'Enable or disable the code interpreter functionality':
+      'Enable or disable the code interpreter functionality',
+    'Features & Capabilities': 'Features & Capabilities',
+    'Execute Python code in a secure Docker container':
+      'Execute Python code in a secure Docker container',
+    'No internet access for enhanced security': 'No internet access for enhanced security',
+    'Automatic file generation and detection': 'Automatic file generation and detection',
+    'Support for data analysis and visualization': 'Support for data analysis and visualization',
+    'Mathematical calculations and scientific computing':
+      'Mathematical calculations and scientific computing',
+    'Security & Limitations': 'Security & Limitations',
+    'Code runs in an isolated Docker environment': 'Code runs in an isolated Docker environment',
+    'No network access to external resources': 'No network access to external resources',
+    'Generated files are temporary and may be cleared':
+      'Generated files are temporary and may be cleared',
+    'Execution time limits may apply': 'Execution time limits may apply',
+
+    // Container configuration
+    コンテナ設定: 'Container Configuration',
+    メモリ制限: 'Memory Limit',
+    CPU制限: 'CPU Limit',
+    タイムアウト: 'Timeout',
+    'Docker ステータス': 'Docker Status',
+    'チェック中...': 'Checking...',
+    利用可能: 'Available',
+    利用不可: 'Unavailable',
+    再チェック: 'Recheck',
+    最終チェック: 'Last checked',
+    設定のガイダンス: 'Configuration Guidance',
+    データサイエンス作業には256MB以上のメモリを推奨:
+      'Recommend 256MB+ memory for data science work',
+    '重い計算処理には1.0 CPU以上を推奨': 'Recommend 1.0+ CPU for heavy computations',
+    複雑な処理には120秒以上のタイムアウトを設定: 'Set 120+ seconds timeout for complex processes',
+    設定されたリソース制限内で実行: 'Execution within configured resource limits',
+    '安全なDocker環境でPythonコードを実行し、データ分析、計算、コード実行のためのコンテナ設定を行います。':
+      'Execute Python code in a secure Docker environment and configure containers for data analysis, calculations, and code execution.',
+    'Usage Examples': 'Usage Examples',
+    'Data Analysis:': 'Data Analysis:',
+    'Process CSV files, perform statistical analysis':
+      'Process CSV files, perform statistical analysis',
+    'Visualization:': 'Visualization:',
+    'Create charts and graphs using matplotlib or plotly':
+      'Create charts and graphs using matplotlib or plotly',
+    'Math & Science:': 'Math & Science:',
+    'Solve complex equations, numerical simulations':
+      'Solve complex equations, numerical simulations',
+    'File Processing:': 'File Processing:',
+    'Generate reports, process text files': 'Generate reports, process text files',
+    // Screen Capture Result Display
+    'Screen Capture': 'Screen Capture',
+    Resolution: 'Resolution',
+    'File Size': 'File Size',
+    Format: 'Format',
+    Timestamp: 'Timestamp',
+    'AI Analysis': 'AI Analysis',
+    'Analysis Prompt': 'Analysis Prompt',
+    'Analyzed with': 'Analyzed with',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'File System',
@@ -75,7 +222,13 @@ export const tools = {
       invokeBedrockAgent: 'Invoke Amazon Bedrock Agent to interact with LLMs and external tools',
       executeCommand: 'Execute allowed commands with support for wildcards',
       applyDiffEdit: 'Apply partial updates to existing files with granular control',
-      think: 'Enable AI to perform complex step-by-step reasoning'
+      think: 'Enable AI to perform complex step-by-step reasoning',
+      invokeFlow: 'Invoke Amazon Bedrock Flow',
+      codeInterpreter: 'Execute Python code in a secure Docker environment',
+      generateVideo: 'Generate high-quality videos from text descriptions using Amazon Nova Reel',
+      checkVideoStatus: 'Check the status of video generation jobs',
+      downloadVideo: 'Download generated videos from S3 to local storage',
+      screenCapture: 'Capture the current screen for AI analysis and debugging'
     },
     'tool info': {
       retrieve: {
@@ -90,7 +243,10 @@ export const tools = {
           'The invokeBedrockAgent tool allows the AI assistant to interact with your custom Amazon Bedrock Agents to perform specialized tasks.',
         'about title': 'About Bedrock Agents',
         'about description':
-          'Amazon Bedrock Agents let you build AI agents that can retrieve information from your data sources, reason over the data, and take actions to complete tasks. Agents can connect to your systems and APIs to perform actions like booking travel, processing orders, or querying databases.'
+          'Amazon Bedrock Agents let you build AI agents that can retrieve information from your data sources, reason over the data, and take actions to complete tasks. Agents can connect to your systems and APIs to perform actions like booking travel, processing orders, or querying databases.',
+        'file limitations title': 'File Sending Limitations',
+        'file limitations description':
+          'File sending is experimental and may not work consistently. Currently, CSV files are partially supported with CHAT use case, but other file formats may fail with validation errors. CODE_INTERPRETER use case is currently not supported.'
       },
       tavilySearch: {
         description:
@@ -108,13 +264,27 @@ export const tools = {
         'example title': 'Example Usage',
         'example description':
           'Common useful patterns include "ls *" (list directories), "npm *" (run npm commands), "aws *" (AWS CLI commands), or "curl *" (make HTTP requests). The AI will only be allowed to run commands that match these patterns.'
+      },
+      generateVideo: {
+        description:
+          'The generateVideo tool uses Amazon Nova Reel to create high-quality videos from text descriptions. Videos are generated asynchronously and require S3 configuration for output storage.',
+        group:
+          'When you enable this tool, the following related tools will also be automatically enabled: checkVideoStatus (to monitor video generation progress) and downloadVideo (to download completed videos). These tools work together to provide a complete video generation workflow.'
+      },
+      screenCapture: {
+        description:
+          'The screenCapture tool captures the current screen and saves it as an image file. When a recognition prompt is provided, the captured image will be automatically analyzed with AI to extract text content, identify UI elements, and provide detailed visual descriptions for debugging and documentation purposes.'
+      },
+      cameraCapture: {
+        description:
+          'The cameraCapture tool captures images from PC camera and saves them as image files. When a recognition prompt is provided, the captured image will be automatically analyzed with AI to extract text content, identify objects, and provide detailed visual descriptions for analysis and documentation purposes.'
       }
     },
     'tool usage': {
       think: {
         description:
           'Enables the AI to perform complex reasoning steps without consuming your context window. This tool allows Claude to work through difficult problems step by step, showing its thought process and reasoning in detail.',
-        tip: 'Enable this when you need the AI to solve complex problems, debug difficult issues, or provide detailed explanations of its reasoning process. Only available with Claude 3.7 Sonnet.'
+        tip: 'Enable this when you need the AI to solve complex problems, debug difficult issues, or provide detailed explanations of its reasoning process.'
       },
       recognizeImage: {
         description:
@@ -181,14 +351,72 @@ export const tools = {
           'Connects the AI with specialized Bedrock Agents to perform complex tasks like data analysis, code interpretation, or domain-specific operations beyond normal chat capabilities. Requires agents to be pre-configured in Amazon Bedrock.',
         tip: 'Use this when you need specialized capabilities like code execution, data analysis, or domain-specific knowledge that requires a dedicated agent with specific tools.'
       },
+      codeInterpreter: {
+        description:
+          'Allows the AI to execute Python code in a secure Docker environment with no internet access. Perfect for data analysis, mathematical calculations, visualizations, and scientific computing tasks.',
+        tip: 'Enable this when you need the AI to perform calculations, analyze data, create visualizations, or execute Python code for problem-solving. All code runs in an isolated container for security.'
+      },
       executeCommand: {
         description:
           'Lets the AI run system commands to automate development tasks. Perfect for build operations, testing, deployment tasks, or any workflow that would typically require command line usage.',
         tip: 'Enable this when you want the AI to help with DevOps tasks, run tests, build projects, or automate repetitive command-line operations. Only pre-approved command patterns are permitted.'
       }
+    },
+    // CodeInterpreter Result Display
+    'code interpreter display': {
+      'Executed Code': 'Executed Code',
+      Output: 'Output',
+      'Generated Files': 'Generated Files',
+      Errors: 'Errors',
+      Success: 'Success',
+      Failed: 'Failed',
+      'Console Output': 'Console Output',
+      'No output produced': 'No output produced',
+      'Copy code': 'Copy code',
+      'Copy output': 'Copy output',
+      'Copy error': 'Copy error',
+      'Code copied to clipboard': 'Code copied to clipboard',
+      'Output copied to clipboard': 'Output copied to clipboard',
+      'Error copied to clipboard': 'Error copied to clipboard',
+      'Failed to copy code': 'Failed to copy code',
+      'Failed to copy output': 'Failed to copy output',
+      'Failed to copy error': 'Failed to copy error',
+      Copied: 'Copied',
+      Copy: 'Copy',
+      Image: 'Image',
+      'CSV Data': 'CSV Data',
+      'Text File': 'Text File',
+      File: 'File',
+      Preview: 'Preview',
+      Download: 'Download',
+      'Download file': 'Download file',
+      'No files generated': 'No files generated',
+      'Total files generated': 'Total files generated',
+      'Execution Error': 'Execution Error',
+      'Exit Code': 'Exit Code',
+      Hint: 'Hint',
+      'Check your code for syntax errors, undefined variables, or incorrect function calls.':
+        'Check your code for syntax errors, undefined variables, or incorrect function calls.',
+      'Execution time': 'Execution time',
+      'Exit code': 'Exit code',
+      'Generated files': 'Generated files',
+      Hide: 'Hide',
+      'Failed to load image': 'Failed to load image',
+      Minimize: 'Minimize',
+      Maximize: 'Maximize',
+      'Download image': 'Download image',
+      Close: 'Close'
     }
   },
   ja: {
+    'file changes': {
+      fileChanges: 'ファイルの変更',
+      original: '元の内容',
+      updated: '更新後の内容',
+      added: '追加された内容',
+      removed: '削除された内容',
+      noChanges: '変更はありません'
+    },
     'Available Tools': '利用可能なツール',
     'Choose the tools': 'AIアシスタントで使用するツールを選択してください',
     // Common UI text
@@ -198,6 +426,53 @@ export const tools = {
     'Select a tool from the list': 'リストからツールを選択してください',
     'Click on any tool to view details and configuration options':
       'ツールをクリックすると詳細と設定オプションが表示されます',
+    // Camera Capture Settings
+    'Image Quality': '画像品質',
+    'Low (640x480)': '低画質 (640x480)',
+    'Medium (1280x720)': '中画質 (1280x720)',
+    'High (1920x1080)': '高画質 (1920x1080)',
+    Refresh: '更新',
+    'Loading camera devices...': 'カメラデバイスを読み込み中...',
+    'No cameras available. Click refresh to try again.':
+      'カメラが見つかりません。更新をクリックして再試行してください。',
+    'Preview not available': 'プレビュー利用不可',
+    'Live Preview': 'ライブプレビュー',
+    '{{count}} camera(s) allowed': '{{count}} 台のカメラが許可されています',
+    'Camera Preview Window': 'カメラプレビューウィンドウ',
+    'Preview Window Size': 'プレビューウィンドウサイズ',
+    'Small (200×150)': '小 (200×150)',
+    'Medium (320×240)': '中 (320×240)',
+    'Large (480×360)': '大 (480×360)',
+    'Preview Window Position': 'プレビューウィンドウ位置',
+    'Bottom Right': '右下',
+    'Bottom Left': '左下',
+    'Top Right': '右上',
+    'Top Left': '左上',
+    'Window Opacity': 'ウィンドウ透明度',
+    'Preview Window Active': 'プレビューウィンドウ アクティブ',
+    'Preview Window Inactive': 'プレビューウィンドウ 非アクティブ',
+    'The camera preview window is currently displayed on your screen.':
+      'カメラプレビューウィンドウが現在画面に表示されています。',
+    'Enable the toggle above to show the camera preview window.':
+      'トグルをオンにしてカメラプレビューウィンドウを表示します。',
+    'Preview Window Features': 'プレビューウィンドウ機能',
+    'Always on top - stays visible above other windows':
+      '常に手前に表示 - 他のウィンドウより上に表示されます',
+    'Draggable - can be moved around the screen': 'ドラッグ可能 - 画面上で移動できます',
+    'Live camera feed - shows real-time video from your camera':
+      'ライブカメラフィード - カメラからのリアルタイム映像を表示',
+    'Hover controls - settings and close buttons appear on mouse hover':
+      'ホバーコントロール - マウスホバー時に設定と閉じるボタンが表示',
+    'Automatic positioning - remembers your preferred screen location':
+      '自動位置決め - お好みの画面位置を記憶します',
+    'Important Notes': '注意事項',
+    'Preview window requires camera permission': 'プレビューウィンドウにはカメラ許可が必要です',
+    'Only one preview window can be active at a time':
+      '一度にアクティブにできるプレビューウィンドウは1つのみです',
+    'Settings changes apply immediately to active preview':
+      '設定変更はアクティブなプレビューにすぐに適用されます',
+    'Close the preview window to free up camera resources':
+      'カメラリソースを解放するにはプレビューウィンドウを閉じてください',
     // MCP Tool related
     'MCP tool from Model Context Protocol server': 'Model Context Protocol サーバーからのMCPツール',
     'MCP tools available from configured servers': '設定済みサーバーからのMCPツールが利用可能',
@@ -228,6 +503,7 @@ export const tools = {
       'Tavily SearchはAIアシスタントがWeb上の最新情報を検索できるようにし、最近のイベント、技術文書、またはトレーニングデータに含まれていない可能性のある情報に関する質問に対して、より良い回答を提供します。',
     Save: '保存',
     Cancel: 'キャンセル',
+    'Tool Group': 'ツールグループ',
     'Agent ID': 'エージェントID',
     'Alias ID': 'エイリアスID',
     'Command Shell': 'コマンドシェル',
@@ -246,6 +522,140 @@ export const tools = {
     'Knowledge Base ID': 'ナレッジベースID',
     'Registered Knowledge Bases': '登録済みナレッジベース',
     'No knowledge bases registered yet': 'ナレッジベースが登録されていません',
+    // Code Interpreter Settings
+    'Code Interpreter': 'コードインタープリタ',
+    'Enable the AI to execute Python code in a secure Docker environment for data analysis, calculations, and code execution.':
+      'データ分析、計算、コード実行のために、AIが安全なDocker環境でPythonコードを実行できるようにします。',
+    // Screen Capture Settings
+    'Screen Capture Settings': 'スクリーンキャプチャ設定',
+    'Default Image Format': 'デフォルト画像形式',
+    'PNG provides better quality but larger files, JPEG is compressed but smaller':
+      'PNGは高品質ですがファイルサイズが大きく、JPEGは圧縮されてファイルサイズが小さくなります',
+    'JPEG Quality (1-100)': 'JPEG品質 (1-100)',
+    'Higher values provide better quality but larger file sizes. Recommended: 70-90':
+      '高い値ほど品質が良くなりますが、ファイルサイズも大きくなります。推奨値: 70-90',
+    'Enable AI Image Analysis': 'AI画像分析を有効にする',
+    'Automatically analyze captured screenshots with AI to extract text and describe visual content':
+      'キャプチャしたスクリーンショットをAIで自動的に分析してテキストを抽出し、視覚的コンテンツを説明します',
+    'Custom Analysis Prompt (Optional)': 'カスタム分析プロンプト（オプション）',
+    'e.g., "Focus on error messages and UI elements" or leave empty for default analysis':
+      '例：「エラーメッセージとUI要素に焦点を当てる」または空白でデフォルト分析',
+    'Customize how AI analyzes your screenshots. Leave empty to use default comprehensive analysis.':
+      'AIがスクリーンショットを分析する方法をカスタマイズします。空白にするとデフォルトの包括的分析を使用します。',
+    'AI Analysis Features': 'AI分析機能',
+    'Extract and transcribe all visible text content':
+      '表示されているすべてのテキストコンテンツを抽出・転写',
+    'Identify UI elements, buttons, and interface components':
+      'UI要素、ボタン、インターフェースコンポーネントを識別',
+    'Detect and describe error messages or alerts': 'エラーメッセージやアラートを検出・説明',
+    'Provide contextual descriptions for debugging assistance':
+      'デバッグ支援のための文脈的説明を提供',
+    'Generate detailed visual documentation automatically': '詳細な視覚的ドキュメントを自動生成',
+    'Generate documentation with automatic screen captures and descriptions':
+      'スクリーンキャプチャと説明を自動で含むドキュメントを生成',
+    'Analyze application layouts and suggest improvements with AI insights':
+      'アプリケーションレイアウトを分析してAIの洞察による改善提案',
+    'Create visual bug reports with contextual AI-generated descriptions':
+      '文脈的なAI生成説明付きの視覚的バグレポートを作成',
+    "Extract text content from applications that don't support text selection":
+      'テキスト選択をサポートしないアプリケーションからテキストコンテンツを抽出',
+    'Image analysis is performed using your configured AI model settings':
+      '画像分析は設定されたAIモデル設定を使用して実行されます',
+    // New Screen Capture Settings (Japanese)
+    'AI Image Analysis Settings': 'AI画像分析設定',
+    'AI Model for Image Analysis': '画像分析用AIモデル',
+    'How to Use': '使用方法',
+    'Screen capture only': 'スクリーンキャプチャのみ',
+    'Use without any prompt to capture screen image only':
+      'プロンプトなしで画面キャプチャのみを実行',
+    'Screen capture + AI analysis': 'スクリーンキャプチャ + AI分析',
+    'Provide a recognition prompt to automatically analyze the captured image':
+      '認識プロンプトを提供してキャプチャした画像を自動分析',
+    'Example prompts': 'プロンプト例',
+    '"Describe this error screen", "Extract all text from this image", "Analyze the UI layout"':
+      '「このエラー画面を説明して」「この画像からすべてのテキストを抽出」「UIレイアウトを分析」',
+    'Screenshots are automatically saved as PNG format for optimal quality':
+      'スクリーンショットは最適な品質でPNG形式で自動保存されます',
+    'Temporary files are automatically cleaned up after processing':
+      '処理後に一時ファイルは自動的にクリーンアップされます',
+    'Convert screenshots into searchable text content for documentation':
+      'スクリーンショットを検索可能なテキストコンテンツに変換してドキュメント化',
+    'Analyze competitor interfaces and provide detailed descriptions':
+      '競合他社のインターフェースを分析して詳細な説明を提供',
+    'AI analysis is performed using your configured AWS Bedrock models':
+      'AI分析は設定されたAWS Bedrockモデルを使用して実行されます',
+    'Captured images are temporarily stored and automatically cleaned up':
+      'キャプチャした画像は一時的に保存され、自動的にクリーンアップされます',
+    'Only enable screen capture when necessary for your workflow':
+      'ワークフローに必要な場合のみスクリーンキャプチャを有効にしてください',
+    'Consider the privacy implications when capturing screens with personal data':
+      '個人データを含む画面をキャプチャする際はプライバシーへの影響を考慮してください',
+    'Platform Requirements': 'プラットフォーム要件',
+    'Performance Notes': 'パフォーマンス情報',
+    'Screen capture is typically very fast (< 1 second)':
+      'スクリーンキャプチャは通常非常に高速です（1秒未満）',
+    'AI analysis may take 5-15 seconds depending on image complexity':
+      'AI分析は画像の複雑さに応じて5〜15秒かかる場合があります',
+    'Claude 3.5 Haiku is faster but less detailed than Claude 3.5 Sonnet':
+      'Claude 3.5 HaikuはClaude 3.5 Sonnetより高速ですが詳細度は劣ります',
+    'Large or high-resolution screens may take longer to analyze':
+      '大画面や高解像度画面の分析には時間がかかる場合があります',
+    'Network latency affects AI analysis response time':
+      'ネットワーク遅延がAI分析の応答時間に影響します',
+    'Code Interpreter Status': 'コードインタープリタ状態',
+    'Enable or disable the code interpreter functionality':
+      'コードインタープリタ機能を有効または無効にします',
+    'Features & Capabilities': '機能・性能',
+    'Execute Python code in a secure Docker container': '安全なDockerコンテナでPythonコードを実行',
+    'No internet access for enhanced security': 'セキュリティ強化のためインターネットアクセスなし',
+    'Automatic file generation and detection': '自動ファイル生成・検出',
+    'Support for data analysis and visualization': 'データ分析・視覚化サポート',
+    'Mathematical calculations and scientific computing': '数学的計算・科学計算',
+    'Security & Limitations': 'セキュリティ・制限事項',
+    'Code runs in an isolated Docker environment': 'コードは分離されたDocker環境で実行',
+    'No network access to external resources': '外部リソースへのネットワークアクセスなし',
+    'Generated files are temporary and may be cleared':
+      '生成されたファイルは一時的で削除される可能性があります',
+    'Execution time limits may apply': '実行時間制限が適用される場合があります',
+
+    // Container configuration
+    コンテナ設定: 'コンテナ設定',
+    メモリ制限: 'メモリ制限',
+    CPU制限: 'CPU制限',
+    タイムアウト: 'タイムアウト',
+    'Docker ステータス': 'Docker ステータス',
+    'チェック中...': 'チェック中...',
+    利用可能: '利用可能',
+    利用不可: '利用不可',
+    再チェック: '再チェック',
+    最終チェック: '最終チェック',
+    設定のガイダンス: '設定のガイダンス',
+    データサイエンス作業には256MB以上のメモリを推奨:
+      'データサイエンス作業には256MB以上のメモリを推奨',
+    '重い計算処理には1.0 CPU以上を推奨': '重い計算処理には1.0 CPU以上を推奨',
+    複雑な処理には120秒以上のタイムアウトを設定: '複雑な処理には120秒以上のタイムアウトを設定',
+    設定されたリソース制限内で実行: '設定されたリソース制限内で実行',
+    '安全なDocker環境でPythonコードを実行し、データ分析、計算、コード実行のためのコンテナ設定を行います。':
+      '安全なDocker環境でPythonコードを実行し、データ分析、計算、コード実行のためのコンテナ設定を行います。',
+    'Usage Examples': '使用例',
+    'Data Analysis:': 'データ分析：',
+    'Process CSV files, perform statistical analysis': 'CSVファイル処理、統計分析の実行',
+    'Visualization:': '視覚化：',
+    'Create charts and graphs using matplotlib or plotly':
+      'matplotlibやplotlyを使用したチャート・グラフの作成',
+    'Math & Science:': '数学・科学：',
+    'Solve complex equations, numerical simulations': '複雑な方程式の解決、数値シミュレーション',
+    'File Processing:': 'ファイル処理：',
+    'Generate reports, process text files': 'レポート生成、テキストファイル処理',
+    // Screen Capture Result Display (Japanese)
+    'Screen Capture': 'スクリーンキャプチャ',
+    Resolution: '解像度',
+    'File Size': 'ファイルサイズ',
+    Format: '形式',
+    Timestamp: 'タイムスタンプ',
+    'AI Analysis': 'AI分析',
+    'Analysis Prompt': '分析プロンプト',
+    'Analyzed with': '分析に使用したモデル',
     // ツールカテゴリ
     'Tool Categories': {
       'File System': 'ファイルシステム',
@@ -275,7 +685,13 @@ export const tools = {
       invokeBedrockAgent: 'Amazon Bedrock Agent を実行',
       executeCommand: 'ワイルドカードをサポートする許可されたコマンドを実行',
       applyDiffEdit: 'ファイルに対して部分的な更新を適用',
-      think: 'AIが複雑なステップバイステップの思考を実行'
+      think: 'AIが複雑なステップバイステップの思考を実行',
+      invokeFlow: 'Amazon Bedrock Flow を実行',
+      codeInterpreter: '安全なDocker環境でPythonコードを実行',
+      generateVideo: 'Amazon Nova Reelを使用してテキスト説明から高品質な動画を生成',
+      checkVideoStatus: '動画生成ジョブのステータスを確認',
+      downloadVideo: '生成された動画をS3からローカルストレージにダウンロード',
+      screenCapture: 'AI分析とデバッグのために現在の画面をキャプチャ'
     },
     'tool info': {
       retrieve: {
@@ -290,7 +706,10 @@ export const tools = {
           'invokeBedrockAgent ツールを使用すると、AIアシスタントはカスタムAmazon Bedrock Agentと連携して、専門的なタスクを実行できます。',
         'about title': 'Bedrock Agentsについて',
         'about description':
-          'Amazon Bedrock Agentsを使用すると、データソースから情報を取得し、データを処理し、タスクを完了するためのアクションを実行するAIエージェントを構築できます。エージェントはシステムやAPIに接続して、旅行の予約、注文の処理、データベースのクエリなどのアクションを実行できます。'
+          'Amazon Bedrock Agentsを使用すると、データソースから情報を取得し、データを処理し、タスクを完了するためのアクションを実行するAIエージェントを構築できます。エージェントはシステムやAPIに接続して、旅行の予約、注文の処理、データベースのクエリなどのアクションを実行できます。',
+        'file limitations title': 'ファイル送信の制限事項',
+        'file limitations description':
+          'ファイル送信機能は実験的であり、一貫して動作しない可能性があります。現在、CSVファイルはCHATユースケースで部分的にサポートされていますが、他のファイル形式ではバリデーションエラーで失敗する可能性があります。CODE_INTERPRETERユースケースは現在サポートされていません。'
       },
       tavilySearch: {
         description:
@@ -308,13 +727,23 @@ export const tools = {
         'example title': '使用例',
         'example description':
           '一般的に役立つパターンには「ls *」（ディレクトリ一覧表示）、「npm *」（npmコマンド実行）、「aws *」（AWS CLIコマンド）、「curl *」（HTTPリクエスト作成）などがあります。AIはこれらのパターンにマッチするコマンドのみを実行できます。'
+      },
+      generateVideo: {
+        description:
+          'generateVideo ツールは Amazon Nova Reel を使用してテキスト説明から高品質な動画を作成します。動画は非同期で生成され、出力保存にはS3設定が必要です。',
+        group:
+          'このツールを有効にすると、関連する以下のツールも自動的に有効になります：checkVideoStatus（動画生成の進行状況を監視）とdownloadVideo（完成した動画をダウンロード）。これらのツールは連携して完全な動画生成ワークフローを提供します。'
+      },
+      screenCapture: {
+        description:
+          'screenCaptureツールは現在の画面をキャプチャして画像ファイルとして保存します。認識プロンプトが提供されると、キャプチャした画像はAIによって自動的に分析され、テキストコンテンツの抽出、UI要素の識別、デバッグとドキュメント作成のための詳細な視覚的説明が提供されます。'
       }
     },
     'tool usage': {
       think: {
         description:
           'AIがコンテキストウィンドウを消費せずに複雑な推論ステップを実行できるようにします。このツールを使用すると、Claudeは難しい問題をステップバイステップで解決し、その思考プロセスと推論を詳細に示すことができます。',
-        tip: 'AIに複雑な問題の解決、難しい問題のデバッグ、または推論プロセスの詳細な説明を提供してもらいたい場合に有効にしてください。Claude 3.7 Sonnetでのみ利用可能です。'
+        tip: 'AIに複雑な問題の解決、難しい問題のデバッグ、または推論プロセスの詳細な説明を提供してもらいたい場合に有効にしてください。'
       },
       recognizeImage: {
         description:
@@ -381,11 +810,61 @@ export const tools = {
           'AIを専門のBedrock Agentsと接続し、データ分析、コード解釈、通常のチャット機能を超えるドメイン固有の操作など、複雑なタスクを実行できるようにします。Amazon Bedrockで事前にエージェントを設定しておく必要があります。',
         tip: 'コード実行、データ分析、特定のツールを持つ専用エージェントが必要なドメイン固有の知識など、特殊な機能が必要な場合に使用してください。'
       },
+      codeInterpreter: {
+        description:
+          'AIが安全なDocker環境でPythonコードを実行できるようにします（インターネットアクセスなし）。データ分析、数学的計算、視覚化、科学計算タスクに最適です。',
+        tip: 'AIに計算の実行、データの分析、視覚化の作成、または問題解決のためのPythonコード実行を行わせたい場合に有効にしてください。すべてのコードはセキュリティのため分離されたコンテナで実行されます。'
+      },
       executeCommand: {
         description:
           'AIにシステムコマンドを実行させて開発タスクを自動化できるようにします。ビルド操作、テスト、デプロイタスク、またはコマンドラインを使用する一般的なワークフローに最適です。',
         tip: 'AIにDevOpsタスク、テスト実行、プロジェクトのビルド、または繰り返しのコマンドライン操作の自動化を支援させたい場合に有効にしてください。セキュリティのため、事前に承認されたコマンドパターンのみが許可されています。'
       }
+    },
+    // CodeInterpreter Result Display (Japanese)
+    'code interpreter display': {
+      'Executed Code': '実行されたコード',
+      Output: '出力',
+      'Generated Files': '生成されたファイル',
+      Errors: 'エラー',
+      Success: '成功',
+      Failed: '失敗',
+      'Console Output': 'コンソール出力',
+      'No output produced': '出力がありません',
+      'Copy code': 'コードをコピー',
+      'Copy output': '出力をコピー',
+      'Copy error': 'エラーをコピー',
+      'Code copied to clipboard': 'コードをクリップボードにコピーしました',
+      'Output copied to clipboard': '出力をクリップボードにコピーしました',
+      'Error copied to clipboard': 'エラーをクリップボードにコピーしました',
+      'Failed to copy code': 'コードのコピーに失敗しました',
+      'Failed to copy output': '出力のコピーに失敗しました',
+      'Failed to copy error': 'エラーのコピーに失敗しました',
+      Copied: 'コピー済み',
+      Copy: 'コピー',
+      Image: '画像',
+      'CSV Data': 'CSVデータ',
+      'Text File': 'テキストファイル',
+      File: 'ファイル',
+      Preview: 'プレビュー',
+      Download: 'ダウンロード',
+      'Download file': 'ファイルをダウンロード',
+      'No files generated': 'ファイルが生成されていません',
+      'Total files generated': 'ファイル生成数合計',
+      'Execution Error': '実行エラー',
+      'Exit Code': '終了コード',
+      Hint: 'ヒント',
+      'Check your code for syntax errors, undefined variables, or incorrect function calls.':
+        'コードの構文エラー、未定義変数、または不正な関数呼び出しを確認してください。',
+      'Execution time': '実行時間',
+      'Exit code': '終了コード',
+      'Generated files': '生成ファイル',
+      Hide: '非表示',
+      'Failed to load image': '画像の読み込みに失敗しました',
+      Minimize: '最小化',
+      Maximize: '最大化',
+      'Download image': '画像をダウンロード',
+      Close: '閉じる'
     }
   }
 }

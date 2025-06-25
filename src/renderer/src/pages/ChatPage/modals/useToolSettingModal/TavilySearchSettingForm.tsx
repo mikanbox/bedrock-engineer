@@ -23,9 +23,6 @@ export const TavilySearchSettingForm = ({
     <div className="mt-4 space-y-4">
       {/* ツールの説明 */}
       <div className="prose dark:prose-invert max-w-none">
-        <p className="mb-4 text-gray-700 dark:text-gray-300 font-bold">
-          {t(`tool descriptions.tavilySearch`)}
-        </p>
         <p className="mb-4 text-gray-700 dark:text-gray-300">
           {t(
             'tool info.tavilySearch.description',

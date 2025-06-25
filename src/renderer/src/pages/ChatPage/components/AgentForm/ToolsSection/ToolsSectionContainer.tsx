@@ -26,6 +26,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   onAllowedCommandsChange,
   bedrockAgents = [],
   onBedrockAgentsChange,
+  flows = [],
+  onFlowsChange,
   mcpServers = [],
   tempMcpTools = [],
   isLoadingMcpTools = false
@@ -40,14 +42,12 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   // メイン状態管理
   const {
     agentTools,
-    selectedCategory,
     activeTab,
     toolInfoToShow,
     expandedTools,
     setActiveTab,
     setToolInfoToShow,
     handleToggleTool,
-    handleCategoryChange,
     toggleToolExpand,
     getEnabledTools,
     categorizedTools,
@@ -74,6 +74,14 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   // ツール詳細設定に必要な設定
   const enabledTools = getEnabledTools()
+  const needSettingToolsLength = enabledTools.filter((tool) => {
+    return (
+      tool.toolSpec?.name === 'retrieve' ||
+      tool.toolSpec?.name === 'invokeBedrockAgent' ||
+      tool.toolSpec?.name === 'executeCommand' ||
+      tool.toolSpec?.name === 'invokeFlow'
+    )
+  }).length
   const toolsWithConfigurations = getToolsWithConfigurations(t)
 
   return (
@@ -95,11 +103,6 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
           onClose={() => setToolInfoToShow(null)}
         />
       )}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Agent Tools</h3>
-        </div>
-      </div>
 
       {/* タブナビゲーション */}
       <div className="border-b border-gray-200 dark:border-gray-700">
@@ -132,23 +135,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
               }}
             >
               {t('Tool Detail Settings')}
-              {enabledTools.filter((tool) => {
-                return (
-                  tool.toolSpec?.name === 'retrieve' ||
-                  tool.toolSpec?.name === 'invokeBedrockAgent' ||
-                  tool.toolSpec?.name === 'executeCommand'
-                )
-              }).length > 0 && (
+              {needSettingToolsLength > 0 && (
                 <span className="inline-flex items-center justify-center w-4 h-4 ml-2 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full">
-                  {
-                    enabledTools.filter((tool) => {
-                      return (
-                        tool.toolSpec?.name === 'retrieve' ||
-                        tool.toolSpec?.name === 'invokeBedrockAgent' ||
-                        tool.toolSpec?.name === 'executeCommand'
-                      )
-                    }).length
-                  }
+                  {needSettingToolsLength}
                 </span>
               )}
             </button>
@@ -160,9 +149,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       {activeTab === 'available-tools' && (
         <AvailableToolsTab
           categorizedTools={categorizedTools()}
-          selectedCategory={selectedCategory}
           mcpServers={mcpServers}
-          onCategoryChange={handleCategoryChange}
           onToggleTool={handleToggleTool}
           onShowToolInfo={(toolName: string) => setToolInfoToShow(toolName)}
           isLoadingMcpTools={isLoadingMcpTools}
@@ -188,6 +175,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
           onBedrockAgentsChange={
             onBedrockAgentsChange || (() => console.warn('onBedrockAgentsChange not provided'))
           }
+          flows={flows}
+          onFlowsChange={onFlowsChange || (() => console.warn('onFlowsChange not provided'))}
         />
       )}
     </div>

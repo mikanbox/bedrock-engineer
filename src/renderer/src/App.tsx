@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage/HomePage'
 import { Toaster } from 'react-hot-toast'
 import ErrorPage from './pages/ErrorPage/ErrorPage'
 import { SettingsProvider } from './contexts/SettingsContext'
+import { ChatHistoryProvider } from './contexts/ChatHistoryContext'
 import { AgentDirectoryProvider } from './contexts/AgentDirectoryContext'
 import { StepType, TourProvider } from '@reactour/tour'
 import { useTranslation } from 'react-i18next'
@@ -65,7 +66,7 @@ const Layout: React.FC = () => {
         </div>
         <CmdK />
 
-        <div className="flex-1 p-3 bg-gray-100 overflow-x-auto dark:bg-gray-900">
+        <div className="flex-1 bg-gray-100 overflow-x-auto dark:bg-gray-900">
           <Outlet />
         </div>
       </div>
@@ -122,12 +123,14 @@ function App(): JSX.Element {
   return (
     <TourProvider steps={steps} styles={styles}>
       <SettingsProvider>
-        <AgentDirectoryProvider>
-          <div>
-            <Toaster position="top-right" />
-            <RouterProvider router={router} />
-          </div>
-        </AgentDirectoryProvider>
+        <ChatHistoryProvider>
+          <AgentDirectoryProvider>
+            <div>
+              <Toaster position="top-right" />
+              <RouterProvider router={router} />
+            </div>
+          </AgentDirectoryProvider>
+        </ChatHistoryProvider>
       </SettingsProvider>
     </TourProvider>
   )

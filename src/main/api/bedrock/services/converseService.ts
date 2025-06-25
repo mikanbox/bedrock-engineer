@@ -11,6 +11,7 @@ import {
 import { createRuntimeClient } from '../client'
 import { processImageContent } from '../utils/imageUtils'
 import { getAlternateRegionOnThrottling } from '../utils/awsUtils'
+import { getThinkingSupportedModelIds } from '../models'
 import type { CallConverseAPIProps, ServiceContext } from '../types'
 import { createCategoryLogger } from '../../../../common/logger'
 
@@ -35,16 +36,6 @@ export class ConverseService {
       // リクエストパラメータの準備
       const { commandParams } = await this.prepareCommandParameters(props)
       const runtimeClient = createRuntimeClient(this.context.store.get('aws'))
-      const awsConfig = this.context.store.get('aws')
-
-      // APIリクエスト前にログ出力
-      converseLogger.debug('Sending converse request', {
-        modelId: props.modelId,
-        region: awsConfig.region,
-        messageCount: props.messages.length
-      })
-
-      // APIリクエストを送信
       const command = new ConverseCommand(commandParams)
       return await runtimeClient.send(command)
     } catch (error: any) {
@@ -99,24 +90,36 @@ export class ConverseService {
     // メッセージを正規化
     const sanitizedMessages = this.normalizeMessages(processedMessages)
 
-    // 推論パラメータを取得
-    const inferenceParams = this.context.store.get('inferenceParams')
+    // 推論パラメータを取得（リクエストで明示的に指定された場合はグローバル設定を書きする）
+    const inferenceConfig = props?.inferenceConfig ?? this.context.store.get('inferenceParams')
 
     const thinkingMode = this.context.store.get('thinkingMode')
+    const interleaveThinking = this.context.store.get('interleaveThinking')
 
-    // Claude 3.7 Sonnet でThinking Modeが有効な場合、additionalModelRequestFieldsを追加
+    // models.tsでsupportsThinking=trueと定義されたモデルでThinking Modeが有効な場合、additionalModelRequestFieldsを追加
     let additionalModelRequestFields: Record<string, any> | undefined = undefined
 
-    // thinkingモードが有効かつmodelIdがClaude 3.7 Sonnetの場合のみ設定
-    if (modelId.includes('anthropic.claude-3-7-sonnet') && thinkingMode?.type === 'enabled') {
+    // Thinking対応モデルのIDリストを取得
+    const thinkingSupportedModelIds = getThinkingSupportedModelIds()
+
+    // thinkingモードが有効かつmodelIdがThinking対応モデルの場合のみ設定
+    if (
+      thinkingSupportedModelIds.some((id) => modelId.includes(id)) &&
+      thinkingMode?.type === 'enabled'
+    ) {
       additionalModelRequestFields = {
         thinking: {
           type: thinkingMode.type,
           budget_tokens: thinkingMode.budget_tokens
         }
       }
-      inferenceParams.topP = undefined // reasoning は topP は不要
-      inferenceParams.temperature = 1 // reasoning は temperature を 1 必須
+
+      // インターリーブ思考が有効な場合のみanthropic_betaを追加
+      if (interleaveThinking) {
+        additionalModelRequestFields.anthropic_beta = ['interleaved-thinking-2025-05-14']
+      }
+      inferenceConfig.topP = undefined // reasoning は topP は不要
+      inferenceConfig.temperature = 1 // reasoning は temperature を 1 必須
 
       // Thinking Mode有効時の特別なログ出力
       converseLogger.debug('Enabling Thinking Mode', {
@@ -134,8 +137,8 @@ export class ConverseService {
       additionalModelRequestFields = {
         inferenceConfig: { topK: 1 }
       }
-      inferenceParams.topP = 1
-      inferenceParams.temperature = 1
+      inferenceConfig.topP = 1
+      inferenceConfig.temperature = 1
 
       // If the number of parallel executions is 3 or more, it may not be stable, so process it in stages.
       system[0].text =
@@ -148,7 +151,7 @@ export class ConverseService {
       messages: sanitizedMessages,
       system,
       toolConfig,
-      inferenceConfig: inferenceParams,
+      inferenceConfig,
       additionalModelRequestFields
     }
 

@@ -8,6 +8,20 @@ export interface CommandConfig {
   description: string
 }
 
+// ウィンドウ設定の型定義
+export interface WindowConfig {
+  id: string // ウィンドウの一意識別子
+  name: string // ウィンドウタイトル
+  enabled: boolean // 許可/非許可
+}
+
+// カメラ設定の型定義
+export interface CameraConfig {
+  id: string // カメラデバイスID
+  name: string // カメラ名
+  enabled: boolean // 許可/非許可
+}
+
 export type AgentChatConfig = {
   ignoreFiles?: string[]
   contextLength?: number
@@ -214,10 +228,15 @@ export type CustomAgent = Agent & {
   tools?: ToolName[] // エージェント固有のツール名リスト
   category?: AgentCategory // エージェントのカテゴリ
   allowedCommands?: CommandConfig[] // エージェント固有の許可コマンド
+  allowedWindows?: WindowConfig[] // エージェント固有の許可ウィンドウ
+  allowedCameras?: CameraConfig[] // エージェント固有の許可カメラ
   bedrockAgents?: BedrockAgent[] // エージェント固有のBedrock Agents
   knowledgeBases?: KnowledgeBase[] // エージェント固有のKnowledge Base
+  flows?: FlowConfig[] // エージェント固有のFlow設定
   mcpServers?: McpServerConfig[] // エージェント固有のMCPサーバー設定
   mcpTools?: ToolState[] // エージェント固有のMCPツール設定
+  additionalInstruction?: string // エージェント生成時の追加指示
+  environmentContextSettings?: EnvironmentContextSettings // エージェント固有の環境コンテキスト設定
 }
 
 export type AgentSettings = {
@@ -229,6 +248,17 @@ export type KnowledgeBase = {
   description: string
 }
 
+// 入力タイプの定義を追加
+export type InputType = 'string' | 'number' | 'boolean' | 'object' | 'array'
+
+export type FlowConfig = {
+  flowIdentifier: string
+  flowAliasIdentifier: string
+  description: string
+  inputType?: InputType // 新規: 入力の型
+  schema?: object // 新規: JSON Schema 定義 (objectとarrayの場合に使用)
+}
+
 // MCPサーバー設定の型定義
 export interface McpServerConfig {
   name: string
@@ -236,4 +266,11 @@ export interface McpServerConfig {
   command: string
   args: string[]
   env?: Record<string, string>
+}
+
+// 環境コンテキスト設定の型定義
+export interface EnvironmentContextSettings {
+  todoListInstruction: boolean // TODO_LIST_INSTRUCTION を含めるかどうか
+  projectRule: boolean // PROJECT_RULE を含めるかどうか
+  visualExpressionRules: boolean // VISUAL_EXPRESSION_RULES を含めるかどうか
 }

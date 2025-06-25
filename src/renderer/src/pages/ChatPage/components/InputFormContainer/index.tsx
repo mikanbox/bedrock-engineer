@@ -19,6 +19,7 @@ type InputFormContainerProps = {
   onClearChat: () => void
   onStopGeneration?: () => void
   hasMessages: boolean
+  onHeightChange?: (height: number) => void // Text area height change handler
 }
 
 /**
@@ -37,7 +38,8 @@ const InputFormContainer = React.forwardRef<InputFormContainerRef, InputFormCont
       onOpenIgnoreModal,
       onClearChat,
       onStopGeneration,
-      hasMessages
+      hasMessages,
+      onHeightChange
     },
     ref
   ) => {
@@ -77,6 +79,7 @@ const InputFormContainer = React.forwardRef<InputFormContainerRef, InputFormCont
         onClearChat={handleClearChat}
         onStopGeneration={onStopGeneration}
         hasMessages={hasMessages}
+        onHeightChange={onHeightChange}
       />
     )
   }

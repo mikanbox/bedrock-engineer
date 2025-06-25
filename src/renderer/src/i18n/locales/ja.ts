@@ -1,5 +1,7 @@
 import { chatPage } from './chat'
 import { awsDiagramGenerator } from './awsDiagramGenerator'
+import { stepFunctionGenerator } from './stepFunctionGenerator'
+import { websiteGenerator } from './websiteGenerator'
 import {
   iamPolicy,
   notificationSettings,
@@ -7,10 +9,12 @@ import {
   agentSettings,
   agentToolsSettings,
   promptCacheSettings,
-  tokenAnalyticsSettings
+  tokenAnalyticsSettings,
+  lightModelSettings
 } from './settings'
 import { thinkingMode } from './thinkingMode'
 import { agentDirectory } from './agentDirectory'
+import { planActMode } from './planActMode'
 
 const HomePage = {
   'set your aws credential':
@@ -18,7 +22,37 @@ const HomePage = {
   'Welcome to Bedrock Engineer': 'Bedrock Engineer にようこそ',
   'This is AI assistant of software development tasks':
     '私は、ソフトウェア開発タスクに特化したAIアシスタントです',
+  'This is AI assistant for business analysis and planning':
+    '私は、ビジネス分析と計画立案に特化したAIアシスタントです',
+  'This is AI assistant for content creation and documentation':
+    '私は、コンテンツ作成とドキュメント作成に特化したAIアシスタントです',
+  'This is AI assistant for data analysis and visualization':
+    '私は、データ分析と可視化に特化したAIアシスタントです',
+  'This is AI assistant for project management and organization':
+    '私は、プロジェクト管理と組織運営に特化したAIアシスタントです',
+  'This is AI assistant that helps streamline your workflow':
+    '私は、あなたのワークフローを効率化するAIアシスタントです',
+  'This is AI assistant for creative problem solving':
+    '私は、創造的な問題解決に特化したAIアシスタントです',
+  'This is AI assistant for research and information gathering':
+    '私は、研究と情報収集に特化したAIアシスタントです',
   'Start by the menu on the left or': '左のメニューから開始するか、次のショートカットが利用できます'
+}
+
+const Translation = {
+  title: '翻訳',
+  translating: '翻訳中...',
+  error: 'エラー',
+  retry: 'リトライ',
+  formality: '敬語',
+  profanity: '不適切表現フィルター',
+  enableTranslation: '翻訳を有効にする',
+  targetLanguage: '翻訳先言語',
+  sourceLanguage: '翻訳元言語',
+  'auto-detect': '自動検出',
+  clearCache: '翻訳キャッシュをクリア',
+  cacheStats: 'キャッシュ統計',
+  translationSettings: '翻訳設定'
 }
 
 const SettingPage = {
@@ -76,6 +110,101 @@ DynamoDB または SNS を使用する場合は、Lambda を使用せず、AWS �
 各行には注文と配送情報があります。
 分散マッププロセッサはこれらの行のバッチを繰り返し、Lambda 関数を使用して注文を検出します。
 その後、注文ごとに SQS キューにメッセージを送信します。`
+}
+
+const SpeakPage = {
+  'Nova Sonic Chat': 'Nova Sonic チャット',
+  'Voice conversation with AI': 'AIとの音声会話',
+  'Voice Conversation': '音声会話',
+  'Start speaking to begin the conversation': '話しかけて会話を開始してください',
+  'Ready to chat': 'チャット準備完了',
+  'Click "Start Speaking" to begin your voice conversation':
+    '「話し始める」をクリックして音声会話を開始してください',
+  'Conversation in progress...': '会話中...',
+  'Conversation paused': '会話一時停止',
+  'Scroll to bottom': '最下部にスクロール',
+  'System Prompt': 'システムプロンプト',
+  'Enter system prompt for the AI assistant...':
+    'AIアシスタント用のシステムプロンプトを入力してください...',
+  'Disconnect to edit the system prompt': 'システムプロンプトを編集するには切断してください',
+  'This prompt will be sent when you connect to start the conversation':
+    'このプロンプトは接続時に会話を開始するために送信されます',
+  'Connection error. Please try reconnecting.': '接続エラーです。再接続してください。',
+  'Reload Page': 'ページを再読み込み',
+  Disconnected: '切断済み',
+  'Connecting...': '接続中...',
+  Connected: '接続済み',
+  Ready: '準備完了',
+  'Recording...': '録音中...',
+  'Processing...': '処理中...',
+  Error: 'エラー',
+  Connect: '接続',
+  Disconnect: '切断',
+  'Start Speaking': '話し始める',
+  'Stop Speaking': '話を止める',
+  Recording: '録音中',
+  Processing: '処理中',
+  Listening: '聞き取り中',
+  Thinking: '考え中',
+  'Listening...': '聞き取り中...',
+  'Thinking...': '考え中...',
+  'Edit System Prompt': 'システムプロンプト編集',
+  // Voice Selection
+  'Select Voice': '音声を選択してください',
+  'Start New Chat': '新しいチャットを始める',
+  Cancel: 'キャンセルする',
+  Voice: '音声',
+  // Translation Settings in Voice Modal
+  'Real-time Translation': 'リアルタイム翻訳',
+  'Translate AI responses to your preferred language': 'AIの応答を希望する言語に翻訳します',
+  'Target Language': '翻訳先言語',
+  Selected: '選択中',
+  'Translation Info': '翻訳について',
+  'Only AI responses will be translated': 'AIの応答のみが翻訳されます',
+  'Translation appears below the original message': '翻訳は元のメッセージの下に表示されます',
+  'You can retry failed translations': '翻訳に失敗した場合は再試行できます',
+  // Voice Descriptions
+  'voice.tiffany.description': '温かく親しみやすい',
+  'voice.tiffany.characteristics': '親近感があり共感的で、居心地の良い会話を作り出します',
+  'voice.amy.description': '冷静で落ち着いている',
+  'voice.amy.characteristics': '思慮深く慎重で、明確でバランスの取れた回答を提供します',
+  'voice.matthew.description': '自信に満ち、威厳的',
+  'voice.matthew.characteristics': '知識豊富で専門的、頼りがいのある印象を与えます',
+  // Sample Text
+  'Try talking like this': 'こんな風に話しかけてみましょう',
+  'sample.noScenarios': 'サンプル会話がありません',
+  'Nova Sonic currently supports English only': 'Nova Sonicは現在英語のみをサポートしています',
+  // Permission Help Modal
+  'permissionHelp.title': '重複した許可ダイヤログの解決',
+  'permissionHelp.description': 'macOSでの重複した許可ダイヤログを解決するための情報',
+  'permissionHelp.commandTitle': '解決コマンド',
+  'permissionHelp.commandDescription':
+    'OSの許可ダイヤログ（マイクロフォンアクセスなど）が重複して表示される場合、アプリケーションをビルド・インストールした後に以下のコマンドを実行してアドホック署名を追加することで、この問題を解決できます：',
+  'permissionHelp.noteTitle': '注意',
+  'permissionHelp.noteDescription':
+    'このコマンドは、アプリケーションにアドホックコード署名を適用し、システムの許可ダイヤログが重複して表示される問題を防ぎます。',
+  'permissionHelp.tooltip': '許可ダイヤログが繰り返し表示される？',
+
+  // Voice Chat
+  'voiceChat.regionWarning.title': 'Voice Chat機能が利用できません',
+  'voiceChat.regionWarning.message':
+    'Voice Chat（Nova Sonic）は現在のリージョン（{{currentRegion}}）では利用できません。対応リージョンに切り替えてください：{{supportedRegions}}',
+  'voiceChat.regionWarning.openSettings': '設定を開く',
+  'voiceChat.error.regionNotSupported':
+    'Voice Chat機能は現在のリージョンでは利用できないか、権限に問題があります。AWSリージョン設定を確認してください。',
+  'voiceChat.error.regionConnection':
+    'Voice Chatサービスへの接続に失敗しました。リージョンの互換性の問題が考えられます。',
+  'voiceChat.error.openSettings': '設定を開く',
+
+  // Settings
+  'settings.novaSonic.title': 'Voice Chat (Nova Sonic)',
+  'settings.novaSonic.checking': '可用性を確認中...',
+  'settings.novaSonic.available': '利用可能',
+  'settings.novaSonic.notAvailable': '利用不可',
+  'settings.novaSonic.refresh': 'ステータスを更新',
+  'settings.novaSonic.currentRegion': '現在のリージョン: {{region}}',
+  'settings.novaSonic.supportedRegions': '対応リージョン: {{regions}}',
+  'Voice Chat Status': 'Voice Chatステータス'
 }
 
 const WebsiteGeneratorPage = {
@@ -190,6 +319,8 @@ const AgentFormTabs = {
   'Server Configuration (JSON)': 'サーバー設定（JSON）',
   'Add Server': 'サーバーを追加',
   'Update Server': 'サーバーを更新',
+  'Server updated successfully': 'サーバーが正常に更新されました',
+  'Multiple servers updated successfully': '複数のサーバーが正常に更新されました',
   'Registered MCP Servers': '登録済みMCPサーバー',
   'No MCP servers registered yet': 'まだMCPサーバーが登録されていません',
   'Required fields are missing or invalid. Check the JSON format.':
@@ -219,7 +350,47 @@ const AgentFormTabs = {
   'Connection Failed': '接続失敗',
   'tools available': 'ツールが利用可能',
   'Startup time': '起動時間',
-  Solution: '解決策'
+  Solution: '解決策',
+  // Environment Context Settings
+  'Environment Context Settings': '環境コンテキスト設定',
+  'Choose which environment context sections to include in the system prompt. Basic context (project path, date) is always included.':
+    'システムプロンプトに含める環境コンテキストセクションを選択してください。基本コンテキスト（プロジェクトパス、日付）は常に含まれます。',
+  'Project Rule': 'プロジェクトルール',
+  'Includes instructions to load project-specific rules from .bedrock-engineer/rules folder':
+    'カスタムのコーディング規約、アーキテクチャガイドライン、特定の開発プラクティスがあるプロジェクトで作業する際に有効にしてください。AIが.bedrock-engineer/rulesフォルダからルールを自動的に読み込み、プロジェクトの規約に従って一貫性を保ちます。',
+  'Visual Expression Rules': '視覚表現ルール',
+  'Includes instructions for creating diagrams, images, and mathematical formulas':
+    'AIに図表（フローチャート、アーキテクチャ図）の作成、画像生成、数式の記述をさせたい場合に有効にしてください。ドキュメント作成、技術説明、データ可視化、教育コンテンツの作成に役立ちます。',
+  'TODO List Instruction': 'TODOリスト指示',
+  'Includes instructions to create TODO lists for long-running tasks':
+    '複雑で複数ステップからなるプロジェクトで、AIに大きなタスクを管理可能なアクションアイテムに分解してもらいたい場合に有効にしてください。プロジェクト計画、機能開発、リファクタリング、複数セッションにわたる作業で特に有用です。'
+}
+
+const CodeBlock = {
+  Source: 'ソース',
+  Preview: 'プレビュー',
+  'Toggle View': 'ビューを切り替え',
+  'Camera Capture': 'カメラキャプチャ',
+  'Camera Device': 'カメラデバイス'
+}
+
+const FileChanges = {
+  original: '元の内容',
+  updated: '更新後の内容',
+  added: '追加された内容',
+  removed: '削除された内容',
+  noChanges: '変更はありません',
+  fileDiff: 'ファイル差分',
+  copyOriginal: '元のテキストをコピー',
+  copyUpdated: '更新後のテキストをコピー',
+  originalTextCopied: '元のテキストをクリップボードにコピーしました',
+  updatedTextCopied: '更新後のテキストをクリップボードにコピーしました',
+  filePathCopied: 'ファイルパスをクリップボードにコピーしました',
+  failedToCopy: 'テキストのコピーに失敗しました',
+  lines: '行',
+  changed: '変更',
+  expand: '拡大',
+  collapse: '折りたたむ'
 }
 
 const ja = {
@@ -227,7 +398,11 @@ const ja = {
   ...SettingPage,
   ...StepFunctionsGeneratorPage,
   ...chatPage.ja,
+  ...SpeakPage,
+  ...FileChanges,
   ...WebsiteGeneratorPage,
+  ...Translation,
+  ...CodeBlock,
   ...iamPolicy.ja,
   ...notificationSettings.ja,
   ...bedrockSettings.ja,
@@ -235,10 +410,14 @@ const ja = {
   ...agentToolsSettings.ja,
   ...promptCacheSettings.ja,
   ...tokenAnalyticsSettings.ja,
+  ...lightModelSettings.ja,
   ...awsDiagramGenerator.ja,
+  ...stepFunctionGenerator.ja,
+  ...websiteGenerator.ja,
   ...thinkingMode.ja,
   ...agentDirectory.ja,
-  ...AgentFormTabs
+  ...AgentFormTabs,
+  ...planActMode.ja
 }
 
 export default ja

@@ -3,25 +3,18 @@ import { LLM } from '@/types/llm'
 import { LuBrainCircuit } from 'react-icons/lu'
 import { useSettings } from '@renderer/contexts/SettingsContext'
 import { FiChevronDown } from 'react-icons/fi'
+import NovaLogo from './nova-color.svg'
+import ClaudeLogo from './claude-color.svg'
+import DeepSeekLogo from './deepseek-color.svg'
+import MetaLogo from './meta-color.svg'
 
 type ModelSelectorProps = {
   openable: boolean
 }
 
 const MODEL_ICONS = {
-  claude: <LuBrainCircuit className="size-4" />,
+  claude: <ClaudeLogo />,
   llama: <LuBrainCircuit className="size-4" />
-} as const
-
-const MODEL_COLORS = {
-  claude: {
-    icon: 'text-purple-600 dark:text-purple-400',
-    hover: 'hover:bg-purple-50 dark:hover:bg-purple-900/50'
-  },
-  llama: {
-    icon: 'text-yellow-600 dark:text-yellow-400',
-    hover: 'hover:bg-yellow-50 dark:hover:bg-yellow-900/50'
-  }
 } as const
 
 export const ModelSelector: React.FC<ModelSelectorProps> = ({ openable }) => {
@@ -43,16 +36,15 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ openable }) => {
   const getModelIcon = (modelId: string) => {
     if (modelId.includes('claude')) return MODEL_ICONS.claude
     if (modelId.includes('llama')) return MODEL_ICONS.llama
-    return <LuBrainCircuit className="size-4" />
+    if (modelId.includes('nova')) return <NovaLogo />
+    if (modelId.includes('deepseek')) return <DeepSeekLogo />
+    if (modelId.includes('meta')) return <MetaLogo />
+    return <LuBrainCircuit />
   }
 
-  const getModelColor = (modelId: string) => {
-    if (modelId.includes('claude')) return MODEL_COLORS.claude
-    if (modelId.includes('llama')) return MODEL_COLORS.llama
-    return {
-      icon: 'text-gray-600 dark:text-gray-400',
-      hover: 'hover:bg-gray-50 dark:hover:bg-gray-800'
-    }
+  const modelColors = {
+    icon: 'text-gray-600 dark:text-gray-400',
+    hover: 'hover:bg-gray-50 dark:hover:bg-gray-800'
   }
 
   return (
@@ -60,12 +52,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ openable }) => {
       <div className="relative">
         {isOpen && (
           <div
-            className="absolute z-20 w-80 bottom-full mb-1 bg-white dark:bg-gray-900 rounded-lg shadow-lg
+            className="absolute z-20 w-[25rem] bottom-full mb-1 bg-white dark:bg-gray-900 rounded-lg shadow-lg
             border border-gray-200 dark:border-gray-700 py-2 px-2 max-h-[40vh] overflow-y-auto"
           >
             {availableModels.map((model: LLM) => {
-              const modelColors = getModelColor(model.modelId)
-
               return (
                 <div
                   key={model.modelId}
@@ -103,9 +93,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ openable }) => {
           className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 rounded-md transition-colors"
         >
           <span className="flex items-center gap-1.5">
-            <span className={getModelColor(currentLLM.modelId).icon}>
-              {getModelIcon(currentLLM.modelId)}
-            </span>
+            <span className={modelColors.icon}>{getModelIcon(currentLLM.modelId)}</span>
             <span className="text-left whitespace-nowrap">{currentLLM.modelName}</span>
             <FiChevronDown className="text-gray-400 dark:text-gray-500" size={16} />
           </span>

@@ -103,11 +103,7 @@ system: >-
 
 
 
-  Working directory is {{projectPath}}
 
-  Today's date: {{date}}
-
-  Allowed commands are: {{allowedCommands}}
 scenarios:
   - title: Create a responsive navbar with dropdown menu
     content: >-

@@ -10,7 +10,6 @@ export const thinkingMode = {
     'Deeper (32K tokens)': 'Deeper (32K tokens)',
     'Thinking mode allows Claude to work through complex problems step by step.':
       'Thinking mode allows Claude to work through complex problems step by step.',
-    'Available only with Claude 3.7 Sonnet.': 'Available only with Claude 3.7 Sonnet.',
     'thinkingMode.none': 'None (0 tokens)',
     'thinkingMode.quick': 'Quick (1K tokens)',
     'thinkingMode.normal': 'Normal (4K tokens)',
@@ -34,7 +33,10 @@ export const thinkingMode = {
       'Especially useful for multi-step problems and policy compliance. The AI will automatically use this tool when needed for complex reasoning.',
     'Tool Categories.Thinking': 'Thinking',
     'Tool Categories.Thinking Description':
-      'Tools for enhanced reasoning and complex problem solving'
+      'Tools for enhanced reasoning and complex problem solving',
+    'interleaveThinking.label': 'Interleave',
+    'interleaveThinking.title':
+      'Toggle Interleaved Thinking (shows reasoning steps mixed with response)'
   },
   ja: {
     'Thinking Mode': '拡張思考モード',
@@ -47,7 +49,6 @@ export const thinkingMode = {
     'Deeper (32K tokens)': 'より深い思考 (32K トークン)',
     'The think tool gives the AI a dedicated space to reason through complex problems during a conversation, without changing data or fetching new information.':
       '思考ツールは、AIが会話中に複雑な問題を推論するための専用スペースを提供し、データを変更したり新しい情報を取得したりすることなく思考できます。',
-    'Available only with Claude 3.7 Sonnet.': 'Claude 3.7 Sonnetのみで利用可能です。',
     'thinkingMode.none': '拡張思考なし (0 トークン)',
     'thinkingMode.quick': 'クイック (1K トークン)',
     'thinkingMode.normal': '通常 (4K トークン)',
@@ -71,6 +72,8 @@ export const thinkingMode = {
     'Especially useful for multi-step problems and policy compliance. The AI will automatically use this tool when needed for complex reasoning.':
       '特に複数ステップの問題やポリシー遵守に有効です。AIは複雑な推論が必要な場合、自動的にこのツールを使用します。',
     'Tool Categories.Thinking': '思考',
-    'Tool Categories.Thinking Description': '拡張された推論と複雑な問題解決のためのツール'
+    'Tool Categories.Thinking Description': '拡張された推論と複雑な問題解決のためのツール',
+    'interleaveThinking.label': 'インターリーブ',
+    'interleaveThinking.title': 'インターリーブ思考を切り替え（推論ステップと応答を混在表示）'
   }
 }

@@ -45,3 +45,94 @@ export const extractDrawioXml = (content: string): string => {
 
   return ''
 }
+/**
+ * AIの出力からDrawIO XMLと説明テキストを抽出する関数
+ * XMLと説明文を分離して返す
+ *
+ * @param content アシスタントの回答テキスト
+ * @returns XMLと説明文を含むオブジェクト
+ */
+export const extractDiagramContent = (content: string): { xml: string; explanation: string } => {
+  if (!content) return { xml: '', explanation: '' }
+
+  // DrawIO XMLを抽出
+  const xml = extractDrawioXml(content)
+
+  if (!xml) {
+    return { xml: '', explanation: content.trim() }
+  }
+
+  // XMLを説明文から除外する
+  let explanation = content
+
+  // 直接XMLタグが含まれている場合
+  if (content.includes(xml)) {
+    explanation = content.replace(xml, '').trim()
+  } else {
+    // コードブロック内にXMLがある場合
+    const xmlCodeBlockRegex = /```(?:xml)?[\s\S]*?```/i
+    const codeBlockMatch = content.match(xmlCodeBlockRegex)
+
+    if (codeBlockMatch && codeBlockMatch[0]) {
+      explanation = content.replace(codeBlockMatch[0], '').trim()
+    }
+  }
+
+  return { xml, explanation }
+}
+
+/**
+ * ストリーミング中のテキストからXMLタグを除外する関数
+ * XMLタグやコードブロックを除去して、純粋な説明文のみを返す
+ *
+ * @param content ストリーミング中のテキスト
+ * @returns XMLタグを除去したテキスト
+ */
+export const filterXmlFromStreamingContent = (content: string): string => {
+  if (!content) return ''
+
+  let filteredContent = content
+
+  // XMLコードブロックを除去
+  filteredContent = filteredContent.replace(/```(?:xml)?[\s\S]*?```/gi, '')
+
+  // 直接的なXMLタグ（<mxfile>, <mxGraphModel>など）を除去
+  filteredContent = filteredContent.replace(/<mxfile[\s\S]*?<\/mxfile>/gi, '')
+  filteredContent = filteredContent.replace(/<mxGraphModel[\s\S]*?<\/mxGraphModel>/gi, '')
+
+  // 部分的なXMLタグも除去（ストリーミング中に途切れている可能性）
+  filteredContent = filteredContent.replace(/<mxfile[\s\S]*$/gi, '')
+  filteredContent = filteredContent.replace(/<mxGraphModel[\s\S]*$/gi, '')
+  filteredContent = filteredContent.replace(/<diagram[\s\S]*$/gi, '')
+  filteredContent = filteredContent.replace(/<mxCell[\s\S]*$/gi, '')
+
+  return filteredContent.trim()
+}
+
+/**
+ * テキストにXMLタグが含まれているかを検出する関数
+ *
+ * @param content 検査するテキスト
+ * @returns XMLタグが含まれている場合true
+ */
+export const containsXmlTags = (content: string): boolean => {
+  if (!content) return false
+
+  // XMLタグの存在をチェック
+  const xmlPatterns = [/<mxfile/i, /<mxGraphModel/i, /<diagram/i, /```(?:xml)?/i]
+
+  return xmlPatterns.some((pattern) => pattern.test(content))
+}
+
+/**
+ * XML生成が完了しているかを判定する関数
+ *
+ * @param content 検査するテキスト
+ * @returns XML生成が完了している場合true
+ */
+export const isXmlComplete = (content: string): boolean => {
+  if (!content) return false
+
+  // </mxfile>タグで終了している、またはコードブロックが閉じている
+  return content.includes('</mxfile>') || /```[\s\S]*?```/.test(content)
+}

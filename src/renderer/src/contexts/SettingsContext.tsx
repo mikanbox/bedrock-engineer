@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
-import { KnowledgeBase, McpServerConfig, SendMsgKey, ToolState } from 'src/types/agent-chat'
+import {
+  FlowConfig,
+  KnowledgeBase,
+  McpServerConfig,
+  SendMsgKey,
+  ToolState,
+  WindowConfig,
+  CameraConfig
+} from 'src/types/agent-chat'
 import { ToolName } from 'src/types/tools'
 import { listModels } from '@renderer/lib/api'
 import { CustomAgent } from '@/types/agent-chat'
@@ -10,9 +18,9 @@ import type { AwsCredentialIdentity } from '@smithy/types'
 import { BedrockAgent } from '@/types/agent'
 import { AgentCategory } from '@/types/agent-chat'
 import { getToolsForCategory } from '../constants/defaultToolSets'
-import { tools } from '@/types/tools'
-import isEqual from 'lodash/isEqual'
 import { Tool } from '@aws-sdk/client-bedrock-runtime'
+import { CodeInterpreterContainerConfig } from 'src/preload/tools/handlers/interpreter/types'
+import { getEnvironmentContext } from '@renderer/pages/ChatPage/constants/AGENTS_ENVIRONMENT_CONTEXT'
 
 const DEFAULT_INFERENCE_PARAMS: InferenceParameters = {
   maxTokens: 4096,
@@ -30,6 +38,10 @@ export interface SettingsContextType {
   sendMsgKey: SendMsgKey
   updateSendMsgKey: (key: SendMsgKey) => void
 
+  // Plan/Act Mode Settings
+  planMode: boolean
+  setPlanMode: (enabled: boolean) => void
+
   // Agent Chat Settings
   contextLength: number
   updateContextLength: (length: number) => void
@@ -44,15 +56,35 @@ export interface SettingsContextType {
   recognizeImageModel: string
   setRecognizeImageModel: (modelId: string) => void
 
+  // generateImage Tool Settings
+  generateImageModel: string
+  setGenerateImageModel: (modelId: string) => void
+
+  // generateVideo Tool Settings
+  generateVideoS3Uri: string
+  setGenerateVideoS3Uri: (s3Uri: string) => void
+
+  // codeInterpreter Tool Settings
+  codeInterpreterConfig: CodeInterpreterContainerConfig
+  setCodeInterpreterConfig: (config: CodeInterpreterContainerConfig) => void
+
   // LLM Settings
   currentLLM: LLM
   updateLLM: (selectedModel: LLM) => void
   availableModels: LLM[]
   llmError: any
 
+  // 軽量処理用モデル設定
+  lightProcessingModel: LLM | null
+  updateLightProcessingModel: (model: LLM | null) => void
+
   // Thinking Mode Settings
   thinkingMode?: ThinkingMode
   updateThinkingMode: (mode: ThinkingMode) => void
+
+  // Interleave Thinking Settings
+  interleaveThinking: boolean
+  setInterleaveThinking: (enabled: boolean) => void
 
   // Inference Parameters
   inferenceParams: InferenceParameters
@@ -146,6 +178,14 @@ export interface SettingsContextType {
   getAgentAllowedCommands: (agentId: string) => CommandConfig[]
   updateAgentAllowedCommands: (agentId: string, commands: CommandConfig[]) => void
 
+  // エージェント固有の許可ウィンドウ設定
+  getAgentAllowedWindows: (agentId: string) => WindowConfig[]
+  updateAgentAllowedWindows: (agentId: string, windows: WindowConfig[]) => void
+
+  // エージェント固有の許可カメラ設定
+  getAgentAllowedCameras: (agentId: string) => CameraConfig[]
+  updateAgentAllowedCameras: (agentId: string, cameras: CameraConfig[]) => void
+
   // エージェント固有のBedrock Agents設定
   getAgentBedrockAgents: (agentId: string) => BedrockAgent[]
   updateAgentBedrockAgents: (agentId: string, agents: BedrockAgent[]) => void
@@ -153,6 +193,10 @@ export interface SettingsContextType {
   // エージェント固有のKnowledge Base設定
   getAgentKnowledgeBases: (agentId: string) => KnowledgeBase[]
   updateAgentKnowledgeBases: (agentId: string, bases: KnowledgeBase[]) => void
+
+  // エージェント固有のFlow設定
+  getAgentFlows: (agentId: string) => FlowConfig[]
+  updateAgentFlows: (agentId: string, flows: FlowConfig[]) => void
 
   // エージェント設定の一括更新
   updateAgentSettings: (
@@ -173,13 +217,31 @@ export interface SettingsContextType {
   // Ignore Files Settings
   ignoreFiles: string[]
   setIgnoreFiles: (files: string[]) => void
+
+  // Voice Settings
+  selectedVoiceId: string
+  setSelectedVoiceId: (voiceId: string) => void
+
+  // Translation Settings
+  translationEnabled: boolean
+  setTranslationEnabled: (enabled: boolean) => void
+  translationTargetLanguage: string
+  setTranslationTargetLanguage: (language: string) => void
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Tool specifications from ToolMetadataCollector
+  const tools = useMemo(() => {
+    return window.api?.tools?.getToolSpecs() || []
+  }, [])
+
   // Advanced Settings
   const [sendMsgKey, setSendMsgKey] = useState<SendMsgKey>('Enter')
+
+  // Plan/Act Mode Settings
+  const [planMode, setStatePlanMode] = useState<boolean>(false)
 
   // Agent Chat Settings
   const [contextLength, setContextLength] = useState<number>(60)
@@ -190,8 +252,24 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // recognizeImage Tool Settings
   const [recognizeImageModel, setStateRecognizeImageModel] = useState<string>(
-    'anthropic.claude-3-sonnet-20240229-v1:0'
+    'anthropic.claude-3-5-sonnet-20241022-v2:0'
   )
+
+  // generateImage Tool Settings
+  const [generateImageModel, setStateGenerateImageModel] = useState<string>(
+    'amazon.titan-image-generator-v2:0'
+  )
+
+  // generateVideo Tool Settings
+  const [generateVideoS3Uri, setStateGenerateVideoS3Uri] = useState<string>('')
+
+  // codeInterpreter Tool Settings
+  const [codeInterpreterConfig, setStateCodeInterpreterConfig] =
+    useState<CodeInterpreterContainerConfig>({
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
 
   // LLM Settings
   const [llmError, setLLMError] = useState<any>()
@@ -207,7 +285,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [inferenceParams, setInferenceParams] =
     useState<InferenceParameters>(DEFAULT_INFERENCE_PARAMS)
 
+  // 軽量処理用モデル設定
+  const [lightProcessingModel, setLightProcessingModel] = useState<LLM | null>(null)
+
   const [thinkingMode, setThinkingMode] = useState<ThinkingMode>()
+
+  // Interleave Thinking Settings
+  const [interleaveThinking, setStateInterleaveThinking] = useState<boolean>(false)
 
   const [bedrockSettings, setBedrockSettings] = useState<{
     enableRegionFailover: boolean
@@ -268,11 +352,24 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     '.github'
   ])
 
+  // Voice Settings
+  const [selectedVoiceId, setStateSelectedVoiceId] = useState<string>('amy')
+
+  // Translation Settings
+  const [translationEnabled, setStateTranslationEnabled] = useState<boolean>(false)
+  const [translationTargetLanguage, setStateTranslationTargetLanguage] = useState<string>('ja')
+
   // Initialize all settings
   useEffect(() => {
     // Load Advanced Settings
     const advancedSetting = window.store.get('advancedSetting')
     setSendMsgKey(advancedSetting?.keybinding?.sendMsgKey)
+
+    // Load Plan/Act Mode Settings
+    const planModeSetting = window.store.get('planMode')
+    if (planModeSetting !== undefined) {
+      setStatePlanMode(planModeSetting)
+    }
 
     // Load Notification Settings
     const notificationSetting = window.store.get('notification')
@@ -280,10 +377,58 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setStateNotification(notificationSetting)
     }
 
+    // Load Light Processing Model Settings
+    const storedLightModel = window.store.get('lightProcessingModel')
+    if (storedLightModel) {
+      setLightProcessingModel(storedLightModel)
+    }
+
     // Load recognizeImage Tool Settings
     const recognizeImageSetting = window.store.get('recognizeImageTool')
     if (recognizeImageSetting?.modelId) {
       setStateRecognizeImageModel(recognizeImageSetting.modelId)
+    }
+
+    // Load generateImage Tool Settings
+    const generateImageSetting = window.store.get('generateImageTool')
+    if (generateImageSetting?.modelId) {
+      setStateGenerateImageModel(generateImageSetting.modelId)
+    }
+
+    // Load generateVideo Tool Settings (backward compatibility with generateVideoTool)
+    const generateVideoSetting = window.store.get('generateVideoTool')
+    if (generateVideoSetting?.s3Uri) {
+      setStateGenerateVideoS3Uri(generateVideoSetting.s3Uri)
+    }
+
+    // Load codeInterpreter Tool Settings
+    const codeInterpreterSetting = window.store.get('codeInterpreterTool')
+    if (codeInterpreterSetting && typeof codeInterpreterSetting === 'object') {
+      // Check if it's the old format (enabled boolean) and migrate
+      if (
+        'enabled' in codeInterpreterSetting &&
+        typeof codeInterpreterSetting.enabled === 'boolean'
+      ) {
+        // Migrate from old format - use default container settings
+        const defaultConfig: CodeInterpreterContainerConfig = {
+          memoryLimit: '256m',
+          cpuLimit: 0.5,
+          timeout: 30
+        }
+        setStateCodeInterpreterConfig(defaultConfig)
+        window.store.set('codeInterpreterTool', defaultConfig)
+      } else if (
+        'memoryLimit' in codeInterpreterSetting &&
+        'cpuLimit' in codeInterpreterSetting &&
+        'timeout' in codeInterpreterSetting
+      ) {
+        // New format - load container configuration
+        setStateCodeInterpreterConfig({
+          memoryLimit: codeInterpreterSetting.memoryLimit as string,
+          cpuLimit: codeInterpreterSetting.cpuLimit as number,
+          timeout: codeInterpreterSetting.timeout as number
+        })
+      }
     }
 
     // Load LLM Settings
@@ -302,12 +447,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const thinkingMode = window.store.get('thinkingMode')
     if (thinkingMode) {
       setThinkingMode(thinkingMode)
+      if (thinkingMode.type === 'disabled') {
+        setInterleaveThinking(false)
+      }
     }
 
-    // Load Thinking Mode Settings
-    const storedThinkingMode = window.store.get('thinkingMode')
-    if (storedThinkingMode) {
-      setThinkingMode(storedThinkingMode)
+    // Load Interleave Thinking Settings
+    const storedInterleaveThinking = window.store.get('interleaveThinking')
+    if (storedInterleaveThinking !== undefined) {
+      setStateInterleaveThinking(storedInterleaveThinking)
     }
 
     // Load Bedrock Settings
@@ -360,7 +508,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const existingAgent = savedAgents.find((agent) => agent.id === defaultAgent.id)
       processedIds.add(defaultAgent.id)
 
-      // プロパティが完全に一致するかチェック
+      // プロパティが完全に一致するかチェック（ツール設定は除外してユーザーのカスタマイズを保持）
       const isIdentical =
         existingAgent &&
         // 基本情報の比較
@@ -369,13 +517,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         existingAgent.system === defaultAgent.system &&
         existingAgent.icon === defaultAgent.icon &&
         existingAgent.iconColor === defaultAgent.iconColor &&
-        existingAgent.category === defaultAgent.category &&
-        // 配列の比較（lodashのisEqualを使用）
-        isEqual(existingAgent.scenarios, defaultAgent.scenarios) &&
-        isEqual(existingAgent.tools, defaultAgent.tools) &&
-        isEqual(existingAgent.allowedCommands, defaultAgent.allowedCommands) &&
-        isEqual(existingAgent.bedrockAgents, defaultAgent.bedrockAgents) &&
-        isEqual(existingAgent.knowledgeBases, defaultAgent.knowledgeBases)
+        existingAgent.category === defaultAgent.category
 
       if (existingAgent && !isIdentical) {
         // IDが一致するが内容が異なる場合は、デフォルトエージェントの内容で更新
@@ -454,6 +596,23 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // 設定を保存
     window.store.set('agentChatConfig', agentChatConfig)
+
+    // Load Voice Settings
+    const storedVoiceId = window.store.get('selectedVoiceId') as string
+    if (storedVoiceId && typeof storedVoiceId === 'string') {
+      setStateSelectedVoiceId(storedVoiceId)
+    }
+
+    // Load Translation Settings
+    const storedTranslationEnabled = window.store.get('translationEnabled' as any)
+    if (typeof storedTranslationEnabled === 'boolean') {
+      setStateTranslationEnabled(storedTranslationEnabled)
+    }
+
+    const storedTranslationLanguage = window.store.get('translationTargetLanguage' as any)
+    if (typeof storedTranslationLanguage === 'string') {
+      setStateTranslationTargetLanguage(storedTranslationLanguage)
+    }
   }, [])
 
   useEffect(() => {
@@ -646,6 +805,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateLLM = (selectedModel: LLM) => {
     setCurrentLLM(selectedModel)
     window.store.set('llm', selectedModel)
+
+    // Claude Sonnet 4とClaude Opus 4以外が選択された場合、インターリーブ思考をOFFにする
+    const isClaude4Model =
+      selectedModel.modelId.includes('claude-sonnet-4') ||
+      selectedModel.modelId.includes('claude-opus-4')
+
+    if (!isClaude4Model && interleaveThinking) {
+      setInterleaveThinking(false)
+    }
+  }
+
+  const updateLightProcessingModel = (model: LLM | null) => {
+    setLightProcessingModel(model)
+    window.store.set('lightProcessingModel', model)
   }
 
   const updateInferenceParams = (params: Partial<InferenceParameters>) => {
@@ -657,6 +830,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateThinkingMode = (mode: ThinkingMode) => {
     setThinkingMode(mode)
     window.store.set('thinkingMode', mode)
+  }
+
+  const setInterleaveThinking = (enabled: boolean) => {
+    setStateInterleaveThinking(enabled)
+    window.store.set('interleaveThinking', enabled)
   }
 
   const updateBedrockSettings = (settings: Partial<typeof bedrockSettings>) => {
@@ -823,6 +1001,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   const setSelectedAgentId = (agentId: string) => {
+    // エージェント切り替え時に既存のカメラプレビューウィンドウを閉じる
+    if (window.api?.camera?.hidePreviewWindow) {
+      window.api.camera.hidePreviewWindow().catch((error) => {
+        console.warn('Failed to hide camera preview window during agent switch:', error)
+      })
+    }
+
     setStateSelectedAgentId(agentId)
     window.store.set('selectedAgentId', agentId)
   }
@@ -876,18 +1061,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const currentAgent = useMemo(() => {
     return allAgents.find((a) => a.id === selectedAgentId)
   }, [allAgents, selectedAgentId])
-
-  // エージェント固有の設定を使用
-  const systemPrompt = useMemo(() => {
-    if (!currentAgent?.system) return ''
-
-    return replacePlaceholders(currentAgent.system, {
-      projectPath,
-      allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
-      knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
-      bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || []
-    })
-  }, [currentAgent, selectedAgentId, projectPath, allAgents])
 
   // 現在選択中のエージェントが変更されたらMCPツールを再読み込み
   useEffect(() => {
@@ -981,6 +1154,21 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.store.set('recognizeImageTool', { modelId })
   }, [])
 
+  const setGenerateImageModel = useCallback((modelId: string) => {
+    setStateGenerateImageModel(modelId)
+    window.store.set('generateImageTool', { modelId })
+  }, [])
+
+  const setGenerateVideoS3Uri = useCallback((s3Uri: string) => {
+    setStateGenerateVideoS3Uri(s3Uri)
+    window.store.set('generateVideoTool', { s3Uri })
+  }, [])
+
+  const setCodeInterpreterConfig = useCallback((config: CodeInterpreterContainerConfig) => {
+    setStateCodeInterpreterConfig(config)
+    window.store.set('codeInterpreterTool', config)
+  }, [])
+
   // エージェント固有のツール設定を取得する関数
   const getAgentTools = useCallback(
     (agentId: string): ToolState[] => {
@@ -1034,6 +1222,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [allAgents]
   )
 
+  // エージェント固有の許可ウィンドウを取得する関数
+  const getAgentAllowedWindows = useCallback(
+    (agentId: string): WindowConfig[] => {
+      // 現在選択されているエージェントを見つける
+      const agent = allAgents.find((a) => a.id === agentId)
+
+      // エージェント固有の許可ウィンドウ設定がある場合はそれを返す
+      // それ以外は空配列を返す
+      return (agent && agent.allowedWindows) || []
+    },
+    [allAgents]
+  )
+
   // エージェント固有のBedrock Agentsを取得する関数
   const getAgentBedrockAgents = useCallback(
     (agentId: string): BedrockAgent[] => {
@@ -1060,9 +1261,28 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [allAgents]
   )
 
-  // effectiveToolsの宣言は getAgentTools 関数の定義後に移動しました
+  // エージェント固有の設定を使用
+  const systemPrompt = useMemo(() => {
+    if (!currentAgent?.system) return ''
 
-  // enabledToolsの宣言は後に移動しました
+    // 現在のエージェントの有効なツールを取得
+    const agentTools = getAgentTools(selectedAgentId)
+    // エージェント固有の環境コンテキスト設定を取得
+    const systemPromptContext = getEnvironmentContext(
+      agentTools,
+      currentAgent?.environmentContextSettings
+    )
+
+    return replacePlaceholders(currentAgent.system + '\n\n' + systemPromptContext, {
+      projectPath,
+      allowedCommands: allAgents.find((a) => a.id === selectedAgentId)?.allowedCommands || [],
+      allowedWindows: allAgents.find((a) => a.id === selectedAgentId)?.allowedWindows || [],
+      allowedCameras: allAgents.find((a) => a.id === selectedAgentId)?.allowedCameras || [],
+      knowledgeBases: allAgents.find((a) => a.id === selectedAgentId)?.knowledgeBases || [],
+      bedrockAgents: allAgents.find((a) => a.id === selectedAgentId)?.bedrockAgents || [],
+      flows: allAgents.find((a) => a.id === selectedAgentId)?.flows || []
+    })
+  }, [currentAgent, selectedAgentId, projectPath, allAgents, getAgentTools])
 
   // エージェントツール設定を更新する関数
   const updateAgentTools = useCallback(
@@ -1107,6 +1327,47 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [customAgents]
   )
 
+  // エージェントの許可ウィンドウ設定を更新する関数
+  const updateAgentAllowedWindows = useCallback(
+    (agentId: string, windows: WindowConfig[]) => {
+      // カスタムエージェントの場合のみ更新可能
+      const updatedAgents = customAgents.map((agent) =>
+        agent.id === agentId ? { ...agent, allowedWindows: windows } : agent
+      )
+
+      setCustomAgents(updatedAgents)
+      window.store.set('customAgents', updatedAgents)
+    },
+    [customAgents]
+  )
+
+  // エージェント固有の許可カメラを取得する関数
+  const getAgentAllowedCameras = useCallback(
+    (agentId: string): CameraConfig[] => {
+      // 現在選択されているエージェントを見つける
+      const agent = allAgents.find((a) => a.id === agentId)
+
+      // エージェント固有の許可カメラ設定がある場合はそれを返す
+      // それ以外は空配列を返す
+      return (agent && agent.allowedCameras) || []
+    },
+    [allAgents]
+  )
+
+  // エージェントの許可カメラ設定を更新する関数
+  const updateAgentAllowedCameras = useCallback(
+    (agentId: string, cameras: CameraConfig[]) => {
+      // カスタムエージェントの場合のみ更新可能
+      const updatedAgents = customAgents.map((agent) =>
+        agent.id === agentId ? { ...agent, allowedCameras: cameras } : agent
+      )
+
+      setCustomAgents(updatedAgents)
+      window.store.set('customAgents', updatedAgents)
+    },
+    [customAgents]
+  )
+
   // エージェントのBedrock Agents設定を更新する関数
   const updateAgentBedrockAgents = useCallback(
     (agentId: string, agents: BedrockAgent[]) => {
@@ -1127,6 +1388,33 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // カスタムエージェントの場合のみ更新可能
       const updatedAgents = customAgents.map((agent) =>
         agent.id === agentId ? { ...agent, knowledgeBases: bases } : agent
+      )
+
+      setCustomAgents(updatedAgents)
+      window.store.set('customAgents', updatedAgents)
+    },
+    [customAgents]
+  )
+
+  // エージェント固有のFlow設定を取得する関数
+  const getAgentFlows = useCallback(
+    (agentId: string): FlowConfig[] => {
+      // 現在選択されているエージェントを見つける
+      const agent = allAgents.find((a) => a.id === agentId)
+
+      // エージェント固有のFlow設定がある場合はそれを返す
+      // それ以外は空配列を返す
+      return (agent && agent.flows) || []
+    },
+    [allAgents]
+  )
+
+  // エージェントのFlow設定を更新する関数
+  const updateAgentFlows = useCallback(
+    (agentId: string, flows: FlowConfig[]) => {
+      // カスタムエージェントの場合のみ更新可能
+      const updatedAgents = customAgents.map((agent) =>
+        agent.id === agentId ? { ...agent, flows } : agent
       )
 
       setCustomAgents(updatedAgents)
@@ -1200,15 +1488,46 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   )
 
   // カテゴリーに基づいてデフォルトツール設定を返す関数
-  const getDefaultToolsForCategory = useCallback((category: string): ToolState[] => {
-    const allWindowTools = tools.map((tool) => ({ ...tool, enabled: true })) as ToolState[]
-    return getToolsForCategory(category as AgentCategory, allWindowTools)
+  const getDefaultToolsForCategory = useCallback(
+    (category: string, enableByDefault: boolean = true): ToolState[] => {
+      const allWindowTools = tools.map((tool) => ({
+        ...tool,
+        enabled: enableByDefault
+      })) as ToolState[]
+      return getToolsForCategory(category as AgentCategory, allWindowTools)
+    },
+    [tools]
+  )
+
+  const setPlanMode = useCallback((enabled: boolean) => {
+    setStatePlanMode(enabled)
+    window.store.set('planMode', enabled)
+  }, [])
+
+  const setSelectedVoiceId = useCallback((voiceId: string) => {
+    setStateSelectedVoiceId(voiceId)
+    window.store.set('selectedVoiceId', voiceId)
+  }, [])
+
+  // Translation Settings functions
+  const setTranslationEnabled = useCallback((enabled: boolean) => {
+    setStateTranslationEnabled(enabled)
+    ;(window.store as any).set('translationEnabled', enabled)
+  }, [])
+
+  const setTranslationTargetLanguage = useCallback((language: string) => {
+    setStateTranslationTargetLanguage(language)
+    ;(window.store as any).set('translationTargetLanguage', language)
   }, [])
 
   const value = {
     // Advanced Settings
     sendMsgKey,
     updateSendMsgKey,
+
+    // Plan/Act Mode Settings
+    planMode,
+    setPlanMode,
 
     // Agent Chat Settings
     contextLength,
@@ -1224,15 +1543,35 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     recognizeImageModel,
     setRecognizeImageModel,
 
+    // generateImage Tool Settings
+    generateImageModel,
+    setGenerateImageModel,
+
+    // generateVideo Tool Settings
+    generateVideoS3Uri,
+    setGenerateVideoS3Uri,
+
+    // codeInterpreter Tool Settings
+    codeInterpreterConfig,
+    setCodeInterpreterConfig,
+
     // LLM Settings
     currentLLM,
     updateLLM,
     availableModels,
     llmError,
 
+    // 軽量処理用モデル設定
+    lightProcessingModel,
+    updateLightProcessingModel,
+
     // Thinking Mode Settings
     thinkingMode,
     updateThinkingMode,
+
+    // Interleave Thinking Settings
+    interleaveThinking,
+    setInterleaveThinking,
 
     // Inference Parameters
     inferenceParams,
@@ -1305,10 +1644,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // エージェント固有の設定
     getAgentAllowedCommands,
     updateAgentAllowedCommands,
+    getAgentAllowedWindows,
+    updateAgentAllowedWindows,
+    getAgentAllowedCameras,
+    updateAgentAllowedCameras,
     getAgentBedrockAgents,
     updateAgentBedrockAgents,
     getAgentKnowledgeBases,
     updateAgentKnowledgeBases,
+    getAgentFlows,
+    updateAgentFlows,
     updateAgentSettings,
 
     // Shell Settings
@@ -1317,7 +1662,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Ignore Files Settings
     ignoreFiles,
-    setIgnoreFiles
+    setIgnoreFiles,
+
+    // Voice Settings
+    selectedVoiceId,
+    setSelectedVoiceId,
+
+    // Translation Settings
+    translationEnabled,
+    setTranslationEnabled,
+    translationTargetLanguage,
+    setTranslationTargetLanguage
   }
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>

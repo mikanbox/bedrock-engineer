@@ -5,6 +5,7 @@ import { ConfigStore } from '../preload/store'
 import { file } from '../preload/file'
 import { API } from '../preload/api'
 import { RendererLogger, RendererCategoryLogger } from '../preload/logger'
+import { ipcClient } from '../preload/ipc-client'
 
 declare global {
   interface Window {
@@ -17,6 +18,7 @@ declare global {
     appWindow: {
       isFocused: () => Promise<boolean>
     }
+    ipc: typeof ipcClient
     logger: {
       log: RendererLogger
       createCategoryLogger: (category: string) => RendererCategoryLogger

@@ -4,6 +4,7 @@ import { AgentChatConfig, KnowledgeBase, SendMsgKey, ToolState } from '../types/
 import { CustomAgent } from '../types/agent-chat'
 import { BedrockAgent } from '../types/agent'
 import { AWSCredentials } from '../main/api/bedrock/types'
+import { CodeInterpreterContainerConfig } from './tools/handlers/interpreter/types'
 
 const DEFAULT_SHELL = '/bin/bash'
 const DEFAULT_INFERENCE_PARAMS: InferenceParameters = {
@@ -35,8 +36,14 @@ type StoreScheme = {
   /** 現在選択されているプロジェクト（作業ディレクトリ）のパス */
   projectPath?: string
 
+  /** Plan/Act モードの設定 (true: Plan, false: Act) */
+  planMode?: boolean
+
   /** 現在選択されている言語モデル (LLM) の設定 */
   llm?: LLM
+
+  /** 軽微な処理（タイトル生成など）に使用するモデルの設定 */
+  lightProcessingModel?: LLM | null
 
   /** 言語モデルの推論パラメータ（温度、最大トークン数など） */
   inferenceParams: InferenceParameters
@@ -44,11 +51,29 @@ type StoreScheme = {
   /** 思考モードの設定（Claude 3.7 Sonnet用） */
   thinkingMode?: ThinkingMode
 
+  /** インターリーブ思考の設定（思考モードの拡張機能） */
+  interleaveThinking?: boolean
+
   /** 画像認識ツールの設定 */
   recognizeImageTool?: {
     /** 使用するモデルID */
     modelId: string
   }
+
+  /** 画像生成ツールの設定 */
+  generateImageTool?: {
+    /** 使用するモデルID */
+    modelId: string
+  }
+
+  /** 動画生成ツールの設定 */
+  generateVideoTool?: {
+    /** S3出力先URI */
+    s3Uri: string
+  }
+
+  /** コードインタープリタツールの設定 */
+  codeInterpreterTool?: CodeInterpreterContainerConfig
 
   /** アプリケーションの表示言語設定（日本語または英語） */
   language: 'ja' | 'en'
@@ -130,6 +155,9 @@ type StoreScheme = {
 
   /** YAML形式から読み込まれた共有エージェントの一覧 */
   sharedAgents?: CustomAgent[]
+
+  /** Nova Sonic音声チャットで使用する音声ID */
+  selectedVoiceId?: string
 }
 
 const electronStore = new Store<StoreScheme>()
@@ -185,6 +213,12 @@ const init = () => {
     electronStore.set('thinkingMode', DEFAULT_THINKING_MODE)
   }
 
+  // Initialize interleaveThinking if not present
+  const interleaveThinking = electronStore.get('interleaveThinking')
+  if (interleaveThinking === undefined) {
+    electronStore.set('interleaveThinking', false)
+  }
+
   // Initialize custom agents if not present
   const customAgents = electronStore.get('customAgents')
   if (!customAgents) {
@@ -219,6 +253,42 @@ const init = () => {
   const guardrailSettings = electronStore.get('guardrailSettings')
   if (!guardrailSettings) {
     electronStore.set('guardrailSettings', DEFAULT_GUARDRAIL_SETTINGS)
+  }
+
+  // Initialize lightProcessingModel if not present
+  const lightProcessingModel = electronStore.get('lightProcessingModel')
+  if (lightProcessingModel === undefined) {
+    // デフォルトでは設定なし（null）で、この場合はメインモデルかフォールバックが使用される
+    electronStore.set('lightProcessingModel', null)
+  }
+
+  // Initialize planMode if not present
+  const planMode = electronStore.get('planMode')
+  if (planMode === undefined) {
+    electronStore.set('planMode', false)
+  }
+
+  // Initialize codeInterpreterTool if not present
+  const codeInterpreterTool = electronStore.get('codeInterpreterTool')
+  if (!codeInterpreterTool) {
+    electronStore.set('codeInterpreterTool', {
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
+  } else if ('enabled' in codeInterpreterTool && typeof codeInterpreterTool.enabled === 'boolean') {
+    // Migrate from old format
+    electronStore.set('codeInterpreterTool', {
+      memoryLimit: '256m',
+      cpuLimit: 0.5,
+      timeout: 30
+    })
+  }
+
+  // Initialize selectedVoiceId if not present
+  const selectedVoiceId = electronStore.get('selectedVoiceId')
+  if (!selectedVoiceId) {
+    electronStore.set('selectedVoiceId', 'amy') // デフォルトはAmy
   }
 }
 

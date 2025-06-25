@@ -16,6 +16,7 @@ const DEFAULT_TOOL_NAMES: Record<string, string[]> = {
     'copyFile',
     'tavilySearch',
     'executeCommand',
+    'invokeFlow',
     'think'
   ],
 
@@ -56,6 +57,7 @@ const DEFAULT_TOOL_NAMES: Record<string, string[]> = {
     'generateImage',
     'invokeBedrockAgent',
     'executeCommand',
+    'invokeFlow',
     'think'
   ],
 

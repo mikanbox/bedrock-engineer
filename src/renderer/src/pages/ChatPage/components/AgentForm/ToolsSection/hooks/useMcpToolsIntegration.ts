@@ -98,7 +98,7 @@ export function useMcpToolsIntegration(
         console.log('Skipping redundant MCP tools integration (no changes detected)')
       }
     }
-  }, [agentMcpTools, tools, onChange])
+  }, [agentMcpTools, onChange])
 
   return {
     agentMcpTools,

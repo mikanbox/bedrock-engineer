@@ -1,11 +1,14 @@
 import mermaid from 'mermaid'
 import React from 'react'
 import { useEffect, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { IoIosClose } from 'react-icons/io'
+import { VscZoomIn, VscZoomOut, VscScreenFull } from 'react-icons/vsc'
 
 type Props = {
   code: string
   handler?: any
+  onRenderComplete?: () => void
 }
 
 mermaid.initialize({
@@ -20,7 +23,7 @@ mermaid.initialize({
 })
 
 export const MermaidCore: React.FC<Props> = (props) => {
-  const { code } = props
+  const { code, onRenderComplete } = props
   const [svgContent, setSvgContent] = useState<string>('')
 
   const render = useCallback(async () => {
@@ -38,13 +41,16 @@ export const MermaidCore: React.FC<Props> = (props) => {
           svgElement.setAttribute('width', '100%')
           svgElement.setAttribute('height', '100%')
           setSvgContent(svgElement.outerHTML)
+          // レンダリング成功時にコールバックを呼び出し
+          onRenderComplete?.()
         }
       } catch (error) {
         console.error(error)
         setSvgContent('<div>Invalid syntax</div>')
+        // エラー時はコールバックを呼び出さない
       }
     }
-  }, [code])
+  }, [code, onRenderComplete])
 
   useEffect(() => {
     render()
@@ -63,8 +69,15 @@ export const MermaidCore: React.FC<Props> = (props) => {
   ) : null
 }
 
-export const Mermaid = ({ chart }: { chart: string }) => {
+export const Mermaid = ({
+  chart,
+  onRenderComplete
+}: {
+  chart: string
+  onRenderComplete?: () => void
+}) => {
   const [zoom, setZoom] = useState(false)
+  const [fullscreenZoomLevel, setFullscreenZoomLevel] = useState(1)
 
   // on click esc key
   useEffect(() => {
@@ -79,25 +92,102 @@ export const Mermaid = ({ chart }: { chart: string }) => {
     }
   }, [])
 
+  // Reset zoom when opening fullscreen
+  useEffect(() => {
+    if (zoom) {
+      setFullscreenZoomLevel(1)
+    }
+  }, [zoom])
+
+  const fullscreenZoomIn = () => {
+    setFullscreenZoomLevel((prev) => Math.min(prev + 0.25, 3))
+  }
+
+  const fullscreenZoomOut = () => {
+    setFullscreenZoomLevel((prev) => Math.max(prev - 0.25, 0.5))
+  }
+
+  const fullscreenResetZoom = () => {
+    setFullscreenZoomLevel(1)
+  }
+
   return (
     <>
-      <MermaidCore handler={() => setZoom(true)} code={chart} />
+      <MermaidCore handler={() => setZoom(true)} code={chart} onRenderComplete={onRenderComplete} />
 
-      {zoom && (
-        <div
-          className="fixed left-1/2 top-1/2 z-[110] -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%]"
-          onClick={() => {
-            setZoom(false)
-          }}
-        >
-          {/* close button */}
-          <div className="absolute top-0 right-0 z-[111] p-4" onClick={() => setZoom(false)}>
-            <IoIosClose className="text-lg flex justify-center content-center w-8 h-8 dark:hover:bg-gray-400 hover:bg-gray-200 rounded cursor-pointer" />
-          </div>
+      {zoom &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-black bg-opacity-75"
+            style={{ zIndex: 2147483647 }}
+            onClick={() => {
+              setZoom(false)
+            }}
+          >
+            {/* Top controls bar */}
+            <div
+              className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 bg-gray-800 bg-opacity-75 rounded-lg px-4 py-2"
+              style={{ zIndex: 2147483647 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Zoom controls */}
+              <button
+                onClick={fullscreenZoomOut}
+                disabled={fullscreenZoomLevel <= 0.5}
+                className="p-1 rounded text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Zoom Out"
+              >
+                <VscZoomOut size={16} />
+              </button>
+              <span className="text-white text-sm min-w-[3rem] text-center">
+                {Math.round(fullscreenZoomLevel * 100)}%
+              </span>
+              <button
+                onClick={fullscreenZoomIn}
+                disabled={fullscreenZoomLevel >= 3}
+                className="p-1 rounded text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Zoom In"
+              >
+                <VscZoomIn size={16} />
+              </button>
+              <button
+                onClick={fullscreenResetZoom}
+                className="p-1 rounded text-white hover:bg-gray-600"
+                title="Reset Zoom"
+              >
+                <VscScreenFull size={16} />
+              </button>
+            </div>
 
-          <MermaidCore code={chart} />
-        </div>
-      )}
+            {/* Close button */}
+            <div
+              className="absolute top-4 right-4 p-2"
+              style={{ zIndex: 2147483647 }}
+              onClick={() => setZoom(false)}
+            >
+              <IoIosClose className="text-white w-8 h-8 hover:bg-gray-700 rounded cursor-pointer" />
+            </div>
+
+            {/* Scrollable content area */}
+            <div
+              className="w-full h-full overflow-auto flex items-center justify-center p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  transform: `scale(${fullscreenZoomLevel})`,
+                  transformOrigin: 'center center',
+                  minWidth: `${100 * fullscreenZoomLevel}%`,
+                  minHeight: `${100 * fullscreenZoomLevel}%`
+                }}
+                className="transition-transform duration-200 flex items-center justify-center"
+              >
+                <MermaidCore code={chart} />
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   )
 }

@@ -2,6 +2,9 @@ import { InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 import { createRuntimeClient } from '../client'
 import type { ServiceContext } from '../types'
 import { createCategoryLogger } from '../../../../common/logger'
+import { ConverseService } from './converseService'
+import path from 'path'
+import fs from 'fs'
 
 // 画像認識サービス専用のカテゴリロガーを作成
 const imageLogger = createCategoryLogger('bedrock:image')
@@ -29,7 +32,7 @@ export class ImageRecognitionService {
     const {
       imagePath,
       prompt = 'Please explain in detail what this image is about.',
-      modelId = 'anthropic.claude-3-sonnet-20240229-v1:0'
+      modelId = 'amazon.nova-lite-v1:0'
     } = props
 
     imageLogger.debug('Recognizing image', {
@@ -39,15 +42,11 @@ export class ImageRecognitionService {
     })
 
     try {
-      // Node.jsの組み込みモジュール
-      const fs = require('fs')
-      const path = require('path')
-
       // ファイル検証を実行
       this.validateImageFile(imagePath)
 
       // 画像をBase64エンコード
-      const fileContent = fs.readFileSync(imagePath)
+      const fileContent = fs.readFileSync(imagePath) as any
       const base64Data = Buffer.from(fileContent).toString('base64')
 
       // メディアタイプの取得
@@ -64,11 +63,25 @@ export class ImageRecognitionService {
       // モデルタイプの判定とモデル別の処理の実行
       const fileName = path.basename(imagePath)
 
-      imageLogger.info('Using Claude model for image recognition', {
-        fileName,
-        modelId
-      })
-      return await this.recognizeImageWithClaude(imagePath, base64Data, mediaType, prompt, modelId)
+      if (this.isNovaModel(modelId)) {
+        imageLogger.info('Using Nova model for image recognition', {
+          fileName,
+          modelId
+        })
+        return await this.recognizeImageWithNova(imagePath, base64Data, mediaType, prompt, modelId)
+      } else {
+        imageLogger.info('Using Claude model for image recognition', {
+          fileName,
+          modelId
+        })
+        return await this.recognizeImageWithClaude(
+          imagePath,
+          base64Data,
+          mediaType,
+          prompt,
+          modelId
+        )
+      }
     } catch (error: any) {
       imageLogger.error('Error in image recognition', {
         imagePath,
@@ -78,6 +91,15 @@ export class ImageRecognitionService {
 
       throw error
     }
+  }
+
+  /**
+   * Nova系モデルかどうかを判定する
+   */
+  private isNovaModel(modelId: string): boolean {
+    // クロスリージョン推論を考慮してベースモデルIDをチェック
+    const baseModelId = modelId.replace(/^[a-z]{2}\./, '')
+    return baseModelId.includes('amazon.nova')
   }
 
   /**
@@ -120,7 +142,6 @@ export class ImageRecognitionService {
     prompt: string,
     modelId: string
   ): Promise<string> {
-    const path = require('path')
     const runtimeClient = createRuntimeClient(this.context.store.get('aws'))
 
     // Claude Messages APIのリクエスト形式を構築
@@ -196,5 +217,89 @@ export class ImageRecognitionService {
     })
 
     return description
+  }
+
+  /**
+   * Nova系モデルを使った画像認識（ConverseServiceを使用）
+   */
+  private async recognizeImageWithNova(
+    imagePath: string,
+    base64Data: string,
+    mediaType: string,
+    prompt: string,
+    modelId: string
+  ): Promise<string> {
+    const path = require('path')
+
+    // ConverseServiceをインポート
+    const converseService = new ConverseService(this.context)
+
+    imageLogger.info('Calling Bedrock for image recognition with Nova using Converse API', {
+      fileName: path.basename(imagePath),
+      modelId
+    })
+
+    // Converse API用のメッセージ形式
+
+    const systemPrompt = [
+      {
+        text: 'あなたは画像認識を行うアシスタントです。提供された画像を詳細に分析し、説明してください。'
+      }
+    ]
+
+    try {
+      const response = await converseService.converse({
+        modelId,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                image: {
+                  format: mediaType.split('/')[1] as any, // 'image/png' -> 'png'
+                  source: {
+                    bytes: Buffer.from(base64Data, 'base64') as any
+                  }
+                }
+              },
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        system: systemPrompt
+      })
+
+      // レスポンスからテキスト部分を抽出
+      let description = ''
+      if (response.output?.message?.content) {
+        if (Array.isArray(response.output.message.content)) {
+          description = response.output.message.content
+            .filter((item: any) => item.text)
+            .map((item: any) => item.text)
+            .join('\n')
+        }
+      }
+
+      if (!description) {
+        throw new Error('No text content in Nova response')
+      }
+
+      imageLogger.info('Image recognition successful with Nova', {
+        fileName: path.basename(imagePath),
+        modelId,
+        responseLength: description.length
+      })
+
+      return description
+    } catch (error: any) {
+      imageLogger.error('Error in Nova image recognition', {
+        fileName: path.basename(imagePath),
+        modelId,
+        error: error.message
+      })
+      throw error
+    }
   }
 }

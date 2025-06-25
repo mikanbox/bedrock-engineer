@@ -6,12 +6,15 @@ import {
   AgentCategory,
   KnowledgeBase,
   McpServerConfig,
-  Scenario
+  Scenario,
+  FlowConfig,
+  EnvironmentContextSettings
 } from '@/types/agent-chat'
 import { ToolName, isMcpTool } from '@/types/tools'
 import useSetting from '@renderer/hooks/useSetting'
 import { BedrockAgent } from '@/types/agent'
 import { CommandConfig } from '../../modals/useToolSettingModal'
+import { usePromptGeneration } from './usePromptGeneration'
 
 /**
  * エージェントフォームの状態管理と主要機能を担当するカスタムフック
@@ -32,7 +35,13 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     icon: initialAgent?.icon || 'robot',
     iconColor: initialAgent?.iconColor,
     tools: initialAgent?.tools || ([] as ToolName[]),
-    category: initialAgent?.category || 'all'
+    category: initialAgent?.category || 'all',
+    additionalInstruction: initialAgent?.additionalInstruction || '',
+    environmentContextSettings: {
+      todoListInstruction: initialAgent?.environmentContextSettings?.todoListInstruction ?? true,
+      projectRule: initialAgent?.environmentContextSettings?.projectRule ?? true,
+      visualExpressionRules: initialAgent?.environmentContextSettings?.visualExpressionRules ?? true
+    }
   })
 
   // タブナビゲーション用の状態
@@ -60,6 +69,35 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     []
   )
 
+  // System prompt update callback functions with useCallback memoization
+  const handleSystemPromptUpdate = useCallback(
+    (prompt: string) => updateField('system', prompt),
+    [updateField]
+  )
+
+  const handleScenariosUpdate = useCallback(
+    (scenarios: Array<{ title: string; content: string }>) => updateField('scenarios', scenarios),
+    [updateField]
+  )
+
+  // Prompt generation functionality integration
+  const {
+    generateSystemPrompt,
+    generateVoiceChatPrompt,
+    generateScenarios,
+    isGeneratingSystem,
+    isGeneratingVoiceChat,
+    isGeneratingScenarios
+  } = usePromptGeneration(
+    formData.name,
+    formData.description,
+    formData.system,
+    handleSystemPromptUpdate,
+    handleScenariosUpdate,
+    formData.additionalInstruction,
+    agentTools
+  )
+
   // 複数フィールドを一度に更新する関数
   const updateMultipleFields = useCallback(
     (
@@ -76,7 +114,9 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
             | KnowledgeBase[]
             | CommandConfig[]
             | BedrockAgent[]
+            | FlowConfig[]
             | string[]
+            | EnvironmentContextSettings
           )
         ]
       >
@@ -119,7 +159,8 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
         ['mcpServers', [] as McpServerConfig[]],
         ['allowedCommands', [] as CommandConfig[]],
         ['knowledgeBases', [] as KnowledgeBase[]],
-        ['bedrockAgents', [] as BedrockAgent[]]
+        ['bedrockAgents', [] as BedrockAgent[]],
+        ['flows', [] as FlowConfig[]]
       ])
 
       return
@@ -129,27 +170,29 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     const category = initialAgent.category || 'all'
     setAgentCategory(category)
 
-    // カテゴリに基づくデフォルトツール
-    const defaultTools = getDefaultToolsForCategory(category)
+    // カテゴリに基づくすべてのツールを取得（デフォルトでは全て無効）
+    const allAvailableTools = getDefaultToolsForCategory(category).map((tool) => ({
+      ...tool,
+      enabled: false // デフォルトは無効
+    }))
 
-    // エージェント固有のツール設定があればそれを適用
-    if (initialAgent.tools && initialAgent.tools.length > 0) {
-      const toolsWithState = defaultTools.map((toolState) => {
-        const toolName = toolState.toolSpec?.name as ToolName
-        const isEnabled = initialAgent.tools?.includes(toolName) || false
-        return { ...toolState, enabled: isEnabled }
-      })
-      setAgentTools(toolsWithState)
-    } else {
-      setAgentTools(defaultTools)
-    }
+    // エージェント固有のツール設定を適用
+    const toolsWithState = allAvailableTools.map((toolState) => {
+      const toolName = toolState.toolSpec?.name as ToolName
+      // エージェントのツールリストに含まれている場合のみ有効化
+      const isEnabled = initialAgent.tools?.includes(toolName) || false
+      return { ...toolState, enabled: isEnabled }
+    })
+
+    setAgentTools(toolsWithState)
 
     // 既存のエージェントが持つすべてのツール設定情報を明示的にformDataに設定
     updateMultipleFields([
       ['mcpServers', initialAgent.mcpServers || []],
       ['knowledgeBases', initialAgent.knowledgeBases || []],
       ['allowedCommands', initialAgent.allowedCommands || []],
-      ['bedrockAgents', initialAgent.bedrockAgents || []]
+      ['bedrockAgents', initialAgent.bedrockAgents || []],
+      ['flows', initialAgent.flows || []]
     ])
   }, [initialAgent, getDefaultToolsForCategory, updateMultipleFields])
 
@@ -265,8 +308,12 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
 
   // アクティブタブが変わった時にツール情報を更新
   useEffect(() => {
-    // ツールタブに切り替わったときのみ実行
-    if (activeTab === 'tools' && formData.mcpServers && formData.mcpServers.length > 0) {
+    // 基本設定・ツールタブに切り替わったときのみ実行
+    if (
+      (activeTab === 'tools' || activeTab == 'basic') &&
+      formData.mcpServers &&
+      formData.mcpServers.length > 0
+    ) {
       // 前回のフェッチから一定時間以上経過した場合のみ再取得
       const now = Date.now()
       const timeSinceLastFetch = now - lastMcpToolsFetchRef.current
@@ -340,6 +387,14 @@ export const useAgentForm = (initialAgent?: CustomAgent, onSave?: (agent: Custom
     agentCategory,
     isLoadingMcpTools,
     tempMcpTools,
+
+    // プロンプト生成関連
+    generateSystemPrompt,
+    generateVoiceChatPrompt,
+    generateScenarios,
+    isGeneratingSystem,
+    isGeneratingVoiceChat,
+    isGeneratingScenarios,
 
     // 状態更新関数
     updateField,
